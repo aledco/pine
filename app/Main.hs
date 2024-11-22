@@ -22,7 +22,7 @@ main = do
     let tokens = scan contents
     let scanError = checkForScanError tokens
     case scanError of
-        Just t -> putStrLn "ERROR" -- TODO
+        Just (Token _ _ (ln, col)) -> putStrLn "Scan Error" 
         Nothing -> pure ()
     dumpTokens tokens
  

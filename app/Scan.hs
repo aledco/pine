@@ -16,7 +16,7 @@ data Token = Token TokenType String (Int, Int)
 
 -- TODO this is builing tokens backward, need to reverse list
 scan :: String -> [Token]
-scan input = scan' input 1 1
+scan input = reverse (scan' input 1 1)
     where
         scan' :: String -> Int -> Int -> [Token]
         scan' [] _ _ = []
@@ -44,9 +44,9 @@ scan input = scan' input 1 1
                 (t2, s2, ln2, col2)  = scanIdOrKey (c:cs) ln col
 
 checkForScanError :: [Token] -> Maybe Token
-checkForScanError tokens = case t of 
-    Token Error s p -> Just t
-    otherwise -> Nothing
+checkForScanError tokens = checkForScanError' t
     where
         t = last tokens
+        checkForScanError' (Token Error s p) = Just t
+        checkForScanError' _ = Nothing
 
