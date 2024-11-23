@@ -1,1 +1,1 @@
-fn add10 x = x + 10
+fn add10 x = x != 10
