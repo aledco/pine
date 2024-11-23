@@ -8,10 +8,10 @@ import Lambda
 import Machine
 
 dumpTokens :: [Token] -> IO ()
-dumpTokens [] = pure ()
-dumpTokens ((Token c t (ln, col)):ts) = do
-    putStrLn t
-    dumpTokens ts
+dumpTokens tokens = do
+    putStrLn "BEGIN TOKEN DUMP"
+    _ <- mapM print tokens
+    putStrLn "END TOKEN DUMP\n"
 
 main :: IO ()
 main = do
@@ -22,7 +22,7 @@ main = do
     let tokens = scan contents
     let scanError = checkForScanError tokens
     case scanError of
-        Just (Token _ _ (ln, col)) -> putStrLn "Scan Error" 
+        Just (Token _ _ (ln, col)) -> error ("scan error at (" ++ show ln ++ ":" ++ show col ++ ")") 
         Nothing -> pure ()
     dumpTokens tokens
  

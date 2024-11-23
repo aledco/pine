@@ -1,1 +1,1 @@
-fn f x = x
+fn add10 x = x + 10
