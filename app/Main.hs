@@ -26,7 +26,7 @@ main = do
         Nothing -> pure ()
     dumpTokens tokens
  
-    parse
+    parse tokens
     lambda
     machine
 
