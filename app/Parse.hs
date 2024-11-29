@@ -2,21 +2,28 @@ module Parse where
 
 import Scan
 
-data BinOp
-    = Add
-    | Sub
-    | Mul
-    | Div
-    | Eq
-    | Neq
-
 data Expr t
     = Var String
     | Lit t
-    | Un UnOp (Expr t)
-    | Bin BinOp (Expr t) (Expr t)
-    | App (Expr t) (Expr t)   
+    | Neg (Expr t) 
+    | Add (Expr t) (Expr t)
+    | Sub (Expr t) (Expr t)
+    | Mul (Expr t) (Expr t)
+    | Div (Expr t) (Expr t)
+    | App (Expr t) (Expr t)
+
+data Fn = ?? -- TODO
     
 parse :: [Token] -> IO ()
-parse tokens = putStrLn "Hello from Parse!"
+parse tokens = parseFns tokens
+    where
+        parseFns :: [Token] -> ??
+        parseFns [] = []
+        parseFns tokens = fn:(parseFns rest) 
+            where
+                parseFn :: [Token] -> (Fn, [Token])
+                parseFn tokens = (??, ??) -- TODO
+
+                (fn, rest) = parseFn tokens
+
 
