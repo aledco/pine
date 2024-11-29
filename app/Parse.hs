@@ -12,7 +12,8 @@ data Expr t
     | Div (Expr t) (Expr t)
     | App (Expr t) (Expr t)
 
-data Fn = ?? -- TODO
+data Fn t = (Symbol, [Symbol], Expr t) -- fn name, parameters, body
+-- TODO need SymbolTable
     
 parse :: [Token] -> IO ()
 parse tokens = parseFns tokens
