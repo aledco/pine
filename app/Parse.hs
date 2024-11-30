@@ -2,17 +2,15 @@ module Parse where
 
 import Scan
 
-data Expr t
+data Expr
     = Var String
-    | Lit t
-    | Neg (Expr t) 
-    | Add (Expr t) (Expr t)
-    | Sub (Expr t) (Expr t)
-    | Mul (Expr t) (Expr t)
-    | Div (Expr t) (Expr t)
-    | App (Expr t) (Expr t)
+    | Lit Int
+    | App Expr Expr
 
-data Fn t = (Symbol, [Symbol], Expr t) -- fn name, parameters, body
+type Symbol = String
+
+data Fn = (Symbol, [Symbol], Expr) -- fn name, parameters, body
+
 -- TODO need SymbolTable
     
 parse :: [Token] -> IO ()
