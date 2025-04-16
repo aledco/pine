@@ -1,9 +1,12 @@
 mod parse;
 mod lex;
 mod ast;
+mod token;
 
 pub use self::ast::*; // export the ast module
 
-pub fn test() -> i32 {
-    return parse::test();
+pub fn parse(input: String) -> Vec<Box<dyn AST>> {
+    // let tokens = lex::lex(input)
+    // return parse::parse(tokens)
+    return vec![];
 }

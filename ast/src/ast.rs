@@ -1,9 +1,15 @@
-pub struct Expression {
-    pub test: String,
+pub trait AST {
+    
 }
 
-impl Expression {
-    pub fn new() -> Expression {
-        Expression { test: String::from("test") }
-    } 
+pub struct FunctionDef {
+    
+}
+
+pub struct Expression {
+}
+
+
+impl AST for FunctionDef {
+    
 }
