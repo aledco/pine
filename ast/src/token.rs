@@ -1,6 +1,6 @@
 pub struct Token {
     pub value: TokenType,
-    
+    pub span: Span,
 }
 
 pub struct Span {
@@ -9,7 +9,12 @@ pub struct Span {
 }
 
 pub enum TokenType {
-    Keyword(String),
+    Keyword(Keyword),
     Integer(i64),
     String(String),
+}
+
+pub enum Keyword {
+    If,
+    For,
 }

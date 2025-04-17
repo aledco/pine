@@ -1,3 +1,6 @@
-pub fn test() -> i32 {
-    return 0;
+use crate::token::*;
+use crate::ast::*;
+
+pub fn parse(tokens: Vec<Token>) -> Program {
+    Program{ modules: vec![], main: FunctionDef {} }
 }
