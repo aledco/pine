@@ -1,5 +1,3 @@
-
-
 fun main() -> int begin
     let L = private_func(1)
     for x in L

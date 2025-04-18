@@ -18,3 +18,9 @@ pub enum Keyword {
     If,
     For,
 }
+
+impl Token {
+    pub fn new(value: TokenType, span: Span) -> Self {
+        Token { value, span }
+    }
+}
