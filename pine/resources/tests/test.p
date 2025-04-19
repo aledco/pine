@@ -1,4 +1,4 @@
-fun main() -> int begin
+fun main() begin
     let L = private_func(1)
     for x in L
     do
