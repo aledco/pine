@@ -3,12 +3,8 @@ pub trait AST {
 }
 
 pub struct Program {
-    pub modules: Vec<Module>,
+    pub nodes: Vec<Box<dyn AST>>,
     pub main: FunctionDef,
-}
-
-pub struct Module {
-    pub functions: Vec<FunctionDef>,
 }
 
 pub struct FunctionDef {
