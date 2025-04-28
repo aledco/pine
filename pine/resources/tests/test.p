@@ -12,7 +12,7 @@ fun main() begin
 end
 
 fun ~private_func(n: int) -> [int] begin
-    L = []
+    let L = []
     for i in 0..n do
         L.add(i)
     return L

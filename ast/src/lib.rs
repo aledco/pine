@@ -2,6 +2,7 @@ mod token;
 mod lex;
 mod ast;
 mod parse;
+mod symbol;
 
 pub use self::token::*; // export the token module
 pub use self::ast::*; // export the ast module

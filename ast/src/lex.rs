@@ -1,3 +1,5 @@
+use std::cmp::{max, min};
+use std::str::FromStr;
 use crate::token::*;
 
 /// Processes the input into a collection of tokens.
@@ -46,21 +48,20 @@ impl Scanner {
                 self.advance();
             } else if self.is_comment() {
                 self.skip_comment();
-            } else if self.is_alphabetic() {
-                let token = self.scan_identifier_or_keyword();
-                tokens.push(token);
-            } else if self.is_digit() {
-                let token = self.scan_numeral();
-                tokens.push(token);
-            } else if self.is_operator() {
-                let token = self.scan_operator();
-                tokens.push(token);
-            } else if self.is_punctuation() {
-                let token = self.scan_punctuation();
-                tokens.push(token);
             } else {
-                // TODO need to parse punctuation
-                panic!("Parse Error: Unrecognized character {} at {}", self.char(), self.point());
+                let token = if self.is_alphabetic() {
+                    self.scan_identifier_or_keyword()
+                } else if self.is_digit() {
+                    self.scan_numeral()
+                } else if self.is_punctuation() || self.is_operator() {
+                     match self.scan_punctuation_or_operator() {
+                         Some(token) => token,
+                         None => panic!("Parse Error: Unrecognized character {} at {}", self.char(), self.point())
+                     }
+                } else {
+                    panic!("Parse Error: Unrecognized character {} at {}", self.char(), self.point())
+                };
+                tokens.push(token);
             }
         }
 
@@ -82,12 +83,11 @@ impl Scanner {
 
         let end = self.point();
         let token_type =
-            if let Some(keyword) = Keyword::from(value.as_str()) {
+            if let Ok(keyword) = Keyword::from_str(value.as_str()) {
                 TokenType::Keyword(keyword)
             } else {
                 TokenType::Identifier(value)
             };
-
         Token::new(token_type, Span::new(start, end))
     }
 
@@ -126,38 +126,31 @@ impl Scanner {
         }
     }
 
-    /// Scans an operator and returns the token.
+    /// Scans punctuation or operator and returns the token.
     ///
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
-    fn scan_operator(&mut self) -> Token {
-        assert!(self.is_operator());
+    fn scan_punctuation_or_operator(&mut self) -> Option<Token> {
+        assert!(self.is_punctuation() || self.is_punctuation());
         let start = self.point();
-        let mut value = String::new();
-        while !self.eof() && self.is_operator() {
-            value.push(self.char());
-            self.advance();
+        let mut length = max(Punctuation::get_max_length(), Operator::get_max_length());
+        length = min(length, self.input.len() - self.index); // TODO check if this is right
+        while length > 0 {
+            let slice = self.slice(length);
+            if let Ok(punctuation) = Punctuation::from_str(slice.as_str()) {
+                self.advance_n(length);
+                let end = self.point();
+                return Some(Token::new(TokenType::Punctuation(punctuation), Span::new(start, end)));
+            } else if let Ok(operator) = Operator::from_str(slice.as_str()) {
+                self.advance_n(length);
+                let end = self.point();
+                return Some(Token::new(TokenType::Operator(operator), Span::new(start, end)));
+            } else {
+                length -= 1;
+            }
         }
-        
-        if let Some(operator) = Operator::from(value.as_str()) {
-            let end = self.point();
-            Token::new(TokenType::Operator(operator), Span::new(start, end))
-        } else {
-            panic!("Parse Error: Invalid operator {} at {}", value, start);
-        }
-    }
 
-    /// Scans punctuation and returns the token.
-    ///
-    /// # Arguments
-    /// * `self` - A mutable reference to the scanner.
-    fn scan_punctuation(&mut self) -> Token {
-        assert!(self.is_punctuation());
-        let start = self.point();
-        let value = self.char();
-        self.advance();
-        let end = self.point();
-        Token::new(TokenType::Punctuation(value), Span::new(start, end))
+        None
     }
 
     /// Skips over single line comments in the input.
@@ -187,6 +180,18 @@ impl Scanner {
         self.index += 1;
     }
 
+    /// Advances the index into the input.
+    ///
+    /// # Arguments
+    /// * `self` - A mutable reference to the scanner.
+    /// * `n` - The number advances to make.
+    fn advance_n(&mut self, n: usize) {
+        assert!(!self.eof());
+        for _ in 0..n {
+            self.advance();
+        }
+    }
+
     /// Returns a value indicating whether the scanner has reached EOF.
     ///
     /// # Arguments
@@ -201,6 +206,16 @@ impl Scanner {
     /// * `self` - A reference to the scanner.
     fn char(&self) -> char {
         self.input[self.index]
+    }
+
+    /// Returns a slice of the input.
+    ///
+    /// # Arguments
+    /// * `self` - A reference to the scanner.
+    /// * `length` - The length of the slice.
+    fn slice(&self, length: usize) -> String {
+        let slice: String = self.input[self.index..self.index + length].iter().collect();
+        slice
     }
 
     /// Returns a value indicating whether the current char is a newline.
@@ -268,15 +283,10 @@ impl Scanner {
     /// # Arguments
     /// * `self` - A reference to the scanner.
     fn is_operator(&self) -> bool {
-        self.char() == '='
-            || self.char() == '!'
-            || self.char() == '<'
-            || self.char() == '>'
-            || self.char() == '+'
-            || self.char() == '-'
-            || self.char() == '*'
-            || self.char() == '/'
-            || self.char() == '%'
+        Operator::get_all_values()
+            .into_iter()
+            .filter(|v| v.contains(self.char()))
+            .count() > 0
     }
 
     /// Returns a value indicating whether the current char is punctuation.
@@ -284,13 +294,10 @@ impl Scanner {
     /// # Arguments
     /// * `self` - A reference to the scanner.
     fn is_punctuation(&self) -> bool {
-        self.char() == '('
-            || self.char() == ')'
-            || self.char() == '{'
-            || self.char() == '}'
-            || self.char() == '['
-            || self.char() == ']'
-            || self.char() == ','
+        Punctuation::get_all_values()
+            .into_iter()
+            .filter(|v| v.contains(self.char()))
+            .count() > 0
     }
 
     /// Returns the current point in the input.
@@ -336,8 +343,8 @@ end";
         let expected = vec![
             Token::new(TokenType::Keyword(Keyword::Fun), span),
             Token::new(TokenType::Identifier(String::from("main")), span),
-            Token::new(TokenType::Punctuation('('), span),
-            Token::new(TokenType::Punctuation(')'), span),
+            Token::new(TokenType::Punctuation(Punctuation::OpenParen), span),
+            Token::new(TokenType::Punctuation(Punctuation::CloseParen), span),
             Token::new(TokenType::Keyword(Keyword::Begin), span),
             Token::new(TokenType::Keyword(Keyword::Return), span),
             Token::new(TokenType::Integer(0), span),
@@ -345,6 +352,7 @@ end";
         ];
         
         let tokens = lex(String::from(input));
+        println!("{:?}", tokens);
         assert!(equal(tokens, expected));
     }
 
@@ -365,12 +373,12 @@ end";
         let expected = vec![
             Token::new(TokenType::Keyword(Keyword::Fun), span),
             Token::new(TokenType::Identifier(String::from("main")), span),
-            Token::new(TokenType::Punctuation('('), span),
-            Token::new(TokenType::Punctuation(')'), span),
+            Token::new(TokenType::Punctuation(Punctuation::OpenParen), span),
+            Token::new(TokenType::Punctuation(Punctuation::CloseParen), span),
             Token::new(TokenType::Keyword(Keyword::Begin), span),
             Token::new(TokenType::Keyword(Keyword::Let), span),
             Token::new(TokenType::Identifier(String::from("x")), span),
-            Token::new(TokenType::Operator(Operator::Assign), span),
+            Token::new(TokenType::Punctuation(Punctuation::EqualSign), span),
             Token::new(TokenType::Integer(0), span),
             Token::new(TokenType::Keyword(Keyword::If), span),
             Token::new(TokenType::Identifier(String::from("x")), span),
@@ -378,9 +386,9 @@ end";
             Token::new(TokenType::Integer(0), span),
             Token::new(TokenType::Keyword(Keyword::Then), span),
             Token::new(TokenType::Identifier(String::from("print")), span),
-            Token::new(TokenType::Punctuation('('), span),
+            Token::new(TokenType::Punctuation(Punctuation::OpenParen), span),
             Token::new(TokenType::Integer(1), span),
-            Token::new(TokenType::Punctuation(')'), span),
+            Token::new(TokenType::Punctuation(Punctuation::CloseParen), span),
             Token::new(TokenType::Keyword(Keyword::End), span),
             Token::new(TokenType::Keyword(Keyword::Return), span),
             Token::new(TokenType::Integer(0), span),
