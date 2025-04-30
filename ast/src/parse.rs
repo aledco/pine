@@ -1,5 +1,6 @@
 use crate::ast::*;
 use crate::token::*;
+use crate::symbol::*;
 
 pub fn parse(tokens: Vec<Token>) -> Program {
     let mut parser = Parser::new(tokens);
@@ -20,10 +21,11 @@ impl Parser {
     }
 
     pub fn parse(&mut self) -> Program {
+        let global_scope = Box::new(Scope::new_global());
         let mut functions: Vec<AstNode> = vec![];
         while !self.eof() {
             if self.matches_function() {
-                let function = self.parse_function();
+                let function = self.parse_function(global_scope);
                 functions.push(function);
             } else {
                 panic!("Parse Error: at {}", self.span())
@@ -33,7 +35,9 @@ impl Parser {
         Program::new(functions)
     }
 
-    fn parse_function(&mut self) -> AstNode {
+    fn parse_function(&mut self, scope: &Scope) -> AstNode {
+        let param_scope = Scope::new(Some(scope));
+        
         let fun = self.match_token(TokenType::Keyword(Keyword::Fun));
         let mut identifier = self.parse_identifier(false);
         let params = self.parse_params();
@@ -63,6 +67,7 @@ impl Parser {
             params,
             Box::new(body),
             function_type,
+            scope,
             span,
         )
     }
