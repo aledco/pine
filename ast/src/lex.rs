@@ -88,7 +88,7 @@ impl Scanner {
             } else {
                 TokenType::Identifier(value)
             };
-        Token::new(token_type, Span::new(start, end))
+        Token::from(token_type, Span::from(start, end))
     }
 
     /// Scans a numeral and returns the token.
@@ -118,11 +118,11 @@ impl Scanner {
 
             let end = self.point();
             let float: f64 = value.parse().unwrap();
-            Token::new(TokenType::Float(float), Span::new(start, end))
+            Token::from(TokenType::Float(float), Span::from(start, end))
         } else {
             let end = self.point();
             let integer: i64 = value.parse().unwrap();
-            Token::new(TokenType::Integer(integer), Span::new(start, end))
+            Token::from(TokenType::Integer(integer), Span::from(start, end))
         }
     }
 
@@ -140,11 +140,11 @@ impl Scanner {
             if let Ok(punctuation) = Punctuation::from_str(slice.as_str()) {
                 self.advance_n(length);
                 let end = self.point();
-                return Some(Token::new(TokenType::Punctuation(punctuation), Span::new(start, end)));
+                return Some(Token::from(TokenType::Punctuation(punctuation), Span::from(start, end)));
             } else if let Ok(operator) = Operator::from_str(slice.as_str()) {
                 self.advance_n(length);
                 let end = self.point();
-                return Some(Token::new(TokenType::Operator(operator), Span::new(start, end)));
+                return Some(Token::from(TokenType::Operator(operator), Span::from(start, end)));
             } else {
                 length -= 1;
             }
@@ -305,97 +305,6 @@ impl Scanner {
     /// # Arguments
     /// * `self` - A reference to the scanner.
     fn point(&self) -> Point {
-        Point::new(self.line, self.col)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    /// Returns a value indicating whether two vectors of tokens are equal.
-    /// 
-    /// # Arguments
-    /// * `actual` - The actual vector of tokens.
-    /// * `expected` - The expected vector of tokens.
-    fn equal(actual: Vec<Token>, expected: Vec<Token>) -> bool {
-        if actual.len() != expected.len() {
-            return false;
-        }
-        
-        for (actual, expected) in actual.into_iter().zip(expected.into_iter()) {
-            if actual != expected {
-                return false;
-            }
-        }
-        
-        true
-    }
-    
-    #[test]
-    fn test_lex1() {
-        let input = "
-fun main() begin
-    return 0
-end";
-        
-        let span = Span::new(Point::new(0, 0), Point::new(0, 0));
-        let expected = vec![
-            Token::new(TokenType::Keyword(Keyword::Fun), span),
-            Token::new(TokenType::Identifier(String::from("main")), span),
-            Token::new(TokenType::Punctuation(Punctuation::OpenParen), span),
-            Token::new(TokenType::Punctuation(Punctuation::CloseParen), span),
-            Token::new(TokenType::Keyword(Keyword::Begin), span),
-            Token::new(TokenType::Keyword(Keyword::Return), span),
-            Token::new(TokenType::Integer(0), span),
-            Token::new(TokenType::Keyword(Keyword::End), span),
-        ];
-        
-        let tokens = lex(String::from(input));
-        println!("{:?}", tokens);
-        assert!(equal(tokens, expected));
-    }
-
-    /// Tests the lexer on a variable assignment.
-    #[test]
-    fn test_lex2() {
-        let input = "
-fun main() begin
-    let x = 0
-    if x == 0 then
-        print(1)
-    end
-
-    return 0
-end";
-
-        let span = Span::new(Point::new(0, 0), Point::new(0, 0));
-        let expected = vec![
-            Token::new(TokenType::Keyword(Keyword::Fun), span),
-            Token::new(TokenType::Identifier(String::from("main")), span),
-            Token::new(TokenType::Punctuation(Punctuation::OpenParen), span),
-            Token::new(TokenType::Punctuation(Punctuation::CloseParen), span),
-            Token::new(TokenType::Keyword(Keyword::Begin), span),
-            Token::new(TokenType::Keyword(Keyword::Let), span),
-            Token::new(TokenType::Identifier(String::from("x")), span),
-            Token::new(TokenType::Punctuation(Punctuation::EqualSign), span),
-            Token::new(TokenType::Integer(0), span),
-            Token::new(TokenType::Keyword(Keyword::If), span),
-            Token::new(TokenType::Identifier(String::from("x")), span),
-            Token::new(TokenType::Operator(Operator::Equals), span),
-            Token::new(TokenType::Integer(0), span),
-            Token::new(TokenType::Keyword(Keyword::Then), span),
-            Token::new(TokenType::Identifier(String::from("print")), span),
-            Token::new(TokenType::Punctuation(Punctuation::OpenParen), span),
-            Token::new(TokenType::Integer(1), span),
-            Token::new(TokenType::Punctuation(Punctuation::CloseParen), span),
-            Token::new(TokenType::Keyword(Keyword::End), span),
-            Token::new(TokenType::Keyword(Keyword::Return), span),
-            Token::new(TokenType::Integer(0), span),
-            Token::new(TokenType::Keyword(Keyword::End), span),
-        ];
-
-        let tokens = lex(String::from(input));
-        assert!(equal(tokens, expected));
+        Point::from(self.line, self.col)
     }
 }

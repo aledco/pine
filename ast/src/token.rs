@@ -1,7 +1,7 @@
 use std::fmt;
 use std::ops;
 use strum::{EnumProperty, IntoEnumIterator};
-use strum_macros::{EnumIter,EnumProperty,EnumString};
+use strum_macros::{EnumIter, EnumProperty, EnumString};
 
 /// Represents a token
 #[derive(Debug, Clone)]
@@ -14,12 +14,23 @@ pub struct Token {
 
 impl Token {
     /// Creates a new token.
-    /// 
+    pub fn new() -> Self {
+        Self {
+            token_type: TokenType::Keyword(Keyword::Fun),
+            span: Span::new(),
+        }
+    }
+
+    /// Creates a new token from the token type and span.
+    ///
     /// # Arguments
     /// * `value` - The value of the token.
     /// * `span` - The span of the token.
-    pub fn new(value: TokenType, span: Span) -> Self {
-        Token { token_type: value, span }
+    pub fn from(value: TokenType, span: Span) -> Self {
+        Self {
+            token_type: value,
+            span,
+        }
     }
 }
 
@@ -96,7 +107,7 @@ pub enum Punctuation {
     #[strum(serialize = "->", props(Value = "->"))]
     Arrow,
     #[strum(serialize = "=", props(Value = "="))]
-    EqualSign
+    EqualSign,
 }
 
 impl Punctuation {
@@ -107,7 +118,7 @@ impl Punctuation {
             .map(|s| String::from(s))
             .collect()
     }
-    
+
     pub fn get_max_length() -> usize {
         Self::get_all_values()
             .into_iter()
@@ -120,23 +131,44 @@ impl Punctuation {
 /// Represents a Pine operator
 #[derive(Debug, PartialEq, Copy, Clone, EnumIter, EnumString, EnumProperty)]
 pub enum Operator {
-    #[strum(serialize = "==", props(Value = "==", IsUnary = false, IsBinary = true))]
+    #[strum(
+        serialize = "==",
+        props(Value = "==", IsUnary = false, IsBinary = true)
+    )]
     Equals,
-    #[strum(serialize = "!=", props(Value = "!=", IsUnary = false, IsBinary = true))]
+    #[strum(
+        serialize = "!=",
+        props(Value = "!=", IsUnary = false, IsBinary = true)
+    )]
     NotEquals,
     #[strum(serialize = ">", props(Value = ">", IsUnary = false, IsBinary = true))]
     GreaterThan,
     #[strum(serialize = "<", props(Value = "<", IsUnary = false, IsBinary = true))]
     LessThan,
-    #[strum(serialize = ">=", props(Value = ">=", IsUnary = false, IsBinary = true))]
+    #[strum(
+        serialize = ">=",
+        props(Value = ">=", IsUnary = false, IsBinary = true)
+    )]
     GreaterThanOrEqual,
-    #[strum(serialize = "<=", props(Value = "<=", IsUnary = false, IsBinary = true))]
+    #[strum(
+        serialize = "<=",
+        props(Value = "<=", IsUnary = false, IsBinary = true)
+    )]
     LessThanOrEqual,
-    #[strum(serialize = "and", props(Value = "and", IsUnary = false, IsBinary = true))]
+    #[strum(
+        serialize = "and",
+        props(Value = "and", IsUnary = false, IsBinary = true)
+    )]
     And,
-    #[strum(serialize = "or", props(Value = "or", IsUnary = false, IsBinary = true))]
+    #[strum(
+        serialize = "or",
+        props(Value = "or", IsUnary = false, IsBinary = true)
+    )]
     Or,
-    #[strum(serialize = "not", props(Value = "not", IsUnary = true, IsBinary = false))]
+    #[strum(
+        serialize = "not",
+        props(Value = "not", IsUnary = true, IsBinary = false)
+    )]
     Not,
     #[strum(serialize = "+", props(Value = "+", IsUnary = false, IsBinary = true))]
     Add,
@@ -146,7 +178,10 @@ pub enum Operator {
     Multiply,
     #[strum(serialize = "/", props(Value = "/", IsUnary = false, IsBinary = true))]
     Divide,
-    #[strum(serialize = "**", props(Value = "**", IsUnary = false, IsBinary = true))]
+    #[strum(
+        serialize = "**",
+        props(Value = "**", IsUnary = false, IsBinary = true)
+    )]
     Power,
     #[strum(serialize = "%", props(Value = "%", IsUnary = false, IsBinary = true))]
     Modulo,
@@ -168,7 +203,7 @@ impl Operator {
             .unwrap()
             .len()
     }
-    
+
     pub fn precedence(&self) -> i32 {
         match self {
             Operator::Equals => 4,
@@ -198,15 +233,11 @@ impl Operator {
     }
 
     pub fn get_all_unary_ops() -> Vec<Self> {
-        Operator::iter()
-            .filter(|op| op.is_unary())
-            .collect()
+        Operator::iter().filter(|op| op.is_unary()).collect()
     }
 
     pub fn get_all_binary_ops() -> Vec<Self> {
-        Operator::iter()
-            .filter(|op| op.is_binary())
-            .collect()
+        Operator::iter().filter(|op| op.is_binary()).collect()
     }
 
     pub fn get_binary_ops_by_precedence(precedence: i32) -> Vec<Self> {
@@ -225,11 +256,12 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn new(line: usize, col: usize) -> Self {
-        Point{
-            line,
-            col
-        }
+    pub fn new() -> Self {
+        Self { line: 0, col: 0 }
+    }
+
+    pub fn from(line: usize, col: usize) -> Self {
+        Self { line, col }
     }
 }
 
@@ -247,11 +279,12 @@ pub struct Span {
 }
 
 impl Span {
-    pub fn new(start: Point, end: Point) -> Self {
-        Span {
-            start,
-            end
-        }
+    pub fn new() -> Self {
+        Self { start: Point::new(), end: Point::new() }
+    }
+
+    pub fn from(start: Point, end: Point) -> Self {
+        Span { start, end }
     }
 }
 
@@ -265,6 +298,9 @@ impl ops::Add<Span> for Span {
     type Output = Span;
 
     fn add(self, rhs: Span) -> Span {
-        Span::new(Point::new(self.start.line, self.start.col), Point::new(rhs.end.line, rhs.end.col))
+        Span::from(
+            Point::from(self.start.line, self.start.col),
+            Point::from(rhs.end.line, rhs.end.col),
+        )
     }
 }

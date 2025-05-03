@@ -171,7 +171,7 @@ impl AstNode {
             ast_type: AstType::Dummy,
             pine_type: PineType::Void,
             scope: Scope::new_global(),
-            span: Span::new(Point::new(0, 0), Point::new(0, 0)),
+            span: Span::from(Point::from(0, 0), Point::from(0, 0)),
         }
     }
 }

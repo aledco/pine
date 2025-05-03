@@ -1,0 +1,12 @@
+key:fun
+id:main
+pun:(
+pun:)
+key:begin
+key:let
+id:x
+pun:=
+int:1
+key:return
+id:x
+key:end

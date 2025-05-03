@@ -6,6 +6,9 @@
       <sourceFolder url="file://$MODULE_DIR$/gen/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/pine/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/pvm/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests_proc_macros/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

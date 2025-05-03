@@ -1,3 +1,19 @@
 [workspace]
 resolver = "2"
-members = [ "ast", "gen", "pine", "pvm"]
+members = ["ast", "gen", "pvm", "tests_proc_macros"]
+
+[package]
+name = "pine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ast = { path = "./ast" }
+gen = { path = "./gen" }
+pvm = { path = "./pvm" }
+
+[dev-dependencies]
+ctor = "0.4.2"
+paste = "1.0.15"
+seq-macro = "0.3.6"
+tests_proc_macros = { path = "./tests_proc_macros" }
