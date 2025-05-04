@@ -1,8 +1,8 @@
-pub mod token;
-pub mod lex;
 pub mod ast;
+pub mod lex;
 pub mod parse;
 pub mod symbol;
+pub mod token;
 
 // pub use self::token::*; // export the token module
 // pub use self::symbol::*; // export the symbol module

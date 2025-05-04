@@ -1,21 +1,23 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 #[proc_macro]
 pub fn make_lex_single_file_tests(_input: TokenStream) -> TokenStream {
-    let n = single_file_tests_n();
-
-    create_output(n, |i| format!("#[test]\nfn test_lex{i}() {{ test({i}); }}\n"))
-        .parse()
-        .unwrap()
+    create_output("lex").parse().unwrap()
 }
 
-fn create_output(n: usize, template: fn(usize) -> String) -> String {
+#[proc_macro]
+pub fn make_parse_single_file_tests(_input: TokenStream) -> TokenStream {
+    create_output("parse").parse().unwrap()
+}
+
+fn create_output(name: &str) -> String {
+    let n = single_file_tests_n();
     (1..=n)
         .into_iter()
-        .map(|i| template(i))
+        .map(|i| format!("#[test]\nfn test_{name}{i}() {{ test({i}); }}\n"))
         .collect::<String>()
 }
 

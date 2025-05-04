@@ -1,6 +1,6 @@
+use crate::token::*;
 use std::cmp::{max, min};
 use std::str::FromStr;
-use crate::token::*;
 
 /// Processes the input into a collection of tokens.
 ///
@@ -25,7 +25,7 @@ struct Scanner {
 
 impl Scanner {
     /// Creates a new scanner.
-    /// 
+    ///
     /// # Arguments
     /// * `input` - A string that holds a Pine program
     pub fn new(input: String) -> Self {
@@ -33,15 +33,15 @@ impl Scanner {
             input: input.chars().collect(),
             index: 0,
             line: 1,
-            col: 1
+            col: 1,
         }
     }
-    
+
     /// Scans the input and produces a vector of tokens.
-    /// 
+    ///
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
-    pub fn scan(&mut self) -> Vec<Token>  {
+    pub fn scan(&mut self) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
         while !self.eof() {
             if self.is_whitespace() {
@@ -54,12 +54,20 @@ impl Scanner {
                 } else if self.is_digit() {
                     self.scan_numeral()
                 } else if self.is_punctuation() || self.is_operator() {
-                     match self.scan_punctuation_or_operator() {
-                         Some(token) => token,
-                         None => panic!("Parse Error: Unrecognized character {} at {}", self.char(), self.point())
-                     }
+                    match self.scan_punctuation_or_operator() {
+                        Some(token) => token,
+                        None => panic!(
+                            "Parse Error: Unrecognized character {} at {}",
+                            self.char(),
+                            self.point()
+                        ),
+                    }
                 } else {
-                    panic!("Parse Error: Unrecognized character {} at {}", self.char(), self.point())
+                    panic!(
+                        "Parse Error: Unrecognized character {} at {}",
+                        self.char(),
+                        self.point()
+                    )
                 };
                 tokens.push(token);
             }
@@ -82,13 +90,12 @@ impl Scanner {
         }
 
         let end = self.point();
-        let token_type =
-            if let Ok(keyword) = Keyword::from_str(value.as_str()) {
-                TokenType::Keyword(keyword)
-            } else {
-                TokenType::Identifier(value)
-            };
-        Token::from(token_type, Span::from(start, end))
+        let token_type = if let Ok(keyword) = Keyword::from_str(value.as_str()) {
+            TokenType::Keyword(keyword)
+        } else {
+            TokenType::Identifier(value)
+        };
+        Token::new(token_type, Span::new(start, end))
     }
 
     /// Scans a numeral and returns the token.
@@ -118,11 +125,11 @@ impl Scanner {
 
             let end = self.point();
             let float: f64 = value.parse().unwrap();
-            Token::from(TokenType::Float(float), Span::from(start, end))
+            Token::new(TokenType::Float(float), Span::new(start, end))
         } else {
             let end = self.point();
             let integer: i64 = value.parse().unwrap();
-            Token::from(TokenType::Integer(integer), Span::from(start, end))
+            Token::new(TokenType::Integer(integer), Span::new(start, end))
         }
     }
 
@@ -131,7 +138,7 @@ impl Scanner {
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
     fn scan_punctuation_or_operator(&mut self) -> Option<Token> {
-        assert!(self.is_punctuation() || self.is_punctuation());
+        assert!(self.is_punctuation() || self.is_operator());
         let start = self.point();
         let mut length = max(Punctuation::get_max_length(), Operator::get_max_length());
         length = min(length, self.input.len() - self.index); // TODO check if this is right
@@ -140,11 +147,17 @@ impl Scanner {
             if let Ok(punctuation) = Punctuation::from_str(slice.as_str()) {
                 self.advance_n(length);
                 let end = self.point();
-                return Some(Token::from(TokenType::Punctuation(punctuation), Span::from(start, end)));
+                return Some(Token::new(
+                    TokenType::Punctuation(punctuation),
+                    Span::new(start, end),
+                ));
             } else if let Ok(operator) = Operator::from_str(slice.as_str()) {
                 self.advance_n(length);
                 let end = self.point();
-                return Some(Token::from(TokenType::Operator(operator), Span::from(start, end)));
+                return Some(Token::new(
+                    TokenType::Operator(operator),
+                    Span::new(start, end),
+                ));
             } else {
                 length -= 1;
             }
@@ -286,7 +299,8 @@ impl Scanner {
         Operator::get_all_values()
             .into_iter()
             .filter(|v| v.contains(self.char()))
-            .count() > 0
+            .count()
+            > 0
     }
 
     /// Returns a value indicating whether the current char is punctuation.
@@ -297,7 +311,8 @@ impl Scanner {
         Punctuation::get_all_values()
             .into_iter()
             .filter(|v| v.contains(self.char()))
-            .count() > 0
+            .count()
+            > 0
     }
 
     /// Returns the current point in the input.
@@ -305,6 +320,6 @@ impl Scanner {
     /// # Arguments
     /// * `self` - A reference to the scanner.
     fn point(&self) -> Point {
-        Point::from(self.line, self.col)
+        Point::new(self.line, self.col)
     }
 }

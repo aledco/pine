@@ -11,6 +11,28 @@ fun main() begin
     return 0
 end
 
+fun if_example() begin
+    let x = 0
+    if x == 0 then
+        print(1)
+    else
+        print(0)
+    end
+
+    if x > 0
+    then
+        print(1)
+    end
+end
+
+fun while_example() begin
+    let x = 0
+    while x < 10 do
+        print(x)
+        x = x + 1
+    end
+end
+
 fun ~private_func(n: int) -> [int] begin
     let L = []
     for i in 0..n do

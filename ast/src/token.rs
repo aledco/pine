@@ -14,10 +14,10 @@ pub struct Token {
 
 impl Token {
     /// Creates a new token.
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self {
             token_type: TokenType::Keyword(Keyword::Fun),
-            span: Span::new(),
+            span: Span::default(),
         }
     }
 
@@ -26,7 +26,7 @@ impl Token {
     /// # Arguments
     /// * `value` - The value of the token.
     /// * `span` - The span of the token.
-    pub fn from(value: TokenType, span: Span) -> Self {
+    pub fn new(value: TokenType, span: Span) -> Self {
         Self {
             token_type: value,
             span,
@@ -50,6 +50,38 @@ pub enum TokenType {
     String(String),
     Punctuation(Punctuation),
     Operator(Operator),
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum TokenTypeMatch {
+    Identifier,
+    Integer,
+    Float,
+    String,
+    Operator,
+}
+
+pub trait TokenMatch {
+    fn matches(&self, token_type: &TokenType) -> bool;
+}
+
+impl TokenMatch for TokenType {
+    fn matches(&self, token_type: &TokenType) -> bool {
+        self == token_type
+    }
+}
+
+impl TokenMatch for TokenTypeMatch {
+    fn matches(&self, token_type: &TokenType) -> bool {
+        match token_type {
+            TokenType::Identifier(_) => self == &TokenTypeMatch::Identifier,
+            TokenType::Integer(_) => self == &TokenTypeMatch::Integer,
+            TokenType::Float(_) => self == &TokenTypeMatch::Float,
+            TokenType::String(_) => self == &TokenTypeMatch::String,
+            TokenType::Operator(_) => self == &TokenTypeMatch::Operator,
+            _ => false,
+        }
+    }
 }
 
 /// Represents a Pine keyword
@@ -83,6 +115,15 @@ pub enum Keyword {
     Float,
     #[strum(serialize = "string")]
     String,
+}
+
+impl TokenMatch for Keyword {
+    fn matches(&self, token_type: &TokenType) -> bool {
+        match token_type {
+            TokenType::Keyword(k) => self == k,
+            _ => false,
+        }
+    }
 }
 
 /// Represents punctuation in a Pine program
@@ -125,6 +166,15 @@ impl Punctuation {
             .max_by(|a, b| a.len().cmp(&b.len()))
             .unwrap()
             .len()
+    }
+}
+
+impl TokenMatch for Punctuation {
+    fn matches(&self, token_type: &TokenType) -> bool {
+        match token_type {
+            TokenType::Punctuation(p) => self == p,
+            _ => false,
+        }
     }
 }
 
@@ -248,6 +298,15 @@ impl Operator {
     }
 }
 
+impl TokenMatch for Operator {
+    fn matches(&self, token_type: &TokenType) -> bool {
+        match token_type {
+            TokenType::Operator(o) => self == o,
+            _ => false,
+        }
+    }
+}
+
 /// Represents a point in the input
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Point {
@@ -256,11 +315,11 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self { line: 0, col: 0 }
     }
 
-    pub fn from(line: usize, col: usize) -> Self {
+    pub fn new(line: usize, col: usize) -> Self {
         Self { line, col }
     }
 }
@@ -279,11 +338,14 @@ pub struct Span {
 }
 
 impl Span {
-    pub fn new() -> Self {
-        Self { start: Point::new(), end: Point::new() }
+    pub fn default() -> Self {
+        Self {
+            start: Point::default(),
+            end: Point::default(),
+        }
     }
 
-    pub fn from(start: Point, end: Point) -> Self {
+    pub fn new(start: Point, end: Point) -> Self {
         Span { start, end }
     }
 }
@@ -298,9 +360,9 @@ impl ops::Add<Span> for Span {
     type Output = Span;
 
     fn add(self, rhs: Span) -> Span {
-        Span::from(
-            Point::from(self.start.line, self.start.col),
-            Point::from(rhs.end.line, rhs.end.col),
+        Span::new(
+            Point::new(self.start.line, self.start.col),
+            Point::new(rhs.end.line, rhs.end.col),
         )
     }
 }

@@ -1,4 +1,4 @@
 fun main() begin
-    let x = 1
+    let x = -1
     return x
 end

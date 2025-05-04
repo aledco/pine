@@ -1,4 +1,4 @@
 fun main() begin
-    let x = 1
+    let x = 8 % 2
     return x
 end

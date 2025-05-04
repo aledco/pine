@@ -1,6 +1,8 @@
-use std::cell::{Ref, RefCell};
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fmt;
 use std::rc::Rc;
+use crate::ast::AstNode;
 
 pub type SymbolRef = Rc<RefCell<Symbol>>;
 pub type ScopeRef = Rc<RefCell<Scope>>;
@@ -23,7 +25,7 @@ pub struct SymbolTable {
 }
 
 #[derive(Debug)]
-pub enum ScopeLevel {
+pub enum ScopeDepth {
     Global,
     Local(usize),
 }
@@ -32,7 +34,7 @@ pub enum ScopeLevel {
 pub struct Scope {
     pub parent: Option<ScopeRef>,
     pub symbol_table: SymbolTable,
-    pub level: ScopeLevel,
+    pub depth: ScopeDepth,
 }
 
 impl Symbol {
@@ -70,20 +72,20 @@ impl Scope {
         Rc::new(RefCell::new(Self {
             parent: None,
             symbol_table: SymbolTable::new(),
-            level: ScopeLevel::Global,
+            depth: ScopeDepth::Global,
         }))
     }
 
     pub fn new_local(parent: ScopeRef) -> ScopeRef {
-        let level = match parent.borrow().level {
-            ScopeLevel::Global => ScopeLevel::Local(0),
-            ScopeLevel::Local(depth) => ScopeLevel::Local(depth + 1),
+        let level = match parent.borrow().depth {
+            ScopeDepth::Global => ScopeDepth::Local(1),
+            ScopeDepth::Local(depth) => ScopeDepth::Local(depth + 1),
         };
 
         Rc::new(RefCell::new(Self {
             parent: Some(parent),
             symbol_table: SymbolTable::new(),
-            level,
+            depth: level,
         }))
     }
 

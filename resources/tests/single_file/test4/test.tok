@@ -3,6 +3,11 @@ id:main
 pun:(
 pun:)
 key:begin
+key:let
+id:x
+pun:=
+op:-
+int:1
 key:return
-int:0
+id:x
 key:end

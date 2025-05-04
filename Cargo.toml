@@ -13,7 +13,4 @@ gen = { path = "./gen" }
 pvm = { path = "./pvm" }
 
 [dev-dependencies]
-ctor = "0.4.2"
-paste = "1.0.15"
-seq-macro = "0.3.6"
 tests_proc_macros = { path = "./tests_proc_macros" }

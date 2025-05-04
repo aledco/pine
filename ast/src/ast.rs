@@ -1,6 +1,18 @@
-use std::cell::RefCell;
-use crate::token::*;
 use crate::symbol::*;
+use crate::token::*;
+use std::fmt;
+
+#[derive(Debug)]
+pub struct Program {
+    pub functions: Vec<AstNode>,
+    //pub main: AstNode,
+}
+
+impl Program {
+    pub fn new(functions: Vec<AstNode>) -> Self {
+        Self { functions }
+    }
+}
 
 /// The type of Pine construct.
 #[derive(Clone, Debug, PartialEq)]
@@ -25,6 +37,16 @@ pub enum AstType {
         body: Box<AstNode>,
     },
     Block(Vec<AstNode>),
+    IfStatement{
+        condition: Box<AstNode>,
+        then_body: Box<AstNode>,
+        else_body: Option<Box<AstNode>>,
+    },
+    WhileStatement{
+        condition: Box<AstNode>,
+        body: Box<AstNode>,
+    },
+    ReturnStatement(Option<Box<AstNode>>),
     Let {
         identifier: Box<AstNode>,
         expression: Box<AstNode>,
@@ -46,7 +68,6 @@ pub enum AstType {
     Dummy,
 }
 
-#[derive(Debug)]
 pub struct AstNode {
     pub ast_type: AstType,
     pub pine_type: PineType,
@@ -83,12 +104,19 @@ impl AstNode {
             span,
         }
     }
-    
-    pub fn new_let(identifier: Box<AstNode>, expression: Box<AstNode>, scope: ScopeRef, span: Span) -> Self {
+
+    pub fn new_if_statement(
+        condition: Box<AstNode>,
+        then_body: Box<AstNode>,
+        else_body: Option<Box<AstNode>>,
+        scope: ScopeRef,
+        span: Span,
+    ) -> Self {
         Self {
-            ast_type: AstType::Let {
-                identifier,
-                expression
+            ast_type: AstType::IfStatement{
+                condition,
+                then_body,
+                else_body
             },
             pine_type: PineType::Void,
             scope,
@@ -96,37 +124,92 @@ impl AstNode {
         }
     }
 
-    pub fn new_binary_expression(lhs: Box<AstNode>, op: Operator, rhs: Box<AstNode>, scope: ScopeRef, span: Span) -> Self {
+    pub fn new_while_statement(
+        condition: Box<AstNode>,
+        body: Box<AstNode>,
+        scope: ScopeRef,
+        span: Span,
+    ) -> Self {
         Self {
-            ast_type: AstType::BinaryExpression {
-                lhs,
-                op,
-                rhs
+            ast_type: AstType::WhileStatement{
+                condition,
+                body
             },
-            pine_type: PineType::Unknown,
+            pine_type: PineType::Void,
             scope,
-            span
-        }
-    }
-
-    pub fn new_unary_expression(op: Operator, expr: Box<AstNode>, scope: ScopeRef, span: Span) -> Self {
-        Self {
-            ast_type: AstType::UnaryExpression {
-                op,
-                expr
-            },
-            pine_type: PineType::Unknown,
-            scope,
-            span
+            span,
         }
     }
     
-    pub fn new_identifier_expression(identifier: Box<AstNode>, scope: ScopeRef, span: Span) -> Self {
+    pub fn new_return_statement(
+        expression: Option<Box<AstNode>>,
+        scope: ScopeRef,
+        span: Span,
+    ) -> Self {
+        Self {
+            ast_type: AstType::ReturnStatement(expression),
+            pine_type: PineType::Void,
+            scope,
+            span,
+        }
+    }
+
+    pub fn new_let(
+        identifier: Box<AstNode>,
+        expression: Box<AstNode>,
+        scope: ScopeRef,
+        span: Span,
+    ) -> Self {
+        Self {
+            ast_type: AstType::Let {
+                identifier,
+                expression,
+            },
+            pine_type: PineType::Void,
+            scope,
+            span,
+        }
+    }
+
+    pub fn new_binary_expression(
+        lhs: Box<AstNode>,
+        op: Operator,
+        rhs: Box<AstNode>,
+        scope: ScopeRef,
+        span: Span,
+    ) -> Self {
+        Self {
+            ast_type: AstType::BinaryExpression { lhs, op, rhs },
+            pine_type: PineType::Unknown,
+            scope,
+            span,
+        }
+    }
+
+    pub fn new_unary_expression(
+        op: Operator,
+        expr: Box<AstNode>,
+        scope: ScopeRef,
+        span: Span,
+    ) -> Self {
+        Self {
+            ast_type: AstType::UnaryExpression { op, expr },
+            pine_type: PineType::Unknown,
+            scope,
+            span,
+        }
+    }
+
+    pub fn new_identifier_expression(
+        identifier: Box<AstNode>,
+        scope: ScopeRef,
+        span: Span,
+    ) -> Self {
         Self {
             ast_type: AstType::IdentifierExpression(identifier),
             pine_type: PineType::Unknown,
             scope,
-            span
+            span,
         }
     }
 
@@ -135,7 +218,7 @@ impl AstNode {
             ast_type: AstType::IntegerExpression(value),
             pine_type: PineType::Unknown,
             scope,
-            span
+            span,
         }
     }
 
@@ -144,7 +227,7 @@ impl AstNode {
             ast_type: AstType::FloatExpression(value),
             pine_type: PineType::Unknown,
             scope,
-            span
+            span,
         }
     }
 
@@ -153,10 +236,10 @@ impl AstNode {
             ast_type: AstType::StringExpression(value),
             pine_type: PineType::Unknown,
             scope,
-            span
+            span,
         }
     }
-    
+
     pub fn new_identifier(value: SymbolRef, scope: ScopeRef, span: Span) -> Self {
         Self {
             ast_type: AstType::Identifier(value),
@@ -166,25 +249,25 @@ impl AstNode {
         }
     }
 
+    pub fn depth(&self) -> usize {
+        match self.scope.borrow().depth {
+            ScopeDepth::Global => 0,
+            ScopeDepth::Local(depth) => depth,
+        }
+    }
+
     pub fn dummy() -> Self {
         Self {
             ast_type: AstType::Dummy,
             pine_type: PineType::Void,
             scope: Scope::new_global(),
-            span: Span::from(Point::from(0, 0), Point::from(0, 0)),
+            span: Span::new(Point::new(0, 0), Point::new(0, 0)),
         }
     }
 }
 
-pub struct Program {
-    pub functions: Vec<AstNode>,
-    //pub main: AstNode,
-}
-
-impl Program {
-    pub fn new(functions: Vec<AstNode>) -> Self {
-        Self {
-            functions
-        }
+impl fmt::Debug for AstNode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        fmt::Debug::fmt(&self.ast_type, f)
     }
 }

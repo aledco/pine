@@ -1,4 +1,4 @@
 fun main() begin
-    let x = 1
+    let x = 2 * 5
     return x
 end
