@@ -50,7 +50,7 @@ impl Scanner {
                 self.skip_comment();
             } else {
                 let token = if self.is_alphabetic() {
-                    self.scan_identifier_or_keyword()
+                    self.scan_identifier_or_keyword_or_operator()
                 } else if self.is_digit() {
                     self.scan_numeral()
                 } else if self.is_punctuation() || self.is_operator() {
@@ -76,11 +76,11 @@ impl Scanner {
         tokens
     }
 
-    /// Scans an identifier or keyword and returns the token.
+    /// Scans an identifier, keyword, or operator and returns the token.
     ///
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
-    fn scan_identifier_or_keyword(&mut self) -> Token {
+    fn scan_identifier_or_keyword_or_operator(&mut self) -> Token {
         assert!(self.is_alphabetic());
         let start = self.point();
         let mut value = String::new();
@@ -91,7 +91,9 @@ impl Scanner {
 
         let end = self.point();
         let token_type = if let Ok(keyword) = Keyword::from_str(value.as_str()) {
-            TokenType::Keyword(keyword)
+            TokenType::Keyword(keyword) 
+        } else if let Ok(operator) = Operator::from_str(value.as_str()) {
+                TokenType::Operator(operator)
         } else {
             TokenType::Identifier(value)
         };
@@ -140,7 +142,7 @@ impl Scanner {
     fn scan_punctuation_or_operator(&mut self) -> Option<Token> {
         assert!(self.is_punctuation() || self.is_operator());
         let start = self.point();
-        let mut length = max(Punctuation::get_max_length(), Operator::get_max_length());
+        let mut length = max(Punctuation::get_max_length(), Operator::max_length());
         length = min(length, self.input.len() - self.index); // TODO check if this is right
         while length > 0 {
             let slice = self.slice(length);
@@ -296,7 +298,7 @@ impl Scanner {
     /// # Arguments
     /// * `self` - A reference to the scanner.
     fn is_operator(&self) -> bool {
-        Operator::get_all_values()
+        Operator::all_values()
             .into_iter()
             .filter(|v| v.contains(self.char()))
             .count()

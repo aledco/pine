@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use ast::{lex::lex, token::*};
 use std::str::FromStr;
 
@@ -8,9 +9,10 @@ mod common;
 
 make_lex_single_file_tests!();
 
-fn test(n: usize) {
-    let (input, token_ref) = read_test_files(n);
+fn test(test_base_path: &str) {
+    let (input, token_ref) = read_test_files(PathBuf::from_str(test_base_path).unwrap());
     let actual = lex(input);
+    println!("{:#?}", actual);
     match token_ref {
         Some(token_ref) => {
             let expected = parse_token_ref(token_ref);
@@ -19,6 +21,19 @@ fn test(n: usize) {
         None => assert!(true),
     }
 }
+
+//         fn test(n: usize) {
+//     let (input, token_ref) = read_test_files(n);
+//     let actual = lex(input);
+//     println!("{:#?}", actual);
+//     match token_ref {
+//         Some(token_ref) => {
+//             let expected = parse_token_ref(token_ref);
+//             assert_eq!(expected, actual);
+//         }
+//         None => assert!(true),
+//     }
+// }
 
 fn parse_token_ref(token_ref: String) -> Vec<Token> {
     token_ref
@@ -49,11 +64,21 @@ fn parse_token_ref_line(line: &str) -> Token {
     Token::new(token_type, Span::default())
 }
 
-fn read_test_files(i: usize) -> (String, Option<String>) {
-    let mut path = common::test_file_base_path(i);
-    let pine_input = common::read_pine_input(&mut path).expect("pine input is mising");
-    match common::read_token_ref(&mut path) {
+fn read_test_files(mut base_path: PathBuf) -> (String, Option<String>) {
+    base_path.push("test");
+    let pine_input = common::read_pine_input(&mut base_path).expect("pine input is mising");
+    match common::read_token_ref(&mut base_path) {
         Ok(token_ref) => (pine_input, Some(token_ref)),
         _ => (pine_input, None),
     }
 }
+
+
+// fn read_test_files(i: usize) -> (String, Option<String>) {
+//     let mut path = common::single_file_test_base_path(i);
+//     let pine_input = common::read_pine_input(&mut path).expect("pine input is mising");
+//     match common::read_token_ref(&mut path) {
+//         Ok(token_ref) => (pine_input, Some(token_ref)),
+//         _ => (pine_input, None),
+//     }
+// }

@@ -47,7 +47,11 @@ pub enum AstType {
         body: Box<AstNode>,
     },
     ReturnStatement(Option<Box<AstNode>>),
-    Let {
+    LetStatement {
+        identifier: Box<AstNode>,
+        expression: Box<AstNode>,
+    },
+    SetStatement {
         identifier: Box<AstNode>,
         expression: Box<AstNode>,
     },
@@ -154,14 +158,31 @@ impl AstNode {
         }
     }
 
-    pub fn new_let(
+    pub fn new_let_statement(
         identifier: Box<AstNode>,
         expression: Box<AstNode>,
         scope: ScopeRef,
         span: Span,
     ) -> Self {
         Self {
-            ast_type: AstType::Let {
+            ast_type: AstType::LetStatement {
+                identifier,
+                expression,
+            },
+            pine_type: PineType::Void,
+            scope,
+            span,
+        }
+    }
+
+    pub fn new_set_statement(
+        identifier: Box<AstNode>,
+        expression: Box<AstNode>,
+        scope: ScopeRef,
+        span: Span,
+    ) -> Self {
+        Self {
+            ast_type: AstType::SetStatement {
                 identifier,
                 expression,
             },

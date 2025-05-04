@@ -1,5 +1,5 @@
 fun main() begin
-    if 1 <= 0 then
+    if 0 < 1 then
         return 1
     else
         return 0

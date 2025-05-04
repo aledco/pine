@@ -2,7 +2,7 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
-pub fn test_file_base_path(i: usize) -> PathBuf {
+pub fn single_file_test_base_path(i: usize) -> PathBuf {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.push(format!("resources/tests/single_file/test{}/test", i));
     path

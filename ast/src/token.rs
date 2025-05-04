@@ -95,6 +95,8 @@ pub enum Keyword {
     End,
     #[strum(serialize = "let")]
     Let,
+    #[strum(serialize = "set")]
+    Set,
     #[strum(serialize = "if")]
     If,
     #[strum(serialize = "then")]
@@ -238,7 +240,7 @@ pub enum Operator {
 }
 
 impl Operator {
-    pub fn get_all_values() -> Vec<String> {
+    pub fn all_values() -> Vec<String> {
         Self::iter()
             .filter(|p| p.get_str("Value").is_some())
             .map(|p| p.get_str("Value").unwrap())
@@ -246,12 +248,41 @@ impl Operator {
             .collect()
     }
 
-    pub fn get_max_length() -> usize {
-        Self::get_all_values()
+    pub fn all_unary_ops() -> Vec<Self> {
+        Self::iter().filter(|op| op.is_unary()).collect()
+    }
+
+    pub fn all_binary_ops() -> Vec<Self> {
+        Self::iter().filter(|op| op.is_binary()).collect()
+    }
+
+    pub fn binary_ops_by_precedence(precedence: i32) -> Vec<Self> {
+        Self::all_binary_ops()
+            .into_iter()
+            .filter(|op| op.precedence() == precedence)
+            .collect()
+    }
+
+    pub fn max_length() -> usize {
+        Self::all_values()
             .into_iter()
             .max_by(|a, b| a.len().cmp(&b.len()))
             .unwrap()
             .len()
+    }
+
+    pub fn max_precedence() -> i32 {
+        Self::iter()
+            .max_by(|a, b| a.precedence().cmp(&b.precedence()))
+            .unwrap()
+            .precedence()
+    }
+
+    pub fn min_precedence() -> i32 {
+        Self::iter()
+            .min_by(|a, b| a.precedence().cmp(&b.precedence()))
+            .unwrap()
+            .precedence()
     }
 
     pub fn precedence(&self) -> i32 {
@@ -280,21 +311,6 @@ impl Operator {
 
     pub fn is_binary(&self) -> bool {
         self.get_bool("IsBinary").unwrap()
-    }
-
-    pub fn get_all_unary_ops() -> Vec<Self> {
-        Operator::iter().filter(|op| op.is_unary()).collect()
-    }
-
-    pub fn get_all_binary_ops() -> Vec<Self> {
-        Operator::iter().filter(|op| op.is_binary()).collect()
-    }
-
-    pub fn get_binary_ops_by_precedence(precedence: i32) -> Vec<Self> {
-        Self::get_all_binary_ops()
-            .into_iter()
-            .filter(|op| op.precedence() == precedence)
-            .collect()
     }
 }
 

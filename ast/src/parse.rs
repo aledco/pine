@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use crate::ast::*;
 use crate::symbol::*;
 use crate::token::*;
@@ -142,6 +143,8 @@ impl Parser {
     fn parse_statement(&mut self, scope: ScopeRef) -> AstNode {
         if self.matches(Keyword::Let) {
             self.parse_let(scope)
+        } else if self.matches(Keyword::Set) {
+            self.parse_set(scope)
         } else if self.matches(Keyword::If) {
             self.parse_if(scope)
         } else if self.matches(Keyword::While) {
@@ -168,7 +171,16 @@ impl Parser {
         self.match_token(Punctuation::EqualSign);
         let expression = self.parse_expression(scope.clone());
         let span = let_token.span + expression.span;
-        AstNode::new_let(Box::new(identifier), Box::new(expression), scope, span)
+        AstNode::new_let_statement(Box::new(identifier), Box::new(expression), scope, span)
+    }
+
+    fn parse_set(&mut self, scope: ScopeRef) -> AstNode {
+        let let_token = self.match_token(Keyword::Set);
+        let identifier = self.parse_identifier(scope.clone(), true);
+        self.match_token(Punctuation::EqualSign);
+        let expression = self.parse_expression(scope.clone());
+        let span = let_token.span + expression.span;
+        AstNode::new_set_statement(Box::new(identifier), Box::new(expression), scope, span)
     }
 
     fn parse_if(&mut self, scope: ScopeRef) -> AstNode {
@@ -227,28 +239,23 @@ impl Parser {
     }
 
     fn parse_expression(&mut self, scope: ScopeRef) -> AstNode {
-        self.parse_expression_by_precedence(scope, 1)
+        self.parse_expression_by_precedence(scope, Operator::max_precedence())
     }
 
     fn parse_expression_by_precedence(&mut self, scope: ScopeRef, precedence: i32) -> AstNode {
-        let ops: Vec<TokenType> = Operator::get_binary_ops_by_precedence(precedence)
-            .into_iter()
-            .map(|op| TokenType::Operator(op))
-            .collect();
-
-        if ops.len() == 0 {
+        if precedence < Operator::min_precedence() {
             self.parse_expression_term(scope)
         } else {
-            let mut expr = self.parse_expression_by_precedence(scope.clone(), precedence + 1);
-            while self.matches_any(Operator::get_binary_ops_by_precedence(precedence)) {
-                let op_token = self.match_any(Operator::get_binary_ops_by_precedence(precedence));
+            let mut expr = self.parse_expression_by_precedence(scope.clone(), precedence - 1);
+            while self.matches_any(Operator::binary_ops_by_precedence(precedence)) {
+                let op_token = self.match_any(Operator::binary_ops_by_precedence(precedence));
                 let op = if let TokenType::Operator(op) = op_token.token_type {
                     op
                 } else {
                     panic!("Parse Error: at {}", self.span())
                 };
 
-                let rhs = self.parse_expression_by_precedence(scope.clone(), precedence + 1);
+                let rhs = self.parse_expression_by_precedence(scope.clone(), precedence - 1);
                 let span = expr.span + rhs.span;
                 expr = AstNode::new_binary_expression(
                     Box::new(expr),
@@ -272,8 +279,8 @@ impl Parser {
             self.parse_float(scope)
         } else if self.matches(TokenTypeMatch::String) {
             self.parse_string(scope)
-        } else if self.matches_any(Operator::get_all_unary_ops()) {
-            let op_token = self.match_any(Operator::get_all_unary_ops());
+        } else if self.matches_any(Operator::all_unary_ops()) {
+            let op_token = self.match_any(Operator::all_unary_ops());
             let op = if let TokenType::Operator(op) = op_token.token_type {
                 op
             } else {
@@ -367,7 +374,7 @@ impl Parser {
 
     fn match_token<T>(&mut self, token_type: T) -> Token
     where
-        T: TokenMatch + Copy,
+        T: TokenMatch + Copy + Debug,
     {
         let token = self.token();
         if token_type.matches(&token.token_type) {
@@ -375,12 +382,12 @@ impl Parser {
             return token;
         }
 
-        panic!("Parse Error: at {}", token.span)
+        panic!("parse error at {} expected {:?} found {:?}", token.span, token_type, token.token_type)
     }
 
     fn match_any<T>(&mut self, token_types: Vec<T>) -> Token
     where
-        T: TokenMatch + Copy,
+        T: TokenMatch + Copy + Debug,
     {
         for token_type in token_types {
             if self.matches(token_type) {
@@ -393,14 +400,14 @@ impl Parser {
 
     fn matches<T>(&self, token_type: T) -> bool
     where
-        T: TokenMatch + Copy,
+        T: TokenMatch + Copy + Debug,
     {
         token_type.matches(&self.token_type())
     }
 
     fn matches_any<T>(&self, token_types: Vec<T>) -> bool
     where
-        T: TokenMatch + Copy,
+        T: TokenMatch + Copy + Debug,
     {
         token_types.into_iter().any(|t| self.matches(t))
     }
@@ -413,6 +420,7 @@ impl Parser {
         if self.matches_any(vec![
             Keyword::Begin,
             Keyword::Let,
+            Keyword::Set,
             Keyword::If,
             Keyword::For,
             Keyword::While,
@@ -435,7 +443,7 @@ impl Parser {
         ]) {
             true
         } else if self.matches_any(
-            Operator::get_all_unary_ops()
+            Operator::all_unary_ops()
                 .into_iter()
                 .map(|o| o)
                 .collect(),
