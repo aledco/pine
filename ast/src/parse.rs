@@ -252,6 +252,8 @@ impl Parser {
             self.parse_integer()
         } else if self.matches(TokenTypeMatch::Float) {
             self.parse_float()
+        }else if self.matches_any(vec![Keyword::True, Keyword::False]) {
+            self.parse_bool()
         } else if self.matches(TokenTypeMatch::String) {
             self.parse_string()
         } else if self.matches_any(Operator::all_unary_ops()) {
@@ -302,6 +304,15 @@ impl Parser {
         }
     }
 
+    fn parse_bool(&mut self) -> AstNode {
+        let token = self.match_any(vec![Keyword::True, Keyword::False]);
+        match token.token_type {
+            TokenType::Keyword(Keyword::False) => AstNode::new_bool_expression(false, token.span.clone()),
+            TokenType::Keyword(Keyword::True) => AstNode::new_bool_expression(true, token.span.clone()),
+            _ => panic!("Parse Error: at {}", self.span()),
+        }
+    }
+
     fn parse_string(&mut self) -> AstNode {
         let token = self.match_token(TokenTypeMatch::String);
         match token.token_type {
@@ -323,6 +334,7 @@ impl Parser {
         if self.matches_any(vec![
             Keyword::Int,
             Keyword::Float,
+            Keyword::Bool,
             Keyword::String,
             Keyword::Void,
         ]) {
@@ -424,6 +436,8 @@ impl Parser {
             TokenTypeMatch::Float,
             TokenTypeMatch::String,
         ]) {
+            true
+        } else if self.matches_any(vec![Keyword::True, Keyword::False]) {
             true
         } else if self.matches_any(Operator::all_unary_ops().into_iter().map(|o| o).collect()) {
             true

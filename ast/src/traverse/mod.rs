@@ -1,7 +1,9 @@
-pub mod scoping;
+mod scoping;
+mod typing;
 
 use crate::ast::Program;
 use crate::traverse::scoping::AstScopeTraverser;
+use crate::traverse::typing::AstTypeTraverser;
 
 pub trait AstTraverse {
     fn traverse(&self, _program: &mut Program) {}
@@ -12,7 +14,8 @@ pub trait AstTraverse {
 }
 
 pub fn traverse(program: &mut Program) {
-    let mut traversals = vec![AstScopeTraverser::new()];
+    let mut traversals: Vec<Box<dyn AstTraverse>> =
+        vec![AstScopeTraverser::new(), AstTypeTraverser::new()];
     traversals.iter_mut().for_each(|t| t.traverse_mut(program));
 }
 

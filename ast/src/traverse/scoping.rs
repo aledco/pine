@@ -15,8 +15,8 @@ impl AstTraverse for AstScopeTraverser {
 }
 
 impl AstScopeTraverser {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new() -> Box<Self> {
+        Box::new(Self {})
     }
 
     pub fn process(&self, node: &mut AstNode, scope: ScopeRef) {
@@ -30,13 +30,15 @@ impl AstScopeTraverser {
             } => {
                 create_symbol(identifier, &scope);
                 self.process(identifier.as_mut(), scope.clone());
+                let param_scope = Scope::new_local(scope.clone());
                 params
                     .iter_mut()
-                    .for_each(|p| self.process(p, scope.clone()));
+                    .for_each(|p| self.process(p, param_scope.clone()));
                 if let Some(return_type_node) = return_type_node {
                     self.process(return_type_node.as_mut(), scope.clone());
                 }
-                self.process(body.as_mut(), scope.clone());
+                let body_scope = Scope::new_local(scope.clone());
+                self.process(body.as_mut(), body_scope);
             }
             AstType::Param {
                 identifier,
@@ -47,9 +49,10 @@ impl AstScopeTraverser {
                 self.process(type_node.as_mut(), scope.clone());
             }
             AstType::Block(statements) => {
+                let block_scope = Scope::new_local(scope.clone());
                 statements
                     .iter_mut()
-                    .for_each(|s| self.process(s, scope.clone()));
+                    .for_each(|s| self.process(s, block_scope.clone()));
             }
             AstType::IfStatement {
                 condition,
@@ -109,6 +112,7 @@ impl AstScopeTraverser {
             }
             AstType::IntegerExpression(_) => {}
             AstType::FloatExpression(_) => {}
+            AstType::BoolExpression(_) => {}
             AstType::StringExpression(_) => {}
             AstType::TypeNode(_) => {}
             AstType::Dummy => {}

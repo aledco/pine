@@ -115,10 +115,16 @@ pub enum Keyword {
     Int,
     #[strum(serialize = "float")]
     Float,
+    #[strum(serialize = "bool")]
+    Bool,
     #[strum(serialize = "string")]
     String,
     #[strum(serialize = "void")]
     Void,
+    #[strum(serialize = "true")]
+    True,
+    #[strum(serialize = "false")]
+    False,
 }
 
 impl TokenMatch for Keyword {

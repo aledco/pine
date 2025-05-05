@@ -74,6 +74,7 @@ pub enum AstType {
     IdentifierExpression(Box<AstNode>),
     IntegerExpression(i64),
     FloatExpression(f64),
+    BoolExpression(bool),
     StringExpression(String),
     Identifier {
         name: String,
@@ -264,6 +265,15 @@ impl AstNode {
     pub fn new_float_expression(value: f64, span: Span) -> Self {
         Self {
             ast_type: AstType::FloatExpression(value),
+            pine_type: PineType::Unknown,
+            scope: Scope::default(),
+            span,
+        }
+    }
+
+    pub fn new_bool_expression(value: bool, span: Span) -> Self {
+        Self {
+            ast_type: AstType::BoolExpression(value),
             pine_type: PineType::Unknown,
             scope: Scope::default(),
             span,
