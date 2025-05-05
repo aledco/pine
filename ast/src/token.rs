@@ -117,6 +117,8 @@ pub enum Keyword {
     Float,
     #[strum(serialize = "string")]
     String,
+    #[strum(serialize = "void")]
+    Void,
 }
 
 impl TokenMatch for Keyword {

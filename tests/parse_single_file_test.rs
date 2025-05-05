@@ -1,6 +1,6 @@
+use ast::{lex::lex, parse::parse};
 use std::path::PathBuf;
 use std::str::FromStr;
-use ast::{lex::lex, parse::parse};
 
 extern crate tests_proc_macros;
 use tests_proc_macros::make_parse_single_file_tests;

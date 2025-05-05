@@ -14,6 +14,12 @@ pub fn make_parse_single_file_tests(_input: TokenStream) -> TokenStream {
     create_output("parse").parse().unwrap()
 }
 
+#[proc_macro]
+pub fn make_traverse_single_file_tests(_input: TokenStream) -> TokenStream {
+    create_output("traverse").parse().unwrap()
+}
+
+
 fn create_output(name: &str) -> String {
     let path = single_file_tests_path();
     fs::read_dir(path)

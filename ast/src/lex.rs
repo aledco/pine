@@ -91,9 +91,9 @@ impl Scanner {
 
         let end = self.point();
         let token_type = if let Ok(keyword) = Keyword::from_str(value.as_str()) {
-            TokenType::Keyword(keyword) 
+            TokenType::Keyword(keyword)
         } else if let Ok(operator) = Operator::from_str(value.as_str()) {
-                TokenType::Operator(operator)
+            TokenType::Operator(operator)
         } else {
             TokenType::Identifier(value)
         };

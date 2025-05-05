@@ -1,7 +1,6 @@
-use std::fmt::Debug;
 use crate::ast::*;
-use crate::symbol::*;
 use crate::token::*;
+use std::fmt::Debug;
 
 pub fn parse(tokens: Vec<Token>) -> Program {
     let mut parser = Parser::new(tokens);
@@ -22,11 +21,10 @@ impl Parser {
     }
 
     pub fn parse(&mut self) -> Program {
-        let global_scope = Scope::new_global();
         let mut functions: Vec<AstNode> = vec![];
         while !self.eof() {
             if self.matches_function() {
-                let function = self.parse_function(global_scope.clone());
+                let function = self.parse_function();
                 functions.push(function);
             } else {
                 panic!("Parse Error: at {}", self.span())
@@ -36,52 +34,38 @@ impl Parser {
         Program::new(functions)
     }
 
-    fn parse_function(&mut self, scope: ScopeRef) -> AstNode {
-        let param_scope = Scope::new_local(scope.clone());
-        let body_scope = Scope::new_local(scope.clone());
-
+    fn parse_function(&mut self) -> AstNode {
         let fun = self.match_token(Keyword::Fun);
-        let mut identifier = self.parse_identifier(scope.clone(), false);
-        let params = self.parse_params(param_scope);
+        let identifier = self.parse_identifier();
+        let params = self.parse_params();
 
         // compute the type of the function
         let return_type = if self.matches(Punctuation::Arrow) {
             self.match_token(Punctuation::Arrow);
-            self.parse_type()
+            Some(Box::new(self.parse_type()))
         } else {
-            PineType::Void
+            None
         };
-        let param_types = params
-            .iter()
-            .map(|p| p.pine_type.clone())
-            .collect::<Vec<PineType>>();
-        let function_type = PineType::Function {
-            params: param_types,
-            ret: Box::new(return_type),
-        };
-
-        identifier.pine_type = function_type.clone();
 
         self.match_token(Keyword::Begin);
-        let body = self.parse_block(body_scope);
+        let body = self.parse_block();
         self.match_token(Keyword::End);
 
         let span = fun.span + body.span;
         AstNode::new_function(
             Box::new(identifier),
             params,
+            return_type,
             Box::new(body),
-            function_type,
-            scope.clone(),
             span,
         )
     }
 
-    fn parse_params(&mut self, scope: ScopeRef) -> Vec<AstNode> {
+    fn parse_params(&mut self) -> Vec<AstNode> {
         self.match_token(Punctuation::OpenParen);
         let mut params = Vec::<AstNode>::new();
         while self.matches(TokenTypeMatch::Identifier) {
-            let param = self.parse_param(scope.clone());
+            let param = self.parse_param();
             params.push(param);
             if !self.matches(Punctuation::CloseParen) {
                 break;
@@ -92,44 +76,29 @@ impl Parser {
         params
     }
 
-    fn parse_param(&mut self, scope: ScopeRef) -> AstNode {
-        let mut identifier = self.parse_identifier(scope, false);
+    fn parse_param(&mut self) -> AstNode {
+        let identifier = self.parse_identifier();
         self.match_token(Punctuation::Colon);
-        identifier.pine_type = self.parse_type();
-        identifier
+        let type_node = self.parse_type();
+        let span = identifier.span.clone() + type_node.span.clone();
+        AstNode::new_param(Box::new(identifier), Box::new(type_node), span)
     }
 
-    fn parse_identifier(&mut self, scope: ScopeRef, lookup: bool) -> AstNode {
+    fn parse_identifier(&mut self) -> AstNode {
         let token = self.match_token(TokenTypeMatch::Identifier);
         match token.token_type {
-            // TODO is this how it should work? I don't think so, need to rethink
             TokenType::Identifier(identifier) => {
-                let symbol = scope.borrow().lookup(&identifier);
-                if lookup {
-                    match symbol {
-                        Some(symbol) => AstNode::new_identifier(symbol, scope, token.span.clone()),
-                        None => panic!("Name Error: at {}", self.span()), // TODO more descriptive names
-                    }
-                } else {
-                    match symbol {
-                        Some(_) => panic!("Name Error: at {}", self.span()), // TODO more descriptive names
-                        None => {
-                            let symbol = Symbol::new(identifier.clone());
-                            scope.borrow_mut().add(symbol.clone());
-                            AstNode::new_identifier(symbol, scope, token.span.clone())
-                        }
-                    }
-                }
+                AstNode::new_identifier(identifier, token.span)
             }
             _ => panic!("Parse Error: at {}", self.span()),
         }
     }
 
-    fn parse_block(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_block(&mut self) -> AstNode {
         let mut span = self.span();
         let mut statements: Vec<AstNode> = vec![];
         while self.matches_statement() {
-            let statement = self.parse_statement(scope.clone());
+            let statement = self.parse_statement();
             statements.push(statement);
         }
 
@@ -137,60 +106,73 @@ impl Parser {
             span = span + statements.last().unwrap().span.clone();
         }
 
-        AstNode::new_block(statements, scope, span)
+        AstNode::new_block(statements, span)
     }
 
-    fn parse_statement(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_statement(&mut self) -> AstNode {
         if self.matches(Keyword::Let) {
-            self.parse_let(scope)
+            self.parse_let()
         } else if self.matches(Keyword::Set) {
-            self.parse_set(scope)
+            self.parse_set()
         } else if self.matches(Keyword::If) {
-            self.parse_if(scope)
+            self.parse_if()
         } else if self.matches(Keyword::While) {
-            self.parse_while(scope)
+            self.parse_while()
         } else if self.matches(Keyword::For) {
-            self.parse_for(scope)
+            self.parse_for()
         } else if self.matches(Keyword::Return) {
-            self.parse_return(scope)
+            self.parse_return()
         } else if self.matches(Keyword::Begin) {
             self.match_token(Keyword::Begin);
-            let block = self.parse_block(scope);
+            let block = self.parse_block();
             self.match_token(Keyword::End);
             block
         } else if self.matches_expression() {
-            self.parse_expression(scope)
+            self.parse_expression()
         } else {
             panic!("Parse Error: at {}", self.span())
         }
     }
 
-    fn parse_let(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_let(&mut self) -> AstNode {
         let let_token = self.match_token(Keyword::Let);
-        let identifier = self.parse_identifier(scope.clone(), false);
+        let identifier = self.parse_identifier();
+        let type_node = if self.matches(Punctuation::Colon) {
+            self.match_token(Punctuation::Colon);
+            let type_node = self.parse_type();
+            Some(Box::new(type_node))
+        } else {
+            None
+        };
+
         self.match_token(Punctuation::EqualSign);
-        let expression = self.parse_expression(scope.clone());
+        let expression = self.parse_expression();
         let span = let_token.span + expression.span;
-        AstNode::new_let_statement(Box::new(identifier), Box::new(expression), scope, span)
+        AstNode::new_let_statement(
+            Box::new(identifier),
+            type_node,
+            Box::new(expression),
+            span,
+        )
     }
 
-    fn parse_set(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_set(&mut self) -> AstNode {
         let let_token = self.match_token(Keyword::Set);
-        let identifier = self.parse_identifier(scope.clone(), true);
+        let identifier = self.parse_identifier();
         self.match_token(Punctuation::EqualSign);
-        let expression = self.parse_expression(scope.clone());
+        let expression = self.parse_expression();
         let span = let_token.span + expression.span;
-        AstNode::new_set_statement(Box::new(identifier), Box::new(expression), scope, span)
+        AstNode::new_set_statement(Box::new(identifier), Box::new(expression), span)
     }
 
-    fn parse_if(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_if(&mut self) -> AstNode {
         let if_token = self.match_token(Keyword::If);
-        let condition = self.parse_expression(scope.clone());
+        let condition = self.parse_expression();
         self.match_token(Keyword::Then);
-        let if_body = self.parse_block(scope.clone());
+        let if_body = self.parse_block();
         let else_body = if self.matches(Keyword::Else) {
             self.match_token(Keyword::Else);
-            let else_body = self.parse_block(scope.clone());
+            let else_body = self.parse_block();
             Some(Box::new(else_body))
         } else {
             None
@@ -201,52 +183,46 @@ impl Parser {
             Box::new(condition),
             Box::new(if_body),
             else_body,
-            scope,
             span,
         )
     }
 
-    fn parse_while(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_while(&mut self) -> AstNode {
         let while_token = self.match_token(Keyword::While);
-        let condition = self.parse_expression(scope.clone());
+        let condition = self.parse_expression();
         self.match_token(Keyword::Do);
-        let body = self.parse_block(scope.clone());
+        let body = self.parse_block();
         let end = self.match_token(Keyword::End);
         let span = while_token.span + end.span;
-        AstNode::new_while_statement(
-            Box::new(condition),
-            Box::new(body),
-            scope,
-            span,
-        )
+        AstNode::new_while_statement(Box::new(condition), Box::new(body), span)
     }
 
-    fn parse_for(&mut self, _scope: ScopeRef) -> AstNode {
+    fn parse_for(&mut self) -> AstNode {
         AstNode::dummy()
     }
 
-    fn parse_return(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_return(&mut self) -> AstNode {
         let ret = self.match_token(Keyword::Return);
         let (expression, span) = if self.matches_expression() {
-            let e = self.parse_expression(scope.clone());
+            let e = self.parse_expression();
             let s = ret.span + e.span.clone();
             (Some(Box::new(e)), s)
         } else {
             (None, ret.span)
         };
 
-        AstNode::new_return_statement(expression, scope, span)
+        AstNode::new_return_statement(expression, span)
     }
 
-    fn parse_expression(&mut self, scope: ScopeRef) -> AstNode {
-        self.parse_expression_by_precedence(scope, Operator::max_precedence())
+    fn parse_expression(&mut self) -> AstNode {
+        self.parse_expression_by_precedence(Operator::max_precedence())
     }
 
-    fn parse_expression_by_precedence(&mut self, scope: ScopeRef, precedence: i32) -> AstNode {
+    fn parse_expression_by_precedence(&mut self, precedence: i32) -> AstNode {
         if precedence < Operator::min_precedence() {
-            self.parse_expression_term(scope)
+            self.parse_expression_term()
         } else {
-            let mut expr = self.parse_expression_by_precedence(scope.clone(), precedence - 1);
+            let mut expr = self.parse_expression_by_precedence(precedence - 1);
             while self.matches_any(Operator::binary_ops_by_precedence(precedence)) {
                 let op_token = self.match_any(Operator::binary_ops_by_precedence(precedence));
                 let op = if let TokenType::Operator(op) = op_token.token_type {
@@ -255,13 +231,12 @@ impl Parser {
                     panic!("Parse Error: at {}", self.span())
                 };
 
-                let rhs = self.parse_expression_by_precedence(scope.clone(), precedence - 1);
+                let rhs = self.parse_expression_by_precedence(precedence - 1);
                 let span = expr.span + rhs.span;
                 expr = AstNode::new_binary_expression(
                     Box::new(expr),
                     op,
                     Box::new(rhs),
-                    scope.clone(),
                     span,
                 );
             }
@@ -270,15 +245,15 @@ impl Parser {
         }
     }
 
-    fn parse_expression_term(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_expression_term(&mut self) -> AstNode {
         if self.matches(TokenTypeMatch::Identifier) {
-            self.parse_identifier_expression(scope)
+            self.parse_identifier_expression()
         } else if self.matches(TokenTypeMatch::Integer) {
-            self.parse_integer(scope)
+            self.parse_integer()
         } else if self.matches(TokenTypeMatch::Float) {
-            self.parse_float(scope)
+            self.parse_float()
         } else if self.matches(TokenTypeMatch::String) {
-            self.parse_string(scope)
+            self.parse_string()
         } else if self.matches_any(Operator::all_unary_ops()) {
             let op_token = self.match_any(Operator::all_unary_ops());
             let op = if let TokenType::Operator(op) = op_token.token_type {
@@ -287,12 +262,12 @@ impl Parser {
                 panic!("Parse Error: at {}", self.span())
             };
 
-            let expr = self.parse_expression(scope.clone());
+            let expr = self.parse_expression();
             let span = op_token.span + expr.span;
-            AstNode::new_unary_expression(op, Box::new(expr), scope, span)
+            AstNode::new_unary_expression(op, Box::new(expr), span)
         } else if self.matches(Punctuation::OpenParen) {
             self.match_token(Punctuation::OpenParen);
-            let expr = self.parse_expression(scope);
+            let expr = self.parse_expression();
             self.match_token(Punctuation::CloseParen);
             expr
         } else {
@@ -301,74 +276,79 @@ impl Parser {
         }
     }
 
-    fn parse_identifier_expression(&mut self, scope: ScopeRef) -> AstNode {
-        let identifier = self.parse_identifier(scope.clone(), true);
+    fn parse_identifier_expression(&mut self) -> AstNode {
+        let identifier = self.parse_identifier();
         let span = identifier.span.clone();
-        AstNode::new_identifier_expression(Box::new(identifier), scope, span)
+        AstNode::new_identifier_expression(Box::new(identifier), span)
     }
 
-    fn parse_integer(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_integer(&mut self) -> AstNode {
         let token = self.match_token(TokenTypeMatch::Integer);
         match token.token_type {
             TokenType::Integer(value) => {
-                AstNode::new_integer_expression(value, scope, token.span.clone())
+                AstNode::new_integer_expression(value, token.span.clone())
             }
             _ => panic!("Parse Error: at {}", self.span()),
         }
     }
 
-    fn parse_float(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_float(&mut self) -> AstNode {
         let token = self.match_token(TokenTypeMatch::Float);
         match token.token_type {
             TokenType::Float(value) => {
-                AstNode::new_float_expression(value, scope, token.span.clone())
+                AstNode::new_float_expression(value, token.span.clone())
             }
             _ => panic!("Parse Error: at {}", self.span()),
         }
     }
 
-    fn parse_string(&mut self, scope: ScopeRef) -> AstNode {
+    fn parse_string(&mut self) -> AstNode {
         let token = self.match_token(TokenTypeMatch::String);
         match token.token_type {
             TokenType::String(value) => {
-                AstNode::new_string_expression(value, scope, token.span.clone())
+                AstNode::new_string_expression(value, token.span.clone())
             }
             _ => panic!("Parse Error: at {}", self.span()),
         }
     }
 
-    fn parse_type(&mut self) -> PineType {
+    fn parse_type(&mut self) -> AstNode {
         let span = self.span();
-        match self.token_type() {
-            TokenType::Keyword(keyword) => {
-                self.index += 1;
-                match keyword {
+        let pine_type = self.match_type();
+        AstNode::new_type_node(pine_type, span)
+    }
+
+    fn match_type(&mut self) -> PineType {
+        let span = self.span();
+        if self.matches_any(vec![
+            Keyword::Int,
+            Keyword::Float,
+            Keyword::String,
+            Keyword::Void,
+        ]) {
+            let type_token = self.match_any(vec![
+                Keyword::Int,
+                Keyword::Float,
+                Keyword::String,
+                Keyword::Void,
+            ]);
+            match type_token.token_type {
+                TokenType::Keyword(keyword) => match keyword {
                     Keyword::Int => PineType::Integer,
                     Keyword::Float => PineType::Float,
                     Keyword::String => PineType::String,
                     _ => panic!("Parse Error: at {}", span),
-                }
+                },
+                _ => panic!("Parse Error: at {}", span),
             }
-            TokenType::Punctuation(p) => {
-                match p {
-                    Punctuation::OpenBracket => {
-                        self.index += 1;
-                        let elem_type = self.parse_type();
-                        self.match_token(Punctuation::OpenBracket);
-                        PineType::List(Box::new(elem_type))
-                    }
-                    Punctuation::OpenParen => {
-                        // TODO parse function type
-                        panic!("Parse Error: at {}", span)
-                    }
-                    _ => panic!("Parse Error: at {}", span),
-                }
-            }
-            TokenType::Identifier(_) => {
-                self.index += 1;
-                PineType::Void // TODO handle user defined types
-            }
-            _ => panic!("Parse Error: at {}", span),
+        } else if self.matches(Punctuation::OpenBracket) {
+            self.match_token(Punctuation::OpenBracket);
+            let elem_type = self.match_type();
+            self.match_token(Punctuation::OpenBracket);
+            PineType::List(Box::new(elem_type))
+        } else {
+            // TODO parse function and user defined types
+            panic!("Parse Error: at {}", span);
         }
     }
 
@@ -382,7 +362,10 @@ impl Parser {
             return token;
         }
 
-        panic!("parse error at {} expected {:?} found {:?}", token.span, token_type, token.token_type)
+        panic!(
+            "parse error at {} expected {:?} found {:?}",
+            token.span, token_type, token.token_type
+        )
     }
 
     fn match_any<T>(&mut self, token_types: Vec<T>) -> Token
@@ -442,12 +425,7 @@ impl Parser {
             TokenTypeMatch::String,
         ]) {
             true
-        } else if self.matches_any(
-            Operator::all_unary_ops()
-                .into_iter()
-                .map(|o| o)
-                .collect(),
-        ) {
+        } else if self.matches_any(Operator::all_unary_ops().into_iter().map(|o| o).collect()) {
             true
         } else if self.matches_any(vec![Punctuation::OpenParen, Punctuation::OpenBracket]) {
             true

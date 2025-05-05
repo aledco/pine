@@ -1,8 +1,8 @@
+use crate::ast::AstNode;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
 use std::rc::Rc;
-use crate::ast::AstNode;
 
 pub type SymbolRef = Rc<RefCell<Symbol>>;
 pub type ScopeRef = Rc<RefCell<Scope>>;
@@ -24,7 +24,7 @@ pub struct SymbolTable {
     symbols: HashMap<String, SymbolRef>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ScopeDepth {
     Global,
     Local(usize),
@@ -38,6 +38,12 @@ pub struct Scope {
 }
 
 impl Symbol {
+    pub fn default() -> SymbolRef {
+        Rc::new(RefCell::new(Self {
+            name: String::default(),
+        }))
+    }
+
     pub fn new(name: String) -> SymbolRef {
         Rc::new(RefCell::new(Self { name }))
     }
@@ -68,6 +74,14 @@ impl SymbolTable {
 }
 
 impl Scope {
+    pub fn default() -> ScopeRef {
+        Rc::new(RefCell::new(Self {
+            parent: None,
+            symbol_table: SymbolTable::new(),
+            depth: ScopeDepth::Global,
+        }))
+    }
+    
     pub fn new_global() -> ScopeRef {
         Rc::new(RefCell::new(Self {
             parent: None,

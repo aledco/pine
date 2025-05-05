@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use ast::{lex::lex, token::*};
+use std::path::PathBuf;
 use std::str::FromStr;
 
 extern crate tests_proc_macros;
@@ -72,7 +72,6 @@ fn read_test_files(mut base_path: PathBuf) -> (String, Option<String>) {
         _ => (pine_input, None),
     }
 }
-
 
 // fn read_test_files(i: usize) -> (String, Option<String>) {
 //     let mut path = common::single_file_test_base_path(i);
