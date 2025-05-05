@@ -42,7 +42,10 @@ impl AstTypeTraverser {
                 
                 self.process(identifier);
                 self.process(body);
-                
+
+                // TODO ensure return type is valid
+                // TODO ensure all paths return if return type is not void
+
                 function_type
             }
             AstType::Param {
@@ -69,7 +72,14 @@ impl AstTypeTraverser {
                 else_body
             } => {
                 let condition_type = self.process(condition);
-                // TODO ensure type is boolean
+                if condition_type != PineType::Bool {
+                    panic!("Type Error at {}: condition must have type bool", node.span);
+                }
+
+                self.process(then_body);
+                if let Some(else_body) = else_body {
+                    self.process(else_body);
+                }
 
                 node.pine_type = PineType::Void;
                 PineType::Void
@@ -78,9 +88,22 @@ impl AstTypeTraverser {
                 condition,
                 body
             } => {
+                let condition_type = self.process(condition);
+                if condition_type != PineType::Bool {
+                    panic!("Type Error at {}: condition must have type bool", node.span);
+                }
+
+                self.process(body);
+
+                node.pine_type = PineType::Void;
                 PineType::Void
             }
             AstType::ReturnStatement(expression) => {
+                if let Some(expression) = expression {
+                    self.process(expression);
+                }
+
+                node.pine_type = PineType::Void;
                 PineType::Void
             }
             AstType::LetStatement {
@@ -88,12 +111,27 @@ impl AstTypeTraverser {
                 type_node,
                 expression
             } => {
+                let e_type = self.process(expression);
+                if let Some(type_node) = type_node {
+                    let n_type = self.process(type_node);
+                    if n_type != e_type {
+                        panic!("Type Error at {}: types do not match", node.span);
+                    }
+                }
+
+                identifier.pine_type = e_type.clone();
+                self.process(identifier);
+
+                node.pine_type = PineType::Void;
                 PineType::Void
             }
             AstType::SetStatement {
                 identifier,
                 expression
             } => {
+                // TODO finish
+
+                node.pine_type = PineType::Void;
                 PineType::Void
             }
             AstType::BinaryExpression {

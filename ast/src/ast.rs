@@ -19,6 +19,7 @@ impl Program {
 pub enum PineType {
     Integer,
     Float,
+    Bool,
     String,
     List(Box<PineType>),
     Function {
