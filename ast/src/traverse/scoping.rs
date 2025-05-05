@@ -29,24 +29,24 @@ impl AstScopeTraverser {
                 body,
             } => {
                 create_symbol(identifier, &scope);
-                self.process(identifier.as_mut(), scope.clone());
+                self.process(identifier, scope.clone());
                 let param_scope = Scope::new_local(scope.clone());
                 params
                     .iter_mut()
                     .for_each(|p| self.process(p, param_scope.clone()));
                 if let Some(return_type_node) = return_type_node {
-                    self.process(return_type_node.as_mut(), scope.clone());
+                    self.process(return_type_node, scope.clone());
                 }
                 let body_scope = Scope::new_local(scope.clone());
-                self.process(body.as_mut(), body_scope);
+                self.process(body, body_scope);
             }
             AstType::Param {
                 identifier,
                 type_node,
             } => {
                 create_symbol(identifier, &scope);
-                self.process(identifier.as_mut(), scope.clone());
-                self.process(type_node.as_mut(), scope.clone());
+                self.process(identifier, scope.clone());
+                self.process(type_node, scope.clone());
             }
             AstType::Block(statements) => {
                 let block_scope = Scope::new_local(scope.clone());
@@ -59,15 +59,15 @@ impl AstScopeTraverser {
                 then_body,
                 else_body,
             } => {
-                self.process(condition.as_mut(), scope.clone());
-                self.process(then_body.as_mut(), scope.clone());
+                self.process(condition, scope.clone());
+                self.process(then_body, scope.clone());
                 if let Some(else_body) = else_body {
-                    self.process(else_body.as_mut(), scope.clone());
+                    self.process(else_body, scope.clone());
                 }
             }
             AstType::WhileStatement { condition, body } => {
-                self.process(condition.as_mut(), scope.clone());
-                self.process(body.as_mut(), scope.clone());
+                self.process(condition, scope.clone());
+                self.process(body, scope.clone());
             }
             AstType::ReturnStatement(expression) => {
                 if let Some(expression) = expression {
@@ -81,9 +81,9 @@ impl AstScopeTraverser {
             } => {
                 create_symbol(identifier, &scope);
                 
-                self.process(identifier.as_mut(), scope.clone());
+                self.process(identifier, scope.clone());
                 if let Some(type_node) = type_node {
-                    self.process(type_node.as_mut(), scope.clone());
+                    self.process(type_node, scope.clone());
                 }
                 self.process(expression, scope.clone());
             }
@@ -91,11 +91,11 @@ impl AstScopeTraverser {
                 identifier,
                 expression,
             } => {
-                self.process(identifier.as_mut(), scope.clone());
+                self.process(identifier, scope.clone());
                 self.process(expression, scope.clone());
             }
             AstType::BinaryExpression { lhs, rhs, .. } => {
-                self.process(lhs.as_mut(), scope.clone());
+                self.process(lhs, scope.clone());
                 self.process(rhs, scope.clone());
             }
             AstType::UnaryExpression { expr, ..} => {
