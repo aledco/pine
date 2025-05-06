@@ -1,4 +1,4 @@
-use crate::ast::AstNode;
+use crate::ast::{AstNode, PineType};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
@@ -17,6 +17,7 @@ pub type ScopeRef = Rc<RefCell<Scope>>;
 pub struct Symbol {
     pub name: String,
     //pub symbol_type: SymbolType,
+    pub pine_type: PineType,
 }
 
 #[derive(Debug)]
@@ -41,11 +42,15 @@ impl Symbol {
     pub fn default() -> SymbolRef {
         Rc::new(RefCell::new(Self {
             name: String::default(),
+            pine_type: PineType::Unknown,
         }))
     }
 
     pub fn new(name: String) -> SymbolRef {
-        Rc::new(RefCell::new(Self { name }))
+        Rc::new(RefCell::new(Self {
+            name,
+            pine_type: PineType::Unknown,
+        }))
     }
 }
 
@@ -81,7 +86,7 @@ impl Scope {
             depth: ScopeDepth::Global,
         }))
     }
-    
+
     pub fn new_global() -> ScopeRef {
         Rc::new(RefCell::new(Self {
             parent: None,

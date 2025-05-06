@@ -129,7 +129,11 @@ impl AstTypeTraverser {
                 identifier,
                 expression
             } => {
-                // TODO finish
+                let e_type = self.process(expression);
+                let i_type = self.process(identifier);
+                if i_type != e_type {
+                    panic!("Type Error at {}: types do not match", node.span);
+                }
 
                 node.pine_type = PineType::Void;
                 PineType::Void
@@ -139,38 +143,61 @@ impl AstTypeTraverser {
                 op,
                 rhs
             } => {
-                PineType::Void
+                let lhs_type = self.process(lhs);
+                let rhs_type = self.process(rhs);
+                if lhs_type != rhs_type {
+                    panic!("Type Error at {}: types do not match", node.span);
+                }
+                
+                // TODO ensure operator is defined for this type
+
+                lhs_type.clone()
             }
             AstType::UnaryExpression {
                 op,
                 expr
             } => {
-                PineType::Void
+                let expr_type = self.process(expr);
+                // TODO ensure operator is defined for this type
+                expr_type
             }
             AstType::IdentifierExpression(identifier) => {
-                PineType::Void
+                self.process(identifier)
             }
             AstType::IntegerExpression(value) => {
-                PineType::Void
+                node.pine_type = PineType::Integer;
+                PineType::Integer
             }
             AstType::FloatExpression(value) => {
-                PineType::Void
+                node.pine_type = PineType::Float;
+                PineType::Float
             },
             AstType::BoolExpression(value) => {
-                PineType::Void
+                node.pine_type = PineType::Bool;
+                PineType::Bool
             }
-            AstType::StringExpression(value) => {
-                PineType::Void
+            AstType::StringExpression(_) => {
+                node.pine_type = PineType::String;
+                PineType::String
             }
             AstType::Identifier {
-                name,
-                symbol
+                symbol,
+                ..
             } => {
-                // TODO set symbol type?
-                PineType::Void
+                // TODO set symbol type, if identifier does not have a type set, set it from symbol
+                if node.pine_type != PineType::Unknown {
+                    symbol.borrow_mut().pine_type = node.pine_type.clone();
+                } else if symbol.borrow().pine_type != PineType::Unknown {
+                    node.pine_type = symbol.borrow().pine_type.clone();
+                } else {
+                    panic!("Type Error at {}: Type is unknown", node.span);
+                }
+
+                node.pine_type.clone()
             }
             AstType::TypeNode(pine_type) => {
-                PineType::Void
+                node.pine_type = pine_type.clone();
+                node.pine_type.clone()
             }
             AstType::Dummy => {
                 PineType::Void
