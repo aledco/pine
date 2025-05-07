@@ -2,6 +2,9 @@ use crate::symbol::*;
 use crate::token::*;
 use std::fmt;
 
+extern crate ast_proc_macros;
+use ast_proc_macros::*;
+
 #[derive(Debug)]
 pub struct Program {
     pub functions: Vec<AstNode>,
@@ -29,6 +32,111 @@ pub enum PineType {
     Void,
     Unknown,
 }
+
+pub trait Ast: fmt::Debug {
+    // TODO rename to AstNode after refactor
+    fn scope(&self) -> ScopeRef;
+    fn set_scope(&mut self, scope: ScopeRef);
+    fn span(&self) -> &Span;
+}
+
+// pub trait Statement: Ast + fmt::Debug {}
+
+pub trait TypedAst: Ast + fmt::Debug {
+    fn pine_type(&self) -> PineType;
+    fn set_pine_type(&mut self, pine_type: PineType);
+}
+
+#[ast]
+pub struct Function {
+    pub identifier: Box<Identifier>,
+    pub params: Vec<Param>,
+    pub return_type_node: Option<Box<TypeNode>>,
+    pub body: Box<Statement>, // TODO need to ensure its a block in type checking
+}
+
+#[ast]
+pub struct Param {
+    pub identifier: Box<Identifier>,
+    pub type_node: Box<TypeNode>,
+}
+
+#[ast]
+pub struct Identifier {
+    pub name: String,
+    pub symbol: SymbolRef,
+}
+
+#[derive(Debug)]
+pub enum StatementType {
+    Let(Box<Identifier>, Option<Box<TypeNode>>, Box<Expression>),
+    Set(Box<Identifier>, Box<Expression>),
+    If(Box<Expression>, Box<Statement>, Option<Box<Statement>>), // TODO add elifs
+    While(Box<Expression>, Box<Statement>),
+    Return(Option<Box<Expression>>),
+    Block(Vec<StatementType>),
+}
+
+#[ast]
+pub struct Statement {
+    pub statement_type: StatementType,
+}
+
+// #[ast]
+// pub struct Block {
+//     pub statements: Vec<Box<dyn Statement>>,
+// }
+//
+// #[ast]
+// pub struct IfStatement {
+//     // TODO add elifs
+//     pub condition: Box<Expression>,
+//     pub then_body: Box<Block>,
+//     pub else_body: Option<Box<Block>>,
+// }
+//
+// #[ast]
+// pub struct WhileStatement {
+//     pub condition: Box<Expression>,
+//     pub body: Box<Block>,
+// }
+//
+// #[ast]
+// pub struct ReturnStatement {
+//     pub expr: Option<Box<Expression>>,
+// }
+//
+// #[ast]
+// pub struct LetStatement {
+//     pub identifier: Box<Identifier>,
+//     pub type_node: Option<Box<TypeNode>>,
+//     pub expr: Box<Expression>,
+// }
+//
+// #[ast]
+// pub struct SetStatement {
+//     pub identifier: Box<Identifier>,
+//     pub expr: Box<Expression>,
+// }
+
+#[derive(Debug)]
+pub enum ExpressionType {
+    IntLiteral(i64),
+    FloatLiteral(f64),
+    BoolLiteral(bool),
+    StringLiteral(String),
+    Identifier(Box<Identifier>),
+    Unary(Operator, Box<ExpressionType>),
+    Binary(Box<ExpressionType>, Operator, Box<ExpressionType>),
+}
+
+#[typed_ast]
+pub struct Expression {
+    pub expression_type: ExpressionType,
+}
+
+#[typed_ast]
+pub struct TypeNode {}
 
 #[derive(Debug)]
 pub enum AstType {
@@ -113,11 +221,7 @@ impl AstNode {
         }
     }
 
-    pub fn new_param(
-        identifier: Box<AstNode>,
-        type_node: Box<AstNode>,
-        span: Span,
-    ) -> Self {
+    pub fn new_param(identifier: Box<AstNode>, type_node: Box<AstNode>, span: Span) -> Self {
         Self {
             ast_type: AstType::Param {
                 identifier,
@@ -156,11 +260,7 @@ impl AstNode {
         }
     }
 
-    pub fn new_while_statement(
-        condition: Box<AstNode>,
-        body: Box<AstNode>,
-        span: Span,
-    ) -> Self {
+    pub fn new_while_statement(condition: Box<AstNode>, body: Box<AstNode>, span: Span) -> Self {
         Self {
             ast_type: AstType::WhileStatement { condition, body },
             pine_type: PineType::Unknown,
@@ -169,10 +269,7 @@ impl AstNode {
         }
     }
 
-    pub fn new_return_statement(
-        expression: Option<Box<AstNode>>,
-        span: Span,
-    ) -> Self {
+    pub fn new_return_statement(expression: Option<Box<AstNode>>, span: Span) -> Self {
         Self {
             ast_type: AstType::ReturnStatement(expression),
             pine_type: PineType::Unknown,
@@ -229,11 +326,7 @@ impl AstNode {
         }
     }
 
-    pub fn new_unary_expression(
-        op: Operator,
-        expr: Box<AstNode>,
-        span: Span,
-    ) -> Self {
+    pub fn new_unary_expression(op: Operator, expr: Box<AstNode>, span: Span) -> Self {
         Self {
             ast_type: AstType::UnaryExpression { op, expr },
             pine_type: PineType::Unknown,
@@ -242,10 +335,7 @@ impl AstNode {
         }
     }
 
-    pub fn new_identifier_expression(
-        identifier: Box<AstNode>,
-        span: Span,
-    ) -> Self {
+    pub fn new_identifier_expression(identifier: Box<AstNode>, span: Span) -> Self {
         Self {
             ast_type: AstType::IdentifierExpression(identifier),
             pine_type: PineType::Unknown,
