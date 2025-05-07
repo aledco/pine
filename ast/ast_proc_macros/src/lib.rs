@@ -2,7 +2,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
 use std::default::Default;
-use syn::{parse, parse::Parser, parse_macro_input, Attribute, Expr, ExprCall, ExprReturn, ExprStruct, FieldValue, FieldsNamed, FnArg, ItemFn, ItemStruct, Meta};
+use syn::{parse, parse::Parser, parse_macro_input, Attribute, Expr, ExprCall, ExprReturn, ExprStruct, Field, FieldValue, FieldsNamed, FnArg, ItemFn, ItemStruct, Meta};
 
 #[proc_macro_attribute]
 pub fn ast(args: TokenStream, input: TokenStream) -> TokenStream {
@@ -50,7 +50,7 @@ pub fn typed_ast(args: TokenStream, input: TokenStream) -> TokenStream {
 
         fields.named.push(
             syn::Field::parse_named
-                .parse2(quote! { pine_type: PineType })
+                .parse2(quote! { #[default(PineType::default)] pine_type: PineType })
                 .unwrap(),
         );
     }
@@ -78,8 +78,8 @@ pub fn derive_ast_node(input: TokenStream) -> TokenStream {
                 self.scope = scope;
             }
 
-            fn span(&self) -> &Span {
-                &self.span
+            fn span(&self) -> Span {
+                self.span.clone()
             }
         }
     }
@@ -113,7 +113,7 @@ pub fn derive_typed_ast(input: TokenStream) -> TokenStream {
     .into()
 }
 
-#[proc_macro_derive(NewAst, attributes(omit_from_new))]
+#[proc_macro_derive(NewAst, attributes(default))]
 pub fn derive_new_ast(input: TokenStream) -> TokenStream {
     let item_struct = parse_macro_input!(input as ItemStruct);
     create_new_fn(&item_struct)
@@ -122,7 +122,7 @@ pub fn derive_new_ast(input: TokenStream) -> TokenStream {
 fn add_ast_fields(fields: &mut FieldsNamed) {
     fields.named.push(
         syn::Field::parse_named
-            .parse2(quote! { #[omit_from_new(default = Scope::default())] scope: ScopeRef })
+            .parse2(quote! { #[default(Scope::default)] scope: ScopeRef })
             .unwrap(),
     );
 
@@ -131,6 +131,16 @@ fn add_ast_fields(fields: &mut FieldsNamed) {
             .parse2(quote! { span: Span })
             .unwrap(),
     );
+}
+
+fn get_default_attr(field: &Field) -> Option<&Attribute> {
+    for attr in &field.attrs {
+        if attr.path().is_ident("default") {
+            return Some(attr);
+        }
+    }
+
+    None
 }
 
 fn create_new_fn(item_struct: &ItemStruct) -> TokenStream {
@@ -148,53 +158,30 @@ fn create_new_fn(item_struct: &ItemStruct) -> TokenStream {
         for f in &fields.named {
             let name = f.ident.clone();
             let ty = f.ty.clone();
-            let attrs = f.attrs.clone();
 
-            for a in attrs {
-                if a.path().is_ident("omit_from_new") {
-                    let mut default_constructor = None::<ExprCall>;
-                    a.parse_nested_meta(|meta| {
-                            if meta.path.is_ident("default") {
-                                let value = meta.value()?;
-                                let call_expr: ExprCall = value.parse()?;
-                                default_constructor = Some(call_expr);
-                                return Ok(());
-                            }
+            if let Some(attr) = get_default_attr(f) {
+                let mut default_constructor = None::<ExprCall>;
+                attr.parse_nested_meta(|meta| {
+                    let path = meta.path.clone();
+                    default_constructor = Some(syn::parse_quote! { #path() });
+                    return Ok(());
+                }).unwrap();
 
-                            return Ok(());
-                        }
-                    ).unwrap();
-                    
-                    if let Some(default_constructor) = default_constructor {
-                        let value_quote = quote! { #name: #default_constructor };
-                        let value: FieldValue = syn::parse_quote!(#value_quote);
-                        self_expr.fields.push(value);
-                    } else {
-                        panic!();
-                    }
-                    
-                    break;
+                if let Some(default_constructor) = default_constructor {
+                    let value: FieldValue = syn::parse_quote!{ #name: #default_constructor };
+                    self_expr.fields.push(value);
+                } else {
+                    panic!("invalid default constructor");
                 }
+            } else {
+                // add the function argument
+                let fn_arg: FnArg = syn::parse_quote!{ #name: #ty };
+                new_fn.sig.inputs.push(fn_arg);
+
+                // add the initializer to the struct
+                let value: FieldValue = syn::parse_quote! { #name };
+                self_expr.fields.push(value);
             }
-
-            // if f.ident.clone().unwrap().to_string() == "scope" {
-            //     // TODO use field attribute instead
-            //     let value_quote = quote! { scope: Scope::default() };
-            //     let value: FieldValue = syn::parse_quote!(#value_quote);
-            //     self_expr.fields.push(value);
-            //     continue;
-            // }
-
-
-            // add the function argument
-            let fn_arg_quote = quote! { #name: #ty };
-            let fn_arg: FnArg = syn::parse_quote!(#fn_arg_quote);
-            new_fn.sig.inputs.push(fn_arg);
-
-            // add the initalizer to the struct
-            let value_quote = quote! { #name };
-            let value: FieldValue = syn::parse_quote!(#value_quote);
-            self_expr.fields.push(value);
         }
     }
 

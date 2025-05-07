@@ -1,5 +1,6 @@
 use std::fmt;
 use std::ops;
+use std::ops::Add;
 use strum::{EnumProperty, IntoEnumIterator};
 use strum_macros::{EnumIter, EnumProperty, EnumString};
 
@@ -380,10 +381,10 @@ impl fmt::Display for Span {
     }
 }
 
-impl ops::Add<Span> for Span {
+impl Add<Span> for Span {
     type Output = Span;
 
-    fn add(self, rhs: Span) -> Span {
+    fn add(self, rhs: Self) -> Self::Output {
         Span::new(
             Point::new(self.start.line, self.start.col),
             Point::new(rhs.end.line, rhs.end.col),

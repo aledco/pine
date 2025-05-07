@@ -5,20 +5,8 @@ use std::fmt;
 extern crate ast_proc_macros;
 use ast_proc_macros::*;
 
-#[derive(Debug)]
-pub struct Program {
-    pub functions: Vec<AstNode>,
-    //pub main: AstNode,
-}
-
-impl Program {
-    pub fn new(functions: Vec<AstNode>) -> Self {
-        Self { functions }
-    }
-}
-
 /// The type of Pine construct.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)] // TODO move to different module
 pub enum PineType {
     Integer,
     Float,
@@ -33,11 +21,17 @@ pub enum PineType {
     Unknown,
 }
 
+impl Default for PineType {
+    fn default() -> Self {
+        PineType::Unknown
+    }
+}
+
 pub trait Ast: fmt::Debug {
     // TODO rename to AstNode after refactor
     fn scope(&self) -> ScopeRef;
     fn set_scope(&mut self, scope: ScopeRef);
-    fn span(&self) -> &Span;
+    fn span(&self) -> Span;
 }
 
 // pub trait Statement: Ast + fmt::Debug {}
@@ -45,6 +39,12 @@ pub trait Ast: fmt::Debug {
 pub trait TypedAst: Ast + fmt::Debug {
     fn pine_type(&self) -> PineType;
     fn set_pine_type(&mut self, pine_type: PineType);
+}
+
+#[ast]
+pub struct Program {
+    pub functions: Vec<Function>,
+    //pub main: AstNode,
 }
 
 #[ast]
@@ -64,6 +64,7 @@ pub struct Param {
 #[ast]
 pub struct Identifier {
     pub name: String,
+    #[default(Symbol::default)]
     pub symbol: SymbolRef,
 }
 
@@ -74,50 +75,14 @@ pub enum StatementType {
     If(Box<Expression>, Box<Statement>, Option<Box<Statement>>), // TODO add elifs
     While(Box<Expression>, Box<Statement>),
     Return(Option<Box<Expression>>),
-    Block(Vec<StatementType>),
+    Block(Vec<Statement>),
+    Expression(Box<Expression>),
 }
 
 #[ast]
 pub struct Statement {
     pub statement_type: StatementType,
 }
-
-// #[ast]
-// pub struct Block {
-//     pub statements: Vec<Box<dyn Statement>>,
-// }
-//
-// #[ast]
-// pub struct IfStatement {
-//     // TODO add elifs
-//     pub condition: Box<Expression>,
-//     pub then_body: Box<Block>,
-//     pub else_body: Option<Box<Block>>,
-// }
-//
-// #[ast]
-// pub struct WhileStatement {
-//     pub condition: Box<Expression>,
-//     pub body: Box<Block>,
-// }
-//
-// #[ast]
-// pub struct ReturnStatement {
-//     pub expr: Option<Box<Expression>>,
-// }
-//
-// #[ast]
-// pub struct LetStatement {
-//     pub identifier: Box<Identifier>,
-//     pub type_node: Option<Box<TypeNode>>,
-//     pub expr: Box<Expression>,
-// }
-//
-// #[ast]
-// pub struct SetStatement {
-//     pub identifier: Box<Identifier>,
-//     pub expr: Box<Expression>,
-// }
 
 #[derive(Debug)]
 pub enum ExpressionType {
@@ -126,8 +91,8 @@ pub enum ExpressionType {
     BoolLiteral(bool),
     StringLiteral(String),
     Identifier(Box<Identifier>),
-    Unary(Operator, Box<ExpressionType>),
-    Binary(Box<ExpressionType>, Operator, Box<ExpressionType>),
+    Unary(Operator, Box<Expression>),
+    Binary(Box<Expression>, Operator, Box<Expression>),
 }
 
 #[typed_ast]
@@ -135,8 +100,10 @@ pub struct Expression {
     pub expression_type: ExpressionType,
 }
 
-#[typed_ast]
-pub struct TypeNode {}
+#[ast]
+pub struct TypeNode {
+    pub pine_type: PineType,
+}
 
 #[derive(Debug)]
 pub enum AstType {
