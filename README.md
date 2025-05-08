@@ -15,7 +15,6 @@ also includes great developer support and tooling.
 
 # TODO
 ## Refactors
-- Move tests into ast so that modules can be made private
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
 - Write comments
 
