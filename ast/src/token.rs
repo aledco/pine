@@ -1,7 +1,8 @@
 use std::fmt;
-use std::ops;
+use std::ops::Add;
 use strum::{EnumProperty, IntoEnumIterator};
 use strum_macros::{EnumIter, EnumProperty, EnumString};
+use crate::operator::Operator;
 
 /// Represents a token
 #[derive(Debug, Clone)]
@@ -188,149 +189,6 @@ impl TokenMatch for Punctuation {
     }
 }
 
-/// Represents a Pine operator
-#[derive(Debug, PartialEq, Copy, Clone, EnumIter, EnumString, EnumProperty)]
-pub enum Operator {
-    #[strum(
-        serialize = "==",
-        props(Value = "==", IsUnary = false, IsBinary = true)
-    )]
-    Equals,
-    #[strum(
-        serialize = "!=",
-        props(Value = "!=", IsUnary = false, IsBinary = true)
-    )]
-    NotEquals,
-    #[strum(serialize = ">", props(Value = ">", IsUnary = false, IsBinary = true))]
-    GreaterThan,
-    #[strum(serialize = "<", props(Value = "<", IsUnary = false, IsBinary = true))]
-    LessThan,
-    #[strum(
-        serialize = ">=",
-        props(Value = ">=", IsUnary = false, IsBinary = true)
-    )]
-    GreaterThanOrEqual,
-    #[strum(
-        serialize = "<=",
-        props(Value = "<=", IsUnary = false, IsBinary = true)
-    )]
-    LessThanOrEqual,
-    #[strum(
-        serialize = "and",
-        props(Value = "and", IsUnary = false, IsBinary = true)
-    )]
-    And,
-    #[strum(
-        serialize = "or",
-        props(Value = "or", IsUnary = false, IsBinary = true)
-    )]
-    Or,
-    #[strum(
-        serialize = "not",
-        props(Value = "not", IsUnary = true, IsBinary = false)
-    )]
-    Not,
-    #[strum(serialize = "+", props(Value = "+", IsUnary = false, IsBinary = true))]
-    Add,
-    #[strum(serialize = "-", props(Value = "-", IsUnary = true, IsBinary = true))]
-    Subtract,
-    #[strum(serialize = "*", props(Value = "*", IsUnary = false, IsBinary = true))]
-    Multiply,
-    #[strum(serialize = "/", props(Value = "/", IsUnary = false, IsBinary = true))]
-    Divide,
-    #[strum(
-        serialize = "**",
-        props(Value = "**", IsUnary = false, IsBinary = true)
-    )]
-    Power,
-    #[strum(serialize = "%", props(Value = "%", IsUnary = false, IsBinary = true))]
-    Modulo,
-}
-
-impl Operator {
-    pub fn all_values() -> Vec<String> {
-        Self::iter()
-            .filter(|p| p.get_str("Value").is_some())
-            .map(|p| p.get_str("Value").unwrap())
-            .map(|s| String::from(s))
-            .collect()
-    }
-
-    pub fn all_unary_ops() -> Vec<Self> {
-        Self::iter().filter(|op| op.is_unary()).collect()
-    }
-
-    pub fn all_binary_ops() -> Vec<Self> {
-        Self::iter().filter(|op| op.is_binary()).collect()
-    }
-
-    pub fn binary_ops_by_precedence(precedence: i32) -> Vec<Self> {
-        Self::all_binary_ops()
-            .into_iter()
-            .filter(|op| op.precedence() == precedence)
-            .collect()
-    }
-
-    pub fn max_length() -> usize {
-        Self::all_values()
-            .into_iter()
-            .max_by(|a, b| a.len().cmp(&b.len()))
-            .unwrap()
-            .len()
-    }
-
-    pub fn max_precedence() -> i32 {
-        Self::iter()
-            .max_by(|a, b| a.precedence().cmp(&b.precedence()))
-            .unwrap()
-            .precedence()
-    }
-
-    pub fn min_precedence() -> i32 {
-        Self::iter()
-            .min_by(|a, b| a.precedence().cmp(&b.precedence()))
-            .unwrap()
-            .precedence()
-    }
-
-    pub fn precedence(&self) -> i32 {
-        match self {
-            Operator::Equals => 4,
-            Operator::NotEquals => 4,
-            Operator::GreaterThan => 4,
-            Operator::LessThan => 4,
-            Operator::GreaterThanOrEqual => 4,
-            Operator::LessThanOrEqual => 4,
-            Operator::And => 6,
-            Operator::Or => 7,
-            Operator::Not => 5,
-            Operator::Add => 3,
-            Operator::Subtract => 3,
-            Operator::Multiply => 2,
-            Operator::Divide => 2,
-            Operator::Power => 1,
-            Operator::Modulo => 2,
-        }
-    }
-
-    pub fn is_unary(&self) -> bool {
-        self.get_bool("IsUnary").unwrap()
-    }
-
-    pub fn is_binary(&self) -> bool {
-        self.get_bool("IsBinary").unwrap()
-    }
-}
-
-impl TokenMatch for Operator {
-    fn matches(&self, token_type: &TokenType) -> bool {
-        match token_type {
-            TokenType::Operator(o) => self == o,
-            _ => false,
-        }
-    }
-}
-
 /// Represents a point in the input
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub struct Point {
@@ -380,10 +238,10 @@ impl fmt::Display for Span {
     }
 }
 
-impl ops::Add<Span> for Span {
+impl Add<Span> for Span {
     type Output = Span;
 
-    fn add(self, rhs: Span) -> Span {
+    fn add(self, rhs: Self) -> Self::Output {
         Span::new(
             Point::new(self.start.line, self.start.col),
             Point::new(rhs.end.line, rhs.end.col),

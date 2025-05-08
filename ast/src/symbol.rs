@@ -1,7 +1,6 @@
-use crate::ast::AstNode;
+use crate::ast::PineType;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::fmt;
 use std::rc::Rc;
 
 pub type SymbolRef = Rc<RefCell<Symbol>>;
@@ -17,6 +16,7 @@ pub type ScopeRef = Rc<RefCell<Scope>>;
 pub struct Symbol {
     pub name: String,
     //pub symbol_type: SymbolType,
+    pub pine_type: PineType,
 }
 
 #[derive(Debug)]
@@ -41,11 +41,15 @@ impl Symbol {
     pub fn default() -> SymbolRef {
         Rc::new(RefCell::new(Self {
             name: String::default(),
+            pine_type: PineType::Unknown,
         }))
     }
 
     pub fn new(name: String) -> SymbolRef {
-        Rc::new(RefCell::new(Self { name }))
+        Rc::new(RefCell::new(Self {
+            name,
+            pine_type: PineType::Unknown,
+        }))
     }
 }
 
@@ -67,9 +71,14 @@ impl SymbolTable {
         }
     }
 
-    pub fn add(&mut self, symbol: SymbolRef) {
+    pub fn add(&mut self, symbol: SymbolRef) -> Result<(), ()> {
         let name = symbol.borrow().name.clone();
-        self.symbols.insert(name, symbol);
+        if self.symbols.contains_key(&name) {
+            Err(())
+        } else {
+            self.symbols.insert(name, symbol);
+            Ok(())
+        }
     }
 }
 
@@ -81,7 +90,7 @@ impl Scope {
             depth: ScopeDepth::Global,
         }))
     }
-    
+
     pub fn new_global() -> ScopeRef {
         Rc::new(RefCell::new(Self {
             parent: None,
@@ -103,8 +112,8 @@ impl Scope {
         }))
     }
 
-    pub fn add(&mut self, symbol: SymbolRef) {
-        self.symbol_table.add(symbol);
+    pub fn add(&mut self, symbol: SymbolRef) -> Result<(), ()> {
+        self.symbol_table.add(symbol)
     }
 
     pub fn lookup(&self, name: &str) -> Option<SymbolRef> {

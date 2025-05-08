@@ -1,16 +1,24 @@
 [workspace]
 resolver = "2"
-members = ["ast", "gen", "pvm", "tests_proc_macros"]
+members = ["ast", "ast/ast_proc_macros", "gen", "pvm", "test_util", "test_util/test_util_proc_macros"]
 
 [package]
 name = "pine"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "pine"
+test = false
+bench = false
+
+[[bin]]
+name = "pvm"
+test = false
+bench = false
+
 [dependencies]
 ast = { path = "./ast" }
 gen = { path = "./gen" }
 pvm = { path = "./pvm" }
 
-[dev-dependencies]
-tests_proc_macros = { path = "./tests_proc_macros" }
