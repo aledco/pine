@@ -1,5 +1,6 @@
 use crate::ast::*;
 use crate::token::*;
+use crate::operator::Operator;
 use std::fmt::Debug;
 
 pub fn parse(tokens: Vec<Token>) -> Program {
@@ -277,7 +278,7 @@ impl Parser {
                 panic!("Parse Error: at {}", self.span())
             };
 
-            let expr = self.parse_expression();
+            let expr = self.parse_expression_term();
             let span = op_token.span + expr.span();
             Expression::new(ExpressionType::Unary(op, Box::new(expr)), span)
         } else if self.matches(Punctuation::OpenParen) {

@@ -2,7 +2,10 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
 use std::default::Default;
-use syn::{parse, parse::Parser, parse_macro_input, Attribute, Expr, ExprCall, ExprReturn, ExprStruct, Field, FieldValue, FieldsNamed, FnArg, ItemFn, ItemStruct, Meta};
+use syn::{
+    parse, parse::Parser, parse_macro_input, Attribute, Expr, ExprCall, ExprReturn, ExprStruct,
+    Field, FieldValue, FieldsNamed, FnArg, ItemFn, ItemStruct,
+};
 
 #[proc_macro_attribute]
 pub fn ast(args: TokenStream, input: TokenStream) -> TokenStream {
@@ -22,24 +25,6 @@ pub fn ast(args: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
-// #[proc_macro_attribute]
-// pub fn statement(args: TokenStream, input: TokenStream) -> TokenStream {
-//     let mut item_struct = parse_macro_input!(input as ItemStruct);
-//     let _ = parse_macro_input!(args as parse::Nothing);
-//
-//     if let syn::Fields::Named(ref mut fields) = item_struct.fields {
-//         add_ast_fields(fields);
-//     }
-//
-//     let derive_quote = quote! { #[derive(Ast, Statement, Debug)] };
-//     let derive_attr: Attribute = syn::parse_quote!(#derive_quote);
-//     item_struct.attrs.push(derive_attr);
-//
-//     quote! {
-//         #item_struct
-//     }.into()
-// }
-
 #[proc_macro_attribute]
 pub fn typed_ast(args: TokenStream, input: TokenStream) -> TokenStream {
     let mut item_struct = parse_macro_input!(input as ItemStruct);
@@ -49,13 +34,13 @@ pub fn typed_ast(args: TokenStream, input: TokenStream) -> TokenStream {
         add_ast_fields(fields);
 
         fields.named.push(
-            syn::Field::parse_named
+            Field::parse_named
                 .parse2(quote! { #[default(PineType::default)] pine_type: PineType })
                 .unwrap(),
         );
     }
 
-    let derive_attr: Attribute = syn::parse_quote!{ #[derive(Ast, TypedAst, NewAst, Debug)] };
+    let derive_attr: Attribute = syn::parse_quote! { #[derive(Ast, TypedAst, NewAst, Debug)] };
     item_struct.attrs.push(derive_attr);
 
     quote! {
@@ -86,14 +71,6 @@ pub fn derive_ast_node(input: TokenStream) -> TokenStream {
     .into()
 }
 
-// #[proc_macro_derive(Statement)]
-// pub fn derive_statement(input: TokenStream) -> TokenStream {
-//     let item_struct = parse_macro_input!(input as ItemStruct);
-//     let name = item_struct.ident.clone();
-//     quote! {
-//         impl Statement for #name { }
-//     }.into()
-// }
 
 #[proc_macro_derive(TypedAst)]
 pub fn derive_typed_ast(input: TokenStream) -> TokenStream {
@@ -165,17 +142,18 @@ fn create_new_fn(item_struct: &ItemStruct) -> TokenStream {
                     let path = meta.path.clone();
                     default_constructor = Some(syn::parse_quote! { #path() });
                     return Ok(());
-                }).unwrap();
+                })
+                .unwrap();
 
                 if let Some(default_constructor) = default_constructor {
-                    let value: FieldValue = syn::parse_quote!{ #name: #default_constructor };
+                    let value: FieldValue = syn::parse_quote! { #name: #default_constructor };
                     self_expr.fields.push(value);
                 } else {
                     panic!("invalid default constructor");
                 }
             } else {
                 // add the function argument
-                let fn_arg: FnArg = syn::parse_quote!{ #name: #ty };
+                let fn_arg: FnArg = syn::parse_quote! { #name: #ty };
                 new_fn.sig.inputs.push(fn_arg);
 
                 // add the initializer to the struct
