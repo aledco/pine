@@ -1,4 +1,5 @@
 use crate::token::*;
+use crate::operator::Operator;
 use std::cmp::{max, min};
 use std::str::FromStr;
 

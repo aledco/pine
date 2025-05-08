@@ -15,6 +15,8 @@ fun if_example() begin
     let x = 0
     if x == 0 then
         print(1)
+    elif x == 1 then
+        print(2)
     else
         print(0)
     end
@@ -39,3 +41,4 @@ fun ~private_func(n: int) -> [int] begin
         L.add(i)
     return L
 end
+

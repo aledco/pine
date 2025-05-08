@@ -1,207 +1,152 @@
 use crate::ast::*;
-use crate::traverse::AstTraverse;
+use crate::traverse::Traverse;
 
 pub struct AstTypeTraverser;
 
-impl AstTraverse for AstTypeTraverser {
-    fn traverse(&self, program: &mut Program) {
-        let types = program
-            .functions
-            .iter_mut()
-            .map(|f| self.process(f));
+impl Traverse for AstTypeTraverser {
+    fn traverse(&mut self, program: &mut Program) {
+        for f in &mut program.functions {
+            self.visit_function(f);
+        }
     }
 }
+
 
 impl AstTypeTraverser {
     pub fn new() -> Box<Self> {
         Box::new(Self {})
     }
 
-    pub fn process(&self, node: &mut AstNode) -> PineType {
-        match &mut node.ast_type {
-            AstType::Function {
-                identifier,
-                params,
-                return_type_node,
-                body
-            } => {
-                let param_types = params
-                    .iter_mut()
-                    .map(|p| self.process(p))
-                    .collect();
-                let return_type = match return_type_node {
-                    Some(t) => self.process(t),
-                    None => PineType::Void,
-                };
-                let function_type = PineType::Function {
-                    params: param_types,
-                    ret: Box::new(return_type)
-                };
-                node.pine_type = function_type.clone();
-                identifier.pine_type = function_type.clone();
-                
-                self.process(identifier);
-                self.process(body);
+    fn visit_function(&self, function: &mut Function) -> PineType {
+        let param_types = function.params
+            .iter_mut()
+            .map(|p| self.visit_param(p))
+            .collect();
 
-                // TODO ensure return type is valid
-                // TODO ensure all paths return if return type is not void
+        let return_type = match &mut function.return_type_node {
+            Some(t) => self.visit_type_node(t.as_mut()),
+            None => PineType::Void,
+        };
 
-                function_type
-            }
-            AstType::Param {
-                identifier,
-                type_node
-            } => {
-                let param_type = self.process(type_node);
-                node.pine_type = param_type.clone();
-                identifier.pine_type = param_type.clone();
-                self.process(identifier);
-                param_type
-            }
-            AstType::Block(statements) => {
-                for s in statements {
-                    self.process(s);
-                }
-                
-                node.pine_type = PineType::Void;
-                PineType::Void
-            }
-            AstType::IfStatement {
-                condition,
-                then_body,
-                else_body
-            } => {
-                let condition_type = self.process(condition);
-                if condition_type != PineType::Bool {
-                    panic!("Type Error at {}: condition must have type bool", node.span);
-                }
+        let function_type = PineType::Function {
+            params: param_types,
+            ret: Box::new(return_type)
+        };
 
-                self.process(then_body);
-                if let Some(else_body) = else_body {
-                    self.process(else_body);
-                }
+        function.identifier.set_pine_type(function_type.clone());
 
-                node.pine_type = PineType::Void;
-                PineType::Void
-            }
-            AstType::WhileStatement {
-                condition,
-                body
-            } => {
-                let condition_type = self.process(condition);
-                if condition_type != PineType::Bool {
-                    panic!("Type Error at {}: condition must have type bool", node.span);
-                }
+        self.visit_identifier(function.identifier.as_mut());
+        self.visit_statement(function.body.as_mut());
 
-                self.process(body);
+        // TODO ensure return type is valid
+        // TODO ensure all paths return if return type is not void
 
-                node.pine_type = PineType::Void;
-                PineType::Void
-            }
-            AstType::ReturnStatement(expression) => {
-                if let Some(expression) = expression {
-                    self.process(expression);
-                }
+        function_type
+    }
 
-                node.pine_type = PineType::Void;
-                PineType::Void
-            }
-            AstType::LetStatement {
-                identifier,
-                type_node,
-                expression
-            } => {
-                let e_type = self.process(expression);
+    fn visit_param(&self, param: &mut Param) -> PineType {
+        let param_type = self.visit_type_node(param.type_node.as_mut());
+        param.identifier.set_pine_type(param_type.clone());
+        self.visit_identifier(param.identifier.as_mut());
+        param_type
+    }
+
+    fn visit_statement(&self, statement: &mut Statement) -> PineType {
+        match &mut statement.statement_type {
+            StatementType::Let(identifier, type_node, expression) => {
+                let e_type = self.visit_expression(expression);
                 if let Some(type_node) = type_node {
-                    let n_type = self.process(type_node);
+                    let n_type = self.visit_type_node(type_node);
                     if n_type != e_type {
-                        panic!("Type Error at {}: types do not match", node.span);
+                        panic!("Type Error at {}: types do not match", statement.span());
                     }
+
+                    identifier.set_pine_type(n_type.clone());
+                } else {
+                    identifier.set_pine_type(e_type.clone());
                 }
 
-                identifier.pine_type = e_type.clone();
-                self.process(identifier);
-
-                node.pine_type = PineType::Void;
-                PineType::Void
+                self.visit_identifier(identifier);
             }
-            AstType::SetStatement {
-                identifier,
-                expression
-            } => {
-                let e_type = self.process(expression);
-                let i_type = self.process(identifier);
+            StatementType::Set(identifier, expression) => {
+                let e_type = self.visit_expression(expression);
+                let i_type = self.visit_identifier(identifier);
                 if i_type != e_type {
-                    panic!("Type Error at {}: types do not match", node.span);
+                    panic!("Type Error at {}: types do not match", statement.span());
+                }
+            }
+            StatementType::If(condition, if_body, else_body) => {
+                let condition_type = self.visit_expression(condition);
+                if condition_type != PineType::Bool {
+                    panic!("Type Error at {}: condition must have type bool", statement.span());
                 }
 
-                node.pine_type = PineType::Void;
-                PineType::Void
+                self.visit_statement(if_body);
+                if let Some(else_body) = else_body {
+                    self.visit_statement(else_body);
+                }
             }
-            AstType::BinaryExpression {
-                lhs,
-                op,
-                rhs
-            } => {
-                let lhs_type = self.process(lhs);
-                let rhs_type = self.process(rhs);
-                if lhs_type != rhs_type {
-                    panic!("Type Error at {}: types do not match", node.span);
+            StatementType::While(condition, body) => {
+                let condition_type = self.visit_expression(condition);
+                if condition_type != PineType::Bool {
+                    panic!("Type Error at {}: condition must have type bool", statement.span());
                 }
                 
-                // TODO ensure operator is defined for this type
-
-                lhs_type.clone()
+                self.visit_statement(body);
             }
-            AstType::UnaryExpression {
-                op,
-                expr
-            } => {
-                let expr_type = self.process(expr);
-                // TODO ensure operator is defined for this type
-                expr_type
-            }
-            AstType::IdentifierExpression(identifier) => {
-                self.process(identifier)
-            }
-            AstType::IntegerExpression(value) => {
-                node.pine_type = PineType::Integer;
-                PineType::Integer
-            }
-            AstType::FloatExpression(value) => {
-                node.pine_type = PineType::Float;
-                PineType::Float
-            },
-            AstType::BoolExpression(value) => {
-                node.pine_type = PineType::Bool;
-                PineType::Bool
-            }
-            AstType::StringExpression(_) => {
-                node.pine_type = PineType::String;
-                PineType::String
-            }
-            AstType::Identifier {
-                symbol,
-                ..
-            } => {
-                // TODO set symbol type, if identifier does not have a type set, set it from symbol
-                if node.pine_type != PineType::Unknown {
-                    symbol.borrow_mut().pine_type = node.pine_type.clone();
-                } else if symbol.borrow().pine_type != PineType::Unknown {
-                    node.pine_type = symbol.borrow().pine_type.clone();
-                } else {
-                    panic!("Type Error at {}: Type is unknown", node.span);
+            StatementType::Return(expression) => {
+                if let Some(expression) = expression {
+                    self.visit_expression(expression);
                 }
-
-                node.pine_type.clone()
             }
-            AstType::TypeNode(pine_type) => {
-                node.pine_type = pine_type.clone();
-                node.pine_type.clone()
+            StatementType::Expression(expression) => {
+                self.visit_expression(expression);
             }
-            AstType::Dummy => {
-                PineType::Void
+            StatementType::Block(statements) => {
+                for s in statements {
+                    self.visit_statement(s);
+                }
             }
         }
+
+        PineType::Void // statements always have type void
+    }
+
+    fn visit_expression(&self, expression: &mut Expression) -> PineType {
+        let span = expression.span();
+        match &mut expression.expression_type {
+            ExpressionType::IntLiteral(_) => PineType::Integer,
+            ExpressionType::FloatLiteral(_) => PineType::Float,
+            ExpressionType::BoolLiteral(_) => PineType::Bool,
+            ExpressionType::StringLiteral(_) => PineType::String,
+            ExpressionType::Identifier(identifier) => {
+                self.visit_identifier(identifier)
+            }
+            ExpressionType::Unary(op, expression) => {
+                let t = self.visit_expression(expression);
+                
+                match op.unary_pine_type(t) {
+                    Ok(t) => t,
+                    Err(e) => panic!("Type Error at {}: {}", span, e),
+                }
+            }
+            ExpressionType::Binary(lhs, op, rhs) => {
+                let lhs_type = self.visit_expression(lhs);
+                let rhs_type = self.visit_expression(rhs);
+                
+                match op.binary_pine_type(lhs_type, rhs_type) {
+                    Ok(t) => t,
+                    Err(e) => panic!("Type Error at {}: {}", span, e),
+                }
+            }
+        }
+    }
+
+    fn visit_identifier(&self, identifier: &mut Identifier) -> PineType {
+        identifier.pine_type()
+    }
+
+    fn visit_type_node(&self, type_node: &mut TypeNode) -> PineType {
+        type_node.pine_type()
     }
 }

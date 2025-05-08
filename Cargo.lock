@@ -6,8 +6,17 @@ version = 4
 name = "ast"
 version = "0.1.0"
 dependencies = [
+ "ast_proc_macros",
  "strum",
  "strum_macros",
+]
+
+[[package]]
+name = "ast_proc_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn",
 ]
 
 [[package]]

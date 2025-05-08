@@ -1,7 +1,6 @@
-use crate::ast::{AstNode, PineType};
+use crate::ast::PineType;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::fmt;
 use std::rc::Rc;
 
 pub type SymbolRef = Rc<RefCell<Symbol>>;
@@ -72,9 +71,14 @@ impl SymbolTable {
         }
     }
 
-    pub fn add(&mut self, symbol: SymbolRef) {
+    pub fn add(&mut self, symbol: SymbolRef) -> Result<(), ()> {
         let name = symbol.borrow().name.clone();
-        self.symbols.insert(name, symbol);
+        if self.symbols.contains_key(&name) {
+            Err(())
+        } else {
+            self.symbols.insert(name, symbol);
+            Ok(())
+        }
     }
 }
 
@@ -108,8 +112,8 @@ impl Scope {
         }))
     }
 
-    pub fn add(&mut self, symbol: SymbolRef) {
-        self.symbol_table.add(symbol);
+    pub fn add(&mut self, symbol: SymbolRef) -> Result<(), ()> {
+        self.symbol_table.add(symbol)
     }
 
     pub fn lookup(&self, name: &str) -> Option<SymbolRef> {
