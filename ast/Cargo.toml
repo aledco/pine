@@ -7,3 +7,6 @@ edition = "2021"
 strum = "0.27.1"
 strum_macros = "0.27.1"
 ast_proc_macros = { path = "./ast_proc_macros" }
+
+[dev-dependencies]
+test_util = { path = "../test_util" }

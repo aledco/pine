@@ -1,4 +1,4 @@
-use std::fmt::{format, Display};
+use std::fmt::Display;
 use crate::ast::PineType;
 use crate::token::{TokenMatch, TokenType};
 use strum::{EnumProperty, IntoEnumIterator};

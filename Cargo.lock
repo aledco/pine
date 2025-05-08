@@ -9,6 +9,7 @@ dependencies = [
  "ast_proc_macros",
  "strum",
  "strum_macros",
+ "test_util",
 ]
 
 [[package]]
@@ -36,7 +37,6 @@ dependencies = [
  "ast",
  "gen",
  "pvm",
- "tests_proc_macros",
 ]
 
 [[package]]
@@ -101,8 +101,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "tests_proc_macros"
+name = "test_util"
 version = "0.1.0"
+dependencies = [
+ "test_util_proc_macros",
+]
+
+[[package]]
+name = "test_util_proc_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "unicode-ident"
