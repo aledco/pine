@@ -6,7 +6,12 @@ pub mod token;
 mod parse;
 mod traverse;
 
-pub fn parse(input: String) -> ast::Program {
+pub use token::*;
+pub use operator::*;
+pub use symbol::*;
+pub use ast::*;
+
+pub fn parse(input: String) -> Program {
     let tokens = lex::lex(input);
     let mut program = parse::parse(tokens);
     traverse::traverse(&mut program);

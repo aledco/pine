@@ -1,5 +1,4 @@
 use crate::env::Environment;
-use ast::symbol;
 
 pub trait Instruction {
     fn execute(&self, context: &mut Environment);
@@ -13,7 +12,7 @@ pub trait Instruction {
     fn to_verbose_string(&self);
 }
 
-pub enum Constant {
+pub enum Value {
     Integer(i64),
     Float(f64),
     String(String),
@@ -21,8 +20,8 @@ pub enum Constant {
 }
 
 pub enum Operand {
-    Constant(Constant),
-    Variable(symbol::Symbol),
+    Constant(Value),
+    Variable(String, Value),
     Label(String),
 }
 
@@ -34,15 +33,15 @@ pub struct AddInst { // TODO use macros for three operand insts
 
 impl AddInst { // TODO use macro to do this?
     pub fn new(dest: Operand, src1: Operand, src2: Operand) -> Self {
-        if !matches!(dest, Operand::Variable(_)) {
+        if !matches!(dest, Operand::Variable(_, _)) {
             panic!("destination must be a variable");
         }
 
-        if !matches!(src1, Operand::Constant(_)) || !matches!(src1, Operand::Variable(_)) {
+        if !matches!(src1, Operand::Constant(_)) || !matches!(src1, Operand::Variable(_, _)) {
             panic!("src1 must be a variable or constant");
         }
 
-        if !matches!(src2, Operand::Constant(_)) || !matches!(src2, Operand::Variable(_)) {
+        if !matches!(src2, Operand::Constant(_)) || !matches!(src2, Operand::Variable(_, _)) {
             panic!("src2 must be a variable or constant");
         }
 
