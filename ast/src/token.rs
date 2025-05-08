@@ -1,8 +1,8 @@
+use crate::operator::Operator;
 use std::fmt;
 use std::ops::Add;
 use strum::{EnumProperty, IntoEnumIterator};
 use strum_macros::{EnumIter, EnumProperty, EnumString};
-use crate::operator::Operator;
 
 /// Represents a token
 #[derive(Debug, Clone)]

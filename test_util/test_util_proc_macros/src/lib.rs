@@ -1,16 +1,15 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
+use quote::{format_ident, quote};
 use std::fs;
 use std::fs::DirEntry;
 use std::path::PathBuf;
-use quote::{quote, format_ident};
 
 #[proc_macro]
 pub fn generate_tests(input: TokenStream) -> TokenStream {
     let name = input.to_string();
     create_output(&name)
 }
-
 
 fn create_output(name: &str) -> TokenStream {
     let path = single_file_tests_path();
@@ -56,7 +55,8 @@ fn create_tests(name: &str, test_type: &str, test_dirs: Vec<DirEntry>) -> Vec<To
                     let test_base_path = std::path::PathBuf::from(#test_base_path);
                     test(test_base_path)
                 }
-            }.into()
+            }
+            .into()
         })
         .collect()
 }

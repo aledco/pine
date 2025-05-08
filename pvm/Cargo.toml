@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 ast = { path = "../ast" }
+pvm_proc_macros = { path = "./pvm_proc_macros" }

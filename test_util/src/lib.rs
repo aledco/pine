@@ -23,7 +23,7 @@ pub fn test_file_content(test_base_path: &mut PathBuf) -> io::Result<TestFileCon
     // read the test pine program
     test_base_path.set_extension("p");
     let pine_content = fs::read_to_string(test_base_path.as_path())?;
-    
+
     // read the token ref if exists
     test_base_path.set_extension("tok");
     let token_ref_content = match fs::read_to_string(test_base_path.as_path()) {

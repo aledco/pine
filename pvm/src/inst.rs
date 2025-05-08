@@ -1,4 +1,8 @@
 use crate::env::Environment;
+use crate::operand::*;
+
+extern crate pvm_proc_macros;
+use pvm_proc_macros::*;
 
 pub trait Instruction {
     fn execute(&self, context: &mut Environment);
@@ -12,46 +16,10 @@ pub trait Instruction {
     fn to_verbose_string(&self);
 }
 
-pub enum Value {
-    Integer(i64),
-    Float(f64),
-    String(String),
-    Address(usize)
-}
+// TODO types of instructions: arithmetic, data, branch
 
-pub enum Operand {
-    Constant(Value),
-    Variable(String, Value),
-    Label(String),
-}
-
-pub struct AddInst { // TODO use macros for three operand insts
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
-}
-
-impl AddInst { // TODO use macro to do this?
-    pub fn new(dest: Operand, src1: Operand, src2: Operand) -> Self {
-        if !matches!(dest, Operand::Variable(_, _)) {
-            panic!("destination must be a variable");
-        }
-
-        if !matches!(src1, Operand::Constant(_)) || !matches!(src1, Operand::Variable(_, _)) {
-            panic!("src1 must be a variable or constant");
-        }
-
-        if !matches!(src2, Operand::Constant(_)) || !matches!(src2, Operand::Variable(_, _)) {
-            panic!("src2 must be a variable or constant");
-        }
-
-        Self {
-            dest,
-            src1,
-            src2
-        }
-    }
-}
+#[arithmetic(2)]
+pub struct AddInst {}
 
 impl Instruction for AddInst {
     fn execute(&self, context: &mut Environment) {
@@ -86,7 +54,6 @@ impl Instruction for SubInst {
         todo!()
     }
 }
-
 
 pub struct MulInst {
     pub dest: Operand,
@@ -165,5 +132,28 @@ impl Instruction for PowInst {
 
     fn to_verbose_string(&self) {
         todo!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    #[should_panic]
+    fn test_add_inst_validation() {
+        let d = Operand::Constant(Value::Integer(0));
+        let s1 = Operand::Constant(Value::Integer(2));
+        let s2 = Operand::Constant(Value::Integer(3));
+        let _ = AddInst::new(d, s1, s2);
+    }
+
+    #[test]
+    fn test_add_inst() {
+        let d = Operand::Variable(String::from("test"), Value::Integer(1));
+        let s1 = Operand::Constant(Value::Integer(2));
+        let s2 = Operand::Constant(Value::Integer(3));
+        let _ = AddInst::new(d, s1, s2);
+        // TODO test execute
     }
 }

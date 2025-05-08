@@ -6,7 +6,9 @@ pub struct ExecuteConfig {
 
 impl Default for ExecuteConfig {
     fn default() -> Self {
-        Self { memory_size: DEFAULT_MEMORY_SIZE }
+        Self {
+            memory_size: DEFAULT_MEMORY_SIZE,
+        }
     }
 }
 

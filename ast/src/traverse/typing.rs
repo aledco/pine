@@ -11,14 +11,14 @@ impl Traverse for AstTypeTraverser {
     }
 }
 
-
 impl AstTypeTraverser {
     pub fn new() -> Box<Self> {
         Box::new(Self {})
     }
 
     fn visit_function(&self, function: &mut Function) -> PineType {
-        let param_types = function.params
+        let param_types = function
+            .params
             .iter_mut()
             .map(|p| self.visit_param(p))
             .collect();
@@ -30,7 +30,7 @@ impl AstTypeTraverser {
 
         let function_type = PineType::Function {
             params: param_types,
-            ret: Box::new(return_type)
+            ret: Box::new(return_type),
         };
 
         function.identifier.set_pine_type(function_type.clone());
@@ -78,7 +78,10 @@ impl AstTypeTraverser {
             StatementType::If(condition, if_body, else_body) => {
                 let condition_type = self.visit_expression(condition);
                 if condition_type != PineType::Bool {
-                    panic!("Type Error at {}: condition must have type bool", statement.span());
+                    panic!(
+                        "Type Error at {}: condition must have type bool",
+                        statement.span()
+                    );
                 }
 
                 self.visit_statement(if_body);
@@ -89,9 +92,12 @@ impl AstTypeTraverser {
             StatementType::While(condition, body) => {
                 let condition_type = self.visit_expression(condition);
                 if condition_type != PineType::Bool {
-                    panic!("Type Error at {}: condition must have type bool", statement.span());
+                    panic!(
+                        "Type Error at {}: condition must have type bool",
+                        statement.span()
+                    );
                 }
-                
+
                 self.visit_statement(body);
             }
             StatementType::Return(expression) => {
@@ -119,12 +125,10 @@ impl AstTypeTraverser {
             ExpressionType::FloatLiteral(_) => PineType::Float,
             ExpressionType::BoolLiteral(_) => PineType::Bool,
             ExpressionType::StringLiteral(_) => PineType::String,
-            ExpressionType::Identifier(identifier) => {
-                self.visit_identifier(identifier)
-            }
+            ExpressionType::Identifier(identifier) => self.visit_identifier(identifier),
             ExpressionType::Unary(op, expression) => {
                 let t = self.visit_expression(expression);
-                
+
                 match op.unary_pine_type(t) {
                     Ok(t) => t,
                     Err(e) => panic!("Type Error at {}: {}", span, e),
@@ -133,7 +137,7 @@ impl AstTypeTraverser {
             ExpressionType::Binary(lhs, op, rhs) => {
                 let lhs_type = self.visit_expression(lhs);
                 let rhs_type = self.visit_expression(rhs);
-                
+
                 match op.binary_pine_type(lhs_type, rhs_type) {
                     Ok(t) => t,
                     Err(e) => panic!("Type Error at {}: {}", span, e),

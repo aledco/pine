@@ -1,7 +1,7 @@
 mod mem;
 
-use std::collections::HashMap;
 use crate::env::mem::Memory;
+use std::collections::HashMap;
 
 pub struct Environment {
     pub memory: Memory,
@@ -20,7 +20,7 @@ impl Environment {
             global_strings: HashMap::new(),
             //stack_ptr: memory_size-1,
             //frame_ptr: memory_size-1,
-            inst_ptr: 0
+            inst_ptr: 0,
         }
     }
 }

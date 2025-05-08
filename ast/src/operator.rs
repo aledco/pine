@@ -1,6 +1,6 @@
-use std::fmt::Display;
 use crate::ast::PineType;
 use crate::token::{TokenMatch, TokenType};
+use std::fmt::Display;
 use strum::{EnumProperty, IntoEnumIterator};
 use strum_macros::{EnumIter, EnumProperty, EnumString};
 
@@ -199,7 +199,7 @@ impl Operator {
     pub fn is_binary(&self) -> bool {
         self.get_bool("IsBinary").unwrap()
     }
-    
+
     pub fn as_str(&self) -> &str {
         self.get_str("Value").unwrap()
     }
