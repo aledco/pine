@@ -28,7 +28,7 @@ impl Display for AddInst {
 
 #[arithmetic(2)]
 #[bin_op(-)]
-pub struct SubInst {}
+pub struct SubInst {} // TODO to make this instructions work, I will need to case u64 to i64 and back
 
 #[arithmetic(2)]
 #[bin_op(*)]
