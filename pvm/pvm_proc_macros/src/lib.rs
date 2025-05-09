@@ -12,6 +12,7 @@ pub fn arithmetic(args: TokenStream, input: TokenStream) -> TokenStream {
 
     let ops_token: LitInt = parse_macro_input!(args);
     let ops: u32 = ops_token.base10_parse().unwrap();
+    //let op: syn::BinOp = parse_macro_input!(args); TODO parse operator
     if ops < 1 || ops > 2 {
         panic!("Arithmetic instruction can only have 1 or 2 operands");
     }

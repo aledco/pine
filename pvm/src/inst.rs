@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use crate::env::Environment;
 use crate::operand::*;
 
@@ -5,15 +6,11 @@ extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
 pub trait Instruction {
-    fn execute(&self, context: &mut Environment);
+    fn execute(&mut self, context: &mut Environment);
 
     fn inc_inst_ptr(&self, context: &mut Environment) {
         context.inst_ptr += 1;
     }
-
-    fn to_string(&self);
-
-    fn to_verbose_string(&self);
 }
 
 // TODO types of instructions: arithmetic, data, branch
@@ -22,16 +19,16 @@ pub trait Instruction {
 pub struct AddInst {}
 
 impl Instruction for AddInst {
-    fn execute(&self, context: &mut Environment) {
-        todo!()
+    fn execute(&mut self, context: &mut Environment) {
+        let val1 = self.src1.value().expect("src1 has no value");
+        let val2 = self.src2.value().expect("src2 has no value");
+        self.dest.set_value(val1 + val2);
     }
+}
 
-    fn to_string(&self) {
-        todo!()
-    }
-
-    fn to_verbose_string(&self) {
-        todo!()
+impl Display for AddInst {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} = {} + {}", self.dest, self.src1, self.src2)
     }
 }
 
@@ -42,15 +39,7 @@ pub struct SubInst {
 }
 
 impl Instruction for SubInst {
-    fn execute(&self, context: &mut Environment) {
-        todo!()
-    }
-
-    fn to_string(&self) {
-        todo!()
-    }
-
-    fn to_verbose_string(&self) {
+    fn execute(&mut self, context: &mut Environment) {
         todo!()
     }
 }
@@ -62,15 +51,7 @@ pub struct MulInst {
 }
 
 impl Instruction for MulInst {
-    fn execute(&self, context: &mut Environment) {
-        todo!()
-    }
-
-    fn to_string(&self) {
-        todo!()
-    }
-
-    fn to_verbose_string(&self) {
+    fn execute(&mut self, context: &mut Environment) {
         todo!()
     }
 }
@@ -82,15 +63,7 @@ pub struct DivInst {
 }
 
 impl Instruction for DivInst {
-    fn execute(&self, context: &mut Environment) {
-        todo!()
-    }
-
-    fn to_string(&self) {
-        todo!()
-    }
-
-    fn to_verbose_string(&self) {
+    fn execute(&mut self, context: &mut Environment) {
         todo!()
     }
 }
@@ -102,15 +75,7 @@ pub struct ModInst {
 }
 
 impl Instruction for ModInst {
-    fn execute(&self, context: &mut Environment) {
-        todo!()
-    }
-
-    fn to_string(&self) {
-        todo!()
-    }
-
-    fn to_verbose_string(&self) {
+    fn execute(&mut self, context: &mut Environment) {
         todo!()
     }
 }
@@ -122,15 +87,7 @@ pub struct PowInst {
 }
 
 impl Instruction for PowInst {
-    fn execute(&self, context: &mut Environment) {
-        todo!()
-    }
-
-    fn to_string(&self) {
-        todo!()
-    }
-
-    fn to_verbose_string(&self) {
+    fn execute(&mut self, context: &mut Environment) {
         todo!()
     }
 }
@@ -142,18 +99,22 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_add_inst_validation() {
-        let d = Operand::Constant(Value::Integer(0));
-        let s1 = Operand::Constant(Value::Integer(2));
-        let s2 = Operand::Constant(Value::Integer(3));
+        let d = Operand::Constant(0);
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
         let _ = AddInst::new(d, s1, s2);
     }
 
     #[test]
     fn test_add_inst() {
-        let d = Operand::Variable(String::from("test"), Value::Integer(1));
-        let s1 = Operand::Constant(Value::Integer(2));
-        let s2 = Operand::Constant(Value::Integer(3));
-        let _ = AddInst::new(d, s1, s2);
-        // TODO test execute
+        let d = Operand::Variable(String::from("x"), None);
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let mut inst = AddInst::new(d, s1, s2);
+        let mut context = Environment::new(32);
+        inst.execute(&mut context);
+        inst.inc_inst_ptr(&mut context);
+        assert_eq!(inst.dest.value(), Some(5));
+        assert_eq!(context.inst_ptr, 1);
     }
 }
