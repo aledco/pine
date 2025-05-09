@@ -37,11 +37,14 @@ pub enum Operand{
 }
 
 impl Operand {
-    pub fn value(&self) -> Option<u64> {
+    pub fn value(&self) -> Result<u64, String> {
         match self {
-            Operand::Constant(v) => Some(v.clone()),
-            Operand::Variable(_, v) => v.clone(),
-            Operand::Label(_) => None,
+            Operand::Constant(v) => Ok(v.clone()),
+            Operand::Variable(_, v) => match v {
+                Some(v) => Ok(*v),
+                None => Err("Operand has no value".to_string()),
+            },
+            Operand::Label(_) => Err("Operand has no value".to_string()), // TODO get address of label?
         }
     }
     
