@@ -1,55 +1,46 @@
 use std::fmt::{Display, Formatter};
+use crate::env::Environment;
 
-// #[derive(Debug, Clone, Copy)]
-// pub enum Value {
-//     Byte(u8),
-//     Integer(i64),
-//     Float(f64),
-//     Address(usize)
-// }
-
-// impl Add for Value {
-//     type Output = Value;
-//
-//     fn add(self, rhs: Self) -> Self::Output {
-//         match self {
-//             Value::Byte(b) => {
-//                 match rhs {
-//                     Value::Byte(b) => Value::Byte(b + b),
-//                     Value::Integer(_) => 0
-//                     Value::Float(_) => {}
-//                     Value::Address(_) => {}
-//                 }
-//             }
-//             Value::Integer(_) => {}
-//             Value::Float(_) => {}
-//             Value::Address(_) => {}
-//         }
-//     }
-// }
-
-#[derive(Debug)]
-pub enum Operand{
+#[derive(Debug, Clone)]
+pub enum Operand {
     Constant(u64),
-    Variable(String, Option<u64>), // TODO will need a symbol table so that variables can share values
+    Variable(String),
     Label(String),
 }
 
+pub enum OperandFormat {
+    /// The constant only operand format
+    Constant,
+    /// The variable only operand format
+    Variable,
+    /// The constant or variable operand format
+    Value,
+    /// The label only operand format
+    Label
+}
+
 impl Operand {
-    pub fn value(&self) -> Result<u64, String> {
+    pub fn value(&self, env: &Environment) -> Result<u64, String> {
         match self {
             Operand::Constant(v) => Ok(v.clone()),
-            Operand::Variable(_, v) => match v {
-                Some(v) => Ok(*v),
-                None => Err("Operand has no value".to_string()),
+            Operand::Variable(n) => match env.variables.get(n) {
+                Some(v) => Ok(v.clone()),
+                None => Err(format!("Variable {} does not exist", n))
             },
-            Operand::Label(_) => Err("Operand has no value".to_string()), // TODO get address of label?
+            Operand::Label(_) => Err("Operand has no value".to_string()),
         }
     }
     
-    pub fn set_value(&mut self, value: u64) {
-        if let Operand::Variable(_, v) = self {
-            *v = Some(value);
+    pub fn set_value(&mut self, value: u64, env: &mut Environment) {
+        if let Operand::Variable(n) = self {
+            env.variables.insert(n.clone(), value);
+        }
+    }
+
+    pub fn var_name(&self) -> Result<String, String>{
+        match self {
+            Operand::Variable(n) => Ok(n.clone()),
+            _ => Err("Operand is not a variable".to_string()),
         }
     }
 }
@@ -58,7 +49,7 @@ impl Display for Operand {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Operand::Constant(c) => write!(f, "{}", c),
-            Operand::Variable(n, _) => write!(f, "{}", n),
+            Operand::Variable(n) => write!(f, "{}", n),
             Operand::Label(l) => write!(f, "{}", l),
         }
     }

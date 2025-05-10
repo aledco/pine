@@ -1,34 +1,70 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{
-    parse::Parser, parse_macro_input, Attribute, BinOp, Expr, ExprReturn, ExprStruct, Field,
-    FieldValue, FnArg, ItemFn, ItemStruct, LitInt,
-};
+use syn::{parse::Parser, parse_macro_input, Attribute, Expr, ExprReturn, ExprStruct, Field, FieldValue, FnArg, ItemFn, ItemStruct, LitInt, LitStr};
 
 #[proc_macro_attribute]
-pub fn arithmetic(args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn inst(args: TokenStream, input: TokenStream) -> TokenStream {
     let mut item_struct = parse_macro_input!(input as ItemStruct);
 
-    let operands: LitInt = syn::parse_macro_input!(args as LitInt);
-    let operands: usize = operands.base10_parse().unwrap();
+    // parse args
+    let mut attrs = InstAttributes::default();
+    let inst_parser = syn::meta::parser(|meta| attrs.parse(meta));
+    parse_macro_input!(args with inst_parser);
 
-    // let meta_parser = syn::meta::parser(|meta| {
-    //     if meta.path.is_ident("operands") {
-    //         operands = Some(meta.value()?.parse()?);
-    //         Ok(())
-    //     // } else if meta.path.is_ident("operator") {
-    //     //     operator = Some(meta.value()?.parse()?);
-    //     //     Ok(())
-    //     } else {
-    //         Err(meta.error("unsupported arithmetic property"))
-    //     }
-    // });
-    //
-    // parse_macro_input!(args with meta_parser);
+    let inst_name = attrs.inst_name.unwrap().value();
+    if inst_name.is_empty() {
+        panic!("Instruction name cannot be empty");
+    }
 
-    if operands < 1 || operands > 2 {
-        panic!("Arithmetic instruction can only have 1 or 2 operands");
+    let n_operands: usize = attrs.n_operands.unwrap().base10_parse().unwrap();
+
+    let helper_attr: Attribute = syn::parse_quote! { #[inst_helper(name = #inst_name, n_operands = #n_operands)] };
+    item_struct.attrs.insert(0, helper_attr);
+    let derive_attr: Attribute = syn::parse_quote! { #[derive(Inst, Debug)] };
+    item_struct.attrs.insert(0, derive_attr);
+    quote! {
+        #item_struct
+    }.into()
+}
+
+// TODO move below to seperate module?
+#[derive(Default)]
+struct InstAttributes {
+    pub inst_name: Option<LitStr>,
+    pub n_operands: Option<LitInt>
+}
+
+impl InstAttributes {
+    fn parse(&mut self, meta: syn::meta::ParseNestedMeta) -> Result<(), syn::Error> {
+        if meta.path.is_ident("name") {
+            self.inst_name = Some(meta.value()?.parse()?);
+            Ok(())
+        } else if meta.path.is_ident("n_operands") {
+            self.n_operands = Some(meta.value()?.parse()?);
+            Ok(())
+        } else {
+            Err(meta.error("Unrecognized inst argument"))
+        }
+    }
+}
+
+#[proc_macro_attribute]
+pub fn arithmetic(_args: TokenStream, input: TokenStream) -> TokenStream {
+    let mut item_struct = parse_macro_input!(input as ItemStruct);
+
+    let mut attrs = InstAttributes::default();
+    if let Some(inst_attr) = get_attr(&item_struct.attrs, "inst_helper") {
+        inst_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
+
+    } else {
+        panic!()
+    }
+
+    let n_operands: usize = attrs.n_operands.unwrap().base10_parse().unwrap();
+
+    if n_operands < 2 || n_operands > 3 {
+        panic!("Arithmetic instruction can only have 2 or 3 operands");
     }
 
     if let syn::Fields::Named(ref mut fields) = item_struct.fields {
@@ -38,12 +74,11 @@ pub fn arithmetic(args: TokenStream, input: TokenStream) -> TokenStream {
                 .unwrap(),
         );
 
-        if operands == 1 {
-            // TODO add way to specify that it cannot be a label too (maybe allowed and not_allowed attributes with args instead)
+        if n_operands == 2 {
             fields
                 .named
                 .push(Field::parse_named.parse2(quote! { src: Operand }).unwrap());
-        } else if operands == 2 {
+        } else if n_operands == 3 {
             fields
                 .named
                 .push(Field::parse_named.parse2(quote! { src1: Operand }).unwrap());
@@ -56,9 +91,9 @@ pub fn arithmetic(args: TokenStream, input: TokenStream) -> TokenStream {
 
     let derive_attr: Attribute =
         if has_attr(&item_struct.attrs, "bin_op") || has_attr(&item_struct.attrs, "un_op") {
-            syn::parse_quote! { #[derive(NewArithmetic, ArithmeticInstruction, Debug)] }
+            syn::parse_quote! { #[derive(NewArithmetic, ArithmeticInstruction)] }
         } else {
-            syn::parse_quote! { #[derive(NewArithmetic, Debug)] }
+            syn::parse_quote! { #[derive(NewArithmetic)] }
         };
     item_struct.attrs.insert(0, derive_attr);
 
@@ -68,8 +103,39 @@ pub fn arithmetic(args: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
+#[proc_macro_derive(Inst, attributes(inst_helper))]
+pub fn derive_inst(input: TokenStream) -> TokenStream {
+    let item_struct = parse_macro_input!(input as ItemStruct);
+    let struct_name = &item_struct.ident.clone();
+    if let Some(inst_attr) = get_attr(&item_struct.attrs, "inst_helper") {
+        let mut attrs = InstAttributes::default();
+        inst_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
+        let inst_name = attrs.inst_name.unwrap().value();
+        let n_operands: usize = attrs.n_operands.unwrap().base10_parse().unwrap();
+        return quote! {
+            impl #struct_name {
+                pub const NAME: &'static str = #inst_name;
+                pub const N_OPERANDS: usize = #n_operands;
+            }
+
+            impl Display for #struct_name {
+                fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+                    write!(f, "{} {}, {}, {}", #inst_name, self.dest, self.src1, self.src2)
+                }
+            }
+        }.into();
+    }
+
+    panic!("Deriving Inst requires inst helper attribute");
+}
+
+// fn create_parse_impl(item_struct: ItemStruct, inst_attrs: &InstAttributes) -> TokenStream {
+// 
+// }
+
+
 #[proc_macro_derive(NewArithmetic, attributes(constant, variable, label))]
-pub fn derive_arithmetic_instruction(input: TokenStream) -> TokenStream {
+pub fn derive_new_arithmetic(input: TokenStream) -> TokenStream {
     let item_struct = parse_macro_input!(input as ItemStruct);
     let struct_name = &item_struct.ident.clone();
 
@@ -93,7 +159,7 @@ pub fn derive_arithmetic_instruction(input: TokenStream) -> TokenStream {
             if has_attr(&f.attrs, "variable") {
                 let field_name = name.clone().unwrap().to_string();
                 let validation: syn::Stmt = syn::parse_quote! {
-                    if !matches!(dest, Operand::Variable(_, _)) {
+                    if !matches!(dest, Operand::Variable(_)) {
                         panic!("{} must be a variable", #field_name);
                     }
                 };
@@ -126,8 +192,8 @@ pub fn derive_arithmetic_instruction(input: TokenStream) -> TokenStream {
     .into()
 }
 
-#[proc_macro_derive(ArithmeticInstruction, attributes(bin_op, signed))]
-pub fn derive_new_ast(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(ArithmeticInstruction, attributes(bin_op))]
+pub fn derive_arithmetic_instruction(input: TokenStream) -> TokenStream {
     let item_struct = parse_macro_input!(input as ItemStruct);
     let struct_name = &item_struct.ident.clone();
     
@@ -140,7 +206,7 @@ pub fn derive_new_ast(input: TokenStream) -> TokenStream {
                 operator = meta.value()?.parse()?;
             } else if meta.path.is_ident("ty1") {
                 val1_ty = meta.value()?.parse()?;
-            }else if meta.path.is_ident("ty2") {
+            } else if meta.path.is_ident("ty2") {
                 val2_ty = meta.value()?.parse()?;
             }
 
@@ -150,48 +216,31 @@ pub fn derive_new_ast(input: TokenStream) -> TokenStream {
         let operator = operator.unwrap();
         return quote! {
             impl Instruction for #struct_name {
-                fn execute(&mut self, context: &mut Environment) -> Result<(), String> {
-                    let val1 = self.src1.value()? as #val1_ty;
-                    let val2 = self.src2.value()? as #val2_ty;
-                    self.dest.set_value(val1.#operator(val2) as u64);
+                fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+                    let val1 = self.src1.value(env)? as #val1_ty;
+                    let val2 = self.src2.value(env)? as #val2_ty;
+                    self.dest.set_value(val1.#operator(val2) as u64, env);
                     Ok(())
+                }
+
+                fn defined_var(&self) -> Option<Operand> {
+                    Some(self.dest.clone())
+                }
+
+                fn used_vars(&self) -> Vec<Operand> {
+                    let mut vars = vec![];
+                    if let Operand::Variable(_) = self.src1 {
+                        vars.push(self.src1.clone());
+                    }
+
+                    if let Operand::Variable(_) = self.src2 {
+                        vars.push(self.src2.clone());
+                    }
+
+                    vars
                 }
             }
         }.into();
-            
-            
-        // let operator_attr = get_attr(&item_struct.attrs, "bin_op").unwrap();
-        // let operator: syn::Ident = operator_attr
-        //     .parse_args()
-        //     .expect("bin_op argument is required");
-        // 
-        // let operation: Expr = syn::parse_quote! {
-        //     val1.#operator(val2)
-        // };
-        // 
-        // return if signed {
-        //     quote! {
-        //         impl Instruction for #struct_name {
-        //             fn execute(&mut self, context: &mut Environment) -> Result<(), String> {
-        //                 let val1 = self.src1.value()? as i64;
-        //                 let val2 = self.src2.value()? as i64;
-        //                 self.dest.set_value((#operation) as u64);
-        //                 Ok(())
-        //             }
-        //         }
-        //     }.into()
-        // } else {
-        //     quote! {
-        //         impl Instruction for #struct_name {
-        //             fn execute(&mut self, context: &mut Environment) -> Result<(), String> {
-        //                 let val1 = self.src1.value()?;
-        //                 let val2 = self.src2.value()?;
-        //                 self.dest.set_value(#operation as u64);
-        //                 Ok(())
-        //             }
-        //         }
-        //     }.into()
-        // }
     }
 
     unimplemented!()
