@@ -13,42 +13,46 @@ pub trait Instruction {
         Ok(())
     }
 
-    fn defined_label(&self) -> Option<String> { None }
-    fn defined_var(&self) -> Option<Operand> { None }
-    fn used_vars(&self) -> Vec<Operand> { Vec::new() }
+    fn defined_label(&self) -> Option<String> {
+        None
+    }
+    fn defined_var(&self) -> Option<Operand> {
+        None
+    }
+    fn used_vars(&self) -> Vec<Operand> {
+        Vec::new()
+    }
 }
 
 // TODO types of instructions: arithmetic, data, branch
 
-const OPERAND_FORMATS: [OperandFormat;3] = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value];
-
 // BEGIN BINARY OP INSTRUCTIONS
-#[inst(name = "add", n_operands = 3)]
+#[inst(name = "add", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[arithmetic]
 #[bin_op(op = wrapping_add, ty1 = i64, ty2 = i64)] // TODO use bin_op_helper instead of arithmetic?
 pub struct AddInst {}
 
-#[inst(name = "sub", n_operands = 3)]
+#[inst(name = "sub", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[arithmetic]
 #[bin_op(op = wrapping_sub, ty1 = i64, ty2 = i64)]
 pub struct SubInst {}
 
-#[inst(name = "mul", n_operands = 3)]
+#[inst(name = "mul", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[arithmetic]
 #[bin_op(op = wrapping_mul, ty1 = i64, ty2 = i64)]
 pub struct MulInst {}
 
-#[inst(name = "div", n_operands = 3)]
+#[inst(name = "div", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[arithmetic]
 #[bin_op(op = wrapping_div, ty1 = i64, ty2 = i64)]
 pub struct DivInst {}
 
-#[inst(name = "mod", n_operands = 3)]
+#[inst(name = "mod", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[arithmetic]
 #[bin_op(op = wrapping_rem, ty1 = i64, ty2 = i64)]
 pub struct ModInst {}
 
-#[inst(name = "pow", n_operands = 3)]
+#[inst(name = "pow", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[arithmetic]
 #[bin_op(op = wrapping_pow, ty1 = i64, ty2 = u32)]
 pub struct PowInst {}

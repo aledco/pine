@@ -17,9 +17,9 @@ pub fn inst(args: TokenStream, input: TokenStream) -> TokenStream {
         panic!("Instruction name cannot be empty");
     }
 
-    let n_operands: usize = attrs.n_operands.unwrap().base10_parse().unwrap();
+    let operands: syn::ExprArray = attrs.operands.unwrap();
 
-    let helper_attr: Attribute = syn::parse_quote! { #[inst_helper(name = #inst_name, n_operands = #n_operands)] };
+    let helper_attr: Attribute = syn::parse_quote! { #[inst_helper(name = #inst_name, operands = #operands)] };
     item_struct.attrs.insert(0, helper_attr);
     let derive_attr: Attribute = syn::parse_quote! { #[derive(Inst, Debug)] };
     item_struct.attrs.insert(0, derive_attr);
@@ -32,7 +32,7 @@ pub fn inst(args: TokenStream, input: TokenStream) -> TokenStream {
 #[derive(Default)]
 struct InstAttributes {
     pub inst_name: Option<LitStr>,
-    pub n_operands: Option<LitInt>
+    pub operands: Option<syn::ExprArray>
 }
 
 impl InstAttributes {
@@ -40,8 +40,8 @@ impl InstAttributes {
         if meta.path.is_ident("name") {
             self.inst_name = Some(meta.value()?.parse()?);
             Ok(())
-        } else if meta.path.is_ident("n_operands") {
-            self.n_operands = Some(meta.value()?.parse()?);
+        } else if meta.path.is_ident("operands") {
+            self.operands = Some(meta.value()?.parse()?);
             Ok(())
         } else {
             Err(meta.error("Unrecognized inst argument"))
@@ -61,7 +61,7 @@ pub fn arithmetic(_args: TokenStream, input: TokenStream) -> TokenStream {
         panic!()
     }
 
-    let n_operands: usize = attrs.n_operands.unwrap().base10_parse().unwrap();
+    let n_operands: usize = attrs.operands.unwrap().elems.len();
 
     if n_operands < 2 || n_operands > 3 {
         panic!("Arithmetic instruction can only have 2 or 3 operands");
@@ -111,10 +111,12 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
         let mut attrs = InstAttributes::default();
         inst_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
         let inst_name = attrs.inst_name.unwrap().value();
-        let n_operands: usize = attrs.n_operands.unwrap().base10_parse().unwrap();
+        let operands = attrs.operands.unwrap();
+        let n_operands: usize = operands.elems.len();
         return quote! {
             impl #struct_name {
                 pub const NAME: &'static str = #inst_name;
+                pub const OPERAND_FORMATS: [OperandFormat;#n_operands] = #operands;
                 pub const N_OPERANDS: usize = #n_operands;
             }
 
@@ -130,7 +132,7 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
 }
 
 // fn create_parse_impl(item_struct: ItemStruct, inst_attrs: &InstAttributes) -> TokenStream {
-// 
+//
 // }
 
 
