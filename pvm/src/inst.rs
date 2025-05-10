@@ -1,11 +1,12 @@
 use crate::env::Environment;
 use crate::operand::*;
-use std::fmt::{Display, Formatter};
+use crate::parse::{Parse, Line, Token, Literal};
+use std::fmt::{Debug, Display, Formatter};
 
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
-pub trait Instruction {
+pub trait Instruction: Debug + Display {
     fn execute(&mut self, env: &mut Environment) -> Result<(), String>;
 
     fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), String> {
@@ -16,10 +17,12 @@ pub trait Instruction {
     fn defined_label(&self) -> Option<String> {
         None
     }
-    fn defined_var(&self) -> Option<Operand> {
+
+    fn defined_var(&self) -> Option<Operand> { // TODO implement
         None
     }
-    fn used_vars(&self) -> Vec<Operand> {
+
+    fn used_vars(&self) -> Vec<Operand> { // TODO implement
         Vec::new()
     }
 }
@@ -329,7 +332,6 @@ mod tests {
 
                 inst.execute(&mut context).unwrap();
                 inst.inc_inst_ptr(&mut context).unwrap();
-                let (r, _) = v1.overflowing_pow(v2 as u32);
                 assert_eq!(
                     inst.dest.value(&mut context).unwrap(),
                     v1.wrapping_pow(v2 as u32) as u64,

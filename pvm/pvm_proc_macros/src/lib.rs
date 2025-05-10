@@ -1,7 +1,8 @@
 extern crate proc_macro;
+use proc_macro2::Span;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse::Parser, parse_macro_input, Attribute, Expr, ExprReturn, ExprStruct, Field, FieldValue, FnArg, ItemFn, ItemStruct, LitInt, LitStr};
+use syn::{parse::Parser, parse_macro_input, Attribute, Expr, ExprReturn, ExprStruct, Field, FieldValue, FnArg, ItemFn, ItemStruct, LitStr};
 
 #[proc_macro_attribute]
 pub fn inst(args: TokenStream, input: TokenStream) -> TokenStream {
@@ -113,6 +114,7 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
         let inst_name = attrs.inst_name.unwrap().value();
         let operands = attrs.operands.unwrap();
         let n_operands: usize = operands.elems.len();
+        let parse_impl = create_parse_impl(item_struct, n_operands);
         return quote! {
             impl #struct_name {
                 pub const NAME: &'static str = #inst_name;
@@ -120,9 +122,11 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
                 pub const N_OPERANDS: usize = #n_operands;
             }
 
+            #parse_impl
+
             impl Display for #struct_name {
                 fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-                    write!(f, "{} {}, {}, {}", #inst_name, self.dest, self.src1, self.src2)
+                    write!(f, "{} {} {} {}", #inst_name, self.dest, self.src1, self.src2)
                 }
             }
         }.into();
@@ -131,9 +135,75 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
     panic!("Deriving Inst requires inst helper attribute");
 }
 
-// fn create_parse_impl(item_struct: ItemStruct, inst_attrs: &InstAttributes) -> TokenStream {
-//
-// }
+fn create_parse_impl(item_struct: ItemStruct, n_operands: usize) -> syn::ItemImpl {
+    let struct_name = &item_struct.ident.clone();
+
+    let mut inst_creation_block: syn::Block = syn::parse_quote!({});
+    let mut new_expr: syn::ExprCall = syn::parse_quote! { Self::new() };
+    for i in 0..n_operands {
+        let operand_name: syn::Ident = syn::Ident::new(format!("o{}", i).as_str(), Span::call_site());
+        let operand_set_stmt = syn::parse_quote! { let #operand_name = operands.remove(0); };
+        inst_creation_block.stmts.push(operand_set_stmt);
+        new_expr.args.push(syn::parse_quote! { #operand_name });
+
+    }
+
+    let return_stmt: syn::Stmt = syn::parse_quote! { return Ok(Box::new(#new_expr)); };
+    inst_creation_block.stmts.push(return_stmt);
+
+    syn::parse_quote! {
+        impl Parse for #struct_name {
+            fn parse(line: &Line) -> Result<Box<dyn Instruction>, String> {
+                if line.inst_token != Token::Identifier(String::from(Self::NAME)) {
+                    return Err(format!("Error at line {}: Cannot parse instruction", line.line));
+                }
+
+                if line.operand_tokens.len() != Self::N_OPERANDS {
+                    return Err(format!(
+                        "Error at line {}: Invalid number of operands for {}. Expected {} but got {}",
+                        line.line,
+                        Self::NAME,
+                        Self::N_OPERANDS,
+                        line.operand_tokens.len()
+                    ));
+                }
+
+                let mut operands: Vec<Operand> = Vec::new();
+                for (operand_token, operand_format) in line.operand_tokens.iter().zip(Self::OPERAND_FORMATS.iter()) {
+                    let operand = match operand_token {
+                        Token::Identifier(v) => {
+                            match operand_format {
+                                OperandFormat::Variable | OperandFormat::Value  => Ok(Operand::Variable(v.clone())),
+                                OperandFormat::Label => Ok(Operand::Label(v.clone())),
+                                _=> Err(format!("Error at line {}: Invalid operand format", line.line)),
+                            }
+                        }
+                        Token::Literal(l) => {
+                            match operand_format {
+                                OperandFormat::Constant | OperandFormat::Value => {
+                                    match l {
+                                        Literal::Integer(i) => Ok(Operand::Constant(i.clone() as u64)),
+                                        Literal::Float(f) => unimplemented!(),
+                                        Literal::Char(c) => Ok(Operand::Constant(c.clone() as u64)),
+                                        Literal::String(_) => unimplemented!(),
+                                    }
+                                }
+                                _ => Err(format!("Error at line {}: Invalid operand format", line.line))
+                            }
+                        },
+                    };
+
+                    match operand {
+                        Ok(operand) => operands.push(operand),
+                        Err(e) => return Err(e),
+                    }
+                }
+
+                #inst_creation_block
+            }
+        }
+    }
+}
 
 
 #[proc_macro_derive(NewArithmetic, attributes(constant, variable, label))]
