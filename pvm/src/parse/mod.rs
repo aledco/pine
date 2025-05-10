@@ -1,5 +1,3 @@
-use crate::inst::Instruction;
-
 mod lex;
 pub(crate) mod token;
 
@@ -28,6 +26,7 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, String> {
             DivInst::NAME => DivInst::parse(line),
             ModInst::NAME => ModInst::parse(line),
             PowInst::NAME => PowInst::parse(line),
+            PrintiInst::NAME => PrintiInst::parse(line),
             code => Err(format!(
                 "Error on line {}: instruction code {} not recognized",
                 line.line, code
