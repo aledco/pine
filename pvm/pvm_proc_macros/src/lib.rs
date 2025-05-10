@@ -60,7 +60,7 @@ pub fn arithmetic(args: TokenStream, input: TokenStream) -> TokenStream {
         } else {
             syn::parse_quote! { #[derive(NewArithmetic, Debug)] }
         };
-    item_struct.attrs.push(derive_attr);
+    item_struct.attrs.insert(0, derive_attr);
 
     quote! {
         #item_struct
@@ -126,28 +126,72 @@ pub fn derive_arithmetic_instruction(input: TokenStream) -> TokenStream {
     .into()
 }
 
-#[proc_macro_derive(ArithmeticInstruction, attributes(bin_op))]
+#[proc_macro_derive(ArithmeticInstruction, attributes(bin_op, signed))]
 pub fn derive_new_ast(input: TokenStream) -> TokenStream {
     let item_struct = parse_macro_input!(input as ItemStruct);
     let struct_name = &item_struct.ident.clone();
+    
+    if let Some(bin_op_attr) = get_attr(&item_struct.attrs, "bin_op") {
+        let mut operator = None::<syn::Ident>;
+        let mut val1_ty: syn::Type = syn::parse_quote!(u64);
+        let mut val2_ty: syn::Type = syn::parse_quote!(u64);
+        bin_op_attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("op") {
+                operator = meta.value()?.parse()?;
+            } else if meta.path.is_ident("ty1") {
+                val1_ty = meta.value()?.parse()?;
+            }else if meta.path.is_ident("ty2") {
+                val2_ty = meta.value()?.parse()?;
+            }
 
-    if has_attr(&item_struct.attrs, "bin_op") {
-        let operator_attr = get_attr(&item_struct.attrs, "bin_op").unwrap();
-        let operator: BinOp = operator_attr
-            .parse_args()
-            .expect("bin_op argument is required");
+            Ok(())
+        }).unwrap();
         
+        let operator = operator.unwrap();
         return quote! {
             impl Instruction for #struct_name {
                 fn execute(&mut self, context: &mut Environment) -> Result<(), String> {
-                    let val1 = self.src1.value()?;
-                    let val2 = self.src2.value()?;
-                    self.dest.set_value(val1 #operator val2);
+                    let val1 = self.src1.value()? as #val1_ty;
+                    let val2 = self.src2.value()? as #val2_ty;
+                    self.dest.set_value(val1.#operator(val2) as u64);
                     Ok(())
                 }
             }
-        }
-        .into();
+        }.into();
+            
+            
+        // let operator_attr = get_attr(&item_struct.attrs, "bin_op").unwrap();
+        // let operator: syn::Ident = operator_attr
+        //     .parse_args()
+        //     .expect("bin_op argument is required");
+        // 
+        // let operation: Expr = syn::parse_quote! {
+        //     val1.#operator(val2)
+        // };
+        // 
+        // return if signed {
+        //     quote! {
+        //         impl Instruction for #struct_name {
+        //             fn execute(&mut self, context: &mut Environment) -> Result<(), String> {
+        //                 let val1 = self.src1.value()? as i64;
+        //                 let val2 = self.src2.value()? as i64;
+        //                 self.dest.set_value((#operation) as u64);
+        //                 Ok(())
+        //             }
+        //         }
+        //     }.into()
+        // } else {
+        //     quote! {
+        //         impl Instruction for #struct_name {
+        //             fn execute(&mut self, context: &mut Environment) -> Result<(), String> {
+        //                 let val1 = self.src1.value()?;
+        //                 let val2 = self.src2.value()?;
+        //                 self.dest.set_value(#operation as u64);
+        //                 Ok(())
+        //             }
+        //         }
+        //     }.into()
+        // }
     }
 
     unimplemented!()

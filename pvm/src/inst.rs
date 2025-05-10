@@ -16,44 +16,36 @@ pub trait Instruction {
 
 // TODO types of instructions: arithmetic, data, branch
 
+
 #[arithmetic(2)]
-#[bin_op(+)]
+#[bin_op(op = wrapping_add, ty1 = i64, ty2 = i64)]
 pub struct AddInst {}
 
 impl Display for AddInst {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} = {} + {}", self.dest, self.src1, self.src2)
+        write!(f, "add {}, {}, {}", self.dest, self.src1, self.src2)
     }
 }
 
 #[arithmetic(2)]
-#[bin_op(-)]
-pub struct SubInst {} // TODO to make this instructions work, I will need to case u64 to i64 and back
+#[bin_op(op = wrapping_sub, ty1 = i64, ty2 = i64)]
+pub struct SubInst {}
 
 #[arithmetic(2)]
-#[bin_op(*)]
+#[bin_op(op = wrapping_mul, ty1 = i64, ty2 = i64)]
 pub struct MulInst {}
 
 #[arithmetic(2)]
-#[bin_op(/)]
+#[bin_op(op = wrapping_div, ty1 = i64, ty2 = i64)]
 pub struct DivInst {}
 
 #[arithmetic(2)]
-#[bin_op(%)]
+#[bin_op(op = wrapping_rem, ty1 = i64, ty2 = i64)]
 pub struct ModInst {}
 
-
 #[arithmetic(2)]
+#[bin_op(op = wrapping_pow, ty1 = i64, ty2 = u32)]
 pub struct PowInst {}
-
-impl Instruction for PowInst {
-    fn execute(&mut self, context: &mut Environment) -> Result<(), String> {
-        let val1 = self.src1.value()?;
-        let val2 = self.src2.value()?;
-        self.dest.set_value(val1.pow(val2 as u32)); // TODO does cast to u32 make sense here?
-        Ok(())
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -72,18 +64,18 @@ mod tests {
     fn test_add_inst() {
         let mut i = 0;
         let mut context = Environment::new(32);
-        for v1 in 0..256 {
-            for v2 in 0..256 {
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
                 i += 1;
 
                 let d = Operand::Variable(String::from("x"), None);
-                let s1 = Operand::Constant(v1);
-                let s2 = Operand::Constant(v2);
+                let s1 = Operand::Constant(v1 as u64);
+                let s2 = Operand::Constant(v2 as u64);
                 let mut inst = AddInst::new(d, s1, s2);
 
                 inst.execute(&mut context).unwrap();
                 inst.inc_inst_ptr(&mut context).unwrap();
-                assert_eq!(inst.dest.value().unwrap(), v1 + v2, "{} != {} + {}", inst.dest.value().unwrap(), v1, v2);
+                assert_eq!(inst.dest.value().unwrap(), v1.wrapping_add(v2) as u64, "{} != {} + {}", inst.dest.value().unwrap(), v1, v2);
                 assert_eq!(context.inst_ptr, i);
             }
         }
@@ -102,18 +94,18 @@ mod tests {
     fn test_sub_inst() {
         let mut i = 0;
         let mut context = Environment::new(32);
-        for v1 in 0..256 {
-            for v2 in 0..256 {
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
                 i += 1;
 
                 let d = Operand::Variable(String::from("x"), None);
-                let s1 = Operand::Constant(v1);
-                let s2 = Operand::Constant(v2);
+                let s1 = Operand::Constant(v1 as u64);
+                let s2 = Operand::Constant(v2 as u64);
                 let mut inst = SubInst::new(d, s1, s2);
 
                 inst.execute(&mut context).unwrap();
                 inst.inc_inst_ptr(&mut context).unwrap();
-                assert_eq!(inst.dest.value().unwrap(), v1 - v2, "{} != {} + {}", inst.dest.value().unwrap(), v1, v2);
+                assert_eq!(inst.dest.value().unwrap(), v1.wrapping_sub(v2) as u64, "{} != {} + {}", inst.dest.value().unwrap(), v1, v2);
                 assert_eq!(context.inst_ptr, i);
             }
         }
@@ -130,15 +122,23 @@ mod tests {
 
     #[test]
     fn test_mul_inst() {
-        let d = Operand::Variable(String::from("x"), None);
-        let s1 = Operand::Constant(4);
-        let s2 = Operand::Constant(3);
-        let mut inst = MulInst::new(d, s1, s2);
+        let mut i = 0;
         let mut context = Environment::new(32);
-        inst.execute(&mut context).unwrap();
-        inst.inc_inst_ptr(&mut context).unwrap();
-        assert_eq!(inst.dest.value(), Ok(12));
-        assert_eq!(context.inst_ptr, 1);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"), None);
+                let s1 = Operand::Constant(v1 as u64);
+                let s2 = Operand::Constant(v2 as u64);
+                let mut inst = MulInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(inst.dest.value().unwrap(), v1.wrapping_mul(v2) as u64, "{} != {} + {}", inst.dest.value().unwrap(), v1, v2);
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
     }
 
     #[test]
@@ -152,15 +152,27 @@ mod tests {
 
     #[test]
     fn test_div_inst() {
-        let d = Operand::Variable(String::from("x"), None);
-        let s1 = Operand::Constant(5);
-        let s2 = Operand::Constant(2);
-        let mut inst = DivInst::new(d, s1, s2);
+        let mut i = 0;
         let mut context = Environment::new(32);
-        inst.execute(&mut context).unwrap();
-        inst.inc_inst_ptr(&mut context).unwrap();
-        assert_eq!(inst.dest.value(), Ok(2));
-        assert_eq!(context.inst_ptr, 1);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                if v2 == 0 {
+                    continue;
+                }
+
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"), None);
+                let s1 = Operand::Constant(v1 as u64);
+                let s2 = Operand::Constant(v2 as u64);
+                let mut inst = DivInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(inst.dest.value().unwrap(), v1.wrapping_div(v2) as u64, "{} != {} + {}", inst.dest.value().unwrap(), v1, v2);
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
     }
 
     #[test]
@@ -174,15 +186,28 @@ mod tests {
 
     #[test]
     fn test_mod_inst() {
-        let d = Operand::Variable(String::from("x"), None);
-        let s1 = Operand::Constant(8);
-        let s2 = Operand::Constant(2);
-        let mut inst = ModInst::new(d, s1, s2);
+        let mut i = 0;
         let mut context = Environment::new(32);
-        inst.execute(&mut context).unwrap();
-        inst.inc_inst_ptr(&mut context).unwrap();
-        assert_eq!(inst.dest.value(), Ok(0));
-        assert_eq!(context.inst_ptr, 1);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                if v2 == 0 {
+                    continue;
+                }
+
+                i += 1;
+
+
+                let d = Operand::Variable(String::from("x"), None);
+                let s1 = Operand::Constant(v1 as u64);
+                let s2 = Operand::Constant(v2 as u64);
+                let mut inst = ModInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(inst.dest.value().unwrap(), v1.wrapping_rem(v2) as u64, "{} != {} + {}", inst.dest.value().unwrap(), v1, v2);
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
     }
 
     #[test]
@@ -196,14 +221,23 @@ mod tests {
 
     #[test]
     fn test_pow_inst() {
-        let d = Operand::Variable(String::from("x"), None);
-        let s1 = Operand::Constant(2);
-        let s2 = Operand::Constant(3);
-        let mut inst = PowInst::new(d, s1, s2);
+        let mut i = 0;
         let mut context = Environment::new(32);
-        inst.execute(&mut context).unwrap();
-        inst.inc_inst_ptr(&mut context).unwrap();
-        assert_eq!(inst.dest.value(), Ok(8));
-        assert_eq!(context.inst_ptr, 1);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"), None);
+                let s1 = Operand::Constant(v1 as u64);
+                let s2 = Operand::Constant(v2 as u64);
+                let mut inst = PowInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                let (r, _) = v1.overflowing_pow(v2 as u32);
+                assert_eq!(inst.dest.value().unwrap(), v1.wrapping_pow(v2 as u32) as u64, "{} != {} + {}", inst.dest.value().unwrap(), v1, v2);
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
     }
 }
