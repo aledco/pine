@@ -3,6 +3,7 @@ mod env;
 mod inst;
 mod operand;
 mod parse;
+mod cast;
 
 pub use crate::conf::ExecuteConfig;
 pub use crate::inst::*;

@@ -21,12 +21,19 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, String> {
     match &line.inst_token {
         Token::Identifier(inst) => match inst.as_str() {
             AddInst::NAME => AddInst::parse(line),
+            AddfInst::NAME => AddfInst::parse(line),
             SubInst::NAME => SubInst::parse(line),
+            SubfInst::NAME => SubfInst::parse(line),
             MulInst::NAME => MulInst::parse(line),
+            MulfInst::NAME => MulfInst::parse(line),
             DivInst::NAME => DivInst::parse(line),
+            DivfInst::NAME => DivfInst::parse(line),
             ModInst::NAME => ModInst::parse(line),
+            ModfInst::NAME => ModfInst::parse(line),
             PowInst::NAME => PowInst::parse(line),
+            PowfInst::NAME => PowfInst::parse(line),
             PrintiInst::NAME => PrintiInst::parse(line),
+            PrintfInst::NAME => PrintfInst::parse(line),
             PrintcInst::NAME => PrintcInst::parse(line),
             PrintlnInst::NAME => PrintlnInst::parse(line),
             code => Err(format!(
