@@ -66,24 +66,11 @@ fn lex_operand(mut value: &str) -> Option<Result<Token, ()>> {
         }
     } else if value.chars().nth(0).unwrap() == '\'' {
         let c = value.replace('\'', "");
-        if c.is_empty() {
+        if c.len() != 1 { // only support one character ascii chars. escaped chars like '\n' must be specified with ascii code
             Some(Err(()))
-        } else if c.len() > 2 {
-            Some(Err(()))
-        } else if c.len() == 1 {
-            let v = c.chars().nth(0).unwrap();
-            Some(Ok(Token::Literal(Literal::Char(v))))
         } else {
-            // if c.chars().nth(0).unwrap() != '\\' {
-            //     Some(Err(()))
-            // } else {
-            //     let escaped_c = c.chars().nth(1).unwrap();
-            //     let v = format!("\\{}", escaped_c);
-            //     println!("v = {:?}", v);
-            //     Some(Ok(Token::Literal(Literal::Char('a'))))
-            // }
-            
-            unimplemented!() // TODO need to parse escaped chars here
+            let b = c.as_bytes()[0];
+            Some(Ok(Token::Literal(Literal::Char(b))))
         }
     } else {
         return Some(Err(()));

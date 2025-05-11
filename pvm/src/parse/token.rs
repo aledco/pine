@@ -25,6 +25,6 @@ pub(crate) enum Token {
 pub(crate) enum Literal {
     Integer(i64),
     Float(f64),
-    Char(char),
+    Char(u8),
     String(String),
 }

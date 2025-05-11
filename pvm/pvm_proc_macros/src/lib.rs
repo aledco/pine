@@ -122,6 +122,37 @@ impl BinOpAttributes {
     }
 }
 
+#[proc_macro_attribute]
+pub fn print(args: TokenStream, input: TokenStream) -> TokenStream {
+    let mut item_struct = parse_macro_input!(input as ItemStruct);
+
+    let mut attrs = InstAttributes::default();
+    if let Some(inst_attr) = get_attr(&item_struct.attrs, "inst_helper") {
+        inst_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
+    } else {
+        panic!()
+    }
+
+    if let syn::Fields::Named(ref mut fields) = item_struct.fields {
+        fields
+            .named
+            .push(
+                Field::parse_named.parse2(quote! { src: Operand }).unwrap());
+    }
+
+    let ty: syn::Type = syn::parse_macro_input!(args);
+
+    let helper_attr: Attribute = syn::parse_quote! { #[print_helper(#ty)] };
+    item_struct.attrs.insert(0, helper_attr);
+    let derive_attr: Attribute = syn::parse_quote! { #[derive(PrintInst)] };
+    item_struct.attrs.insert(0, derive_attr);
+
+    quote! {
+        #item_struct
+    }.into()
+}
+
+
 #[proc_macro_derive(Inst, attributes(inst_helper))]
 pub fn derive_inst(input: TokenStream) -> TokenStream {
     let item_struct = parse_macro_input!(input as ItemStruct);
@@ -194,9 +225,9 @@ fn create_parse_impl(item_struct: ItemStruct, n_operands: usize) -> syn::ItemImp
                             match operand_format {
                                 OperandFormat::Constant | OperandFormat::Value => {
                                     match l {
-                                        Literal::Integer(i) => Ok(Operand::Constant(i.clone() as u64)),
-                                        Literal::Float(f) => unimplemented!(),
-                                        Literal::Char(c) => Ok(Operand::Constant(c.clone() as u64)),
+                                        Literal::Integer(i) => Ok(Operand::Constant(crate::cast::to_u64!(*i))),
+                                        Literal::Float(f) => Ok(Operand::Constant(crate::cast::to_u64!(*f))),
+                                        Literal::Char(c) => Ok(Operand::Constant(crate::cast::to_u64!(*c))),
                                         Literal::String(_) => unimplemented!(),
                                     }
                                 }
@@ -276,9 +307,10 @@ pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
         return quote! {
             impl Instruction for #struct_name {
                 fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
-                    let val1 = self.src1.value(env)? as #val1_ty;
-                    let val2 = self.src2.value(env)? as #val2_ty;
-                    self.dest.set_value(val1.#operator(val2) as u64, env);
+                    let val1 = crate::cast::from_u64!(self.src1.value(env)?; #val1_ty);
+                    let val2 = crate::cast::from_u64!(self.src2.value(env)?; #val2_ty);
+                    let res = crate::cast::to_u64!(val1.#operator(val2));
+                    self.dest.set_value(res, env);
                     Ok(())
                 }
 
@@ -320,17 +352,55 @@ pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
         }.into();
     }
 
-    unimplemented!()
+    panic!("bin_helper attribute is required");
 }
 
-fn has_attr(attrs: &Vec<Attribute>, attr_name: &str) -> bool {
-    for attr in attrs {
-        if attr.path().is_ident(attr_name) {
-            return true;
-        }
+#[proc_macro_derive(PrintInst, attributes(print_helper))]
+pub fn derive_print_inst(input: TokenStream) -> TokenStream {
+    let item_struct = parse_macro_input!(input as ItemStruct);
+    let struct_name = &item_struct.ident.clone();
+
+    if let Some(print_attr) = get_attr(&item_struct.attrs, "print_helper") {
+
+        let ty: syn::Type = print_attr.parse_args().unwrap();
+
+        return quote! {
+            impl Instruction for #struct_name {
+                fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+                    let value: #ty = crate::from_u64!(self.src.value(env)?; #ty);
+                    let res = write!(env.stdout.borrow_mut(), "{}", value);
+                    match res {
+                        Ok(_) => Ok(()),
+                        Err(e) => Err(format!("{}", e)),
+                    }
+                }
+
+                fn used_vars(&self) -> Vec<Operand> {
+                    if let Operand::Variable(_) = self.src {
+                        return vec![self.src.clone()];
+                    }
+
+                    vec![]
+                }
+
+                fn validate(&self) -> Result<(), String> {
+                    if matches!(self.src, Operand::Label(_)) {
+                        Err("src must be a variable or constant".to_string())
+                    } else {
+                        Ok(())
+                    }
+                }
+            }
+
+            impl Display for #struct_name {
+                fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+                    write!(f, "{} {}", Self::NAME, self.src)
+                }
+            }
+        }.into();
     }
 
-    false
+    unimplemented!()
 }
 
 fn get_attr(attrs: &Vec<Attribute>, attr_name: &str) -> Option<Attribute> {
@@ -342,4 +412,3 @@ fn get_attr(attrs: &Vec<Attribute>, attr_name: &str) -> Option<Attribute> {
 
     None
 }
-

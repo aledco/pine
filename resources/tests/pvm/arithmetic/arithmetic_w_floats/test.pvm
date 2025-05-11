@@ -1,0 +1,12 @@
+addf x 1.1 1.0
+printf x # 2.1
+println
+
+addf y 10.0 2.0
+addf x x y
+printf x # 14.1
+println
+
+powf x x 0
+printf x # 1
+println

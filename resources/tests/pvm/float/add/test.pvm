@@ -1,0 +1,3 @@
+addf x 100.14 0.14
+printf x # 100
+println
