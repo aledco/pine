@@ -52,8 +52,8 @@ dependencies = [
 name = "pvm"
 version = "0.1.0"
 dependencies = [
- "ast",
  "pvm_proc_macros",
+ "test_util",
 ]
 
 [[package]]

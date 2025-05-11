@@ -1,0 +1,12 @@
+add x 1 1 # x = 2
+pow y 2 3 # y = 8
+mul z x y # z = 16
+
+printi x # 2
+println
+
+printi y # 8
+println
+
+printi z # 16
+println

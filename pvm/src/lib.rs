@@ -10,13 +10,13 @@ pub use crate::parse::*;
 
 use crate::env::Environment;
 
-pub fn execute(instructions: Vec<Box<dyn Instruction>>) {
+pub fn execute(instructions: Vec<Box<dyn Instruction>>)  -> Result<(), String> {
     let config = ExecuteConfig::default();
-    execute_with_config(instructions, config);
+    execute_with_config(instructions, config)
 }
 
-pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: ExecuteConfig) {
-    let mut context = Environment::new(config.memory_size);
+pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: ExecuteConfig) -> Result<(), String> {
+    let mut context = Environment::new(config.memory_size, config.stdout);
 
     // initial pass
     for (i, instruction) in instructions.iter().enumerate() {
@@ -26,14 +26,14 @@ pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: 
 
         let used_vars = instruction.used_vars();
         for var in used_vars {
-            let name = var.var_name().unwrap();
+            let name = var.var_name()?;
             if !context.variables.contains_key(&name) {
                 panic!("Variable {} was never defined", name);
             }
         }
 
         if let Some(var) = instruction.defined_var() {
-            let name = var.var_name().unwrap();
+            let name = var.var_name()?;
             context.variables.insert(name, 0);
         }
     }
@@ -45,7 +45,9 @@ pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: 
         }
 
         let inst = &mut instructions[context.inst_ptr];
-        inst.execute(&mut context).unwrap();
-        inst.inc_inst_ptr(&mut context).unwrap();
+        inst.execute(&mut context)?;
+        inst.inc_inst_ptr(&mut context)?;
     }
+    
+    Ok(())
 }

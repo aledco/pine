@@ -312,8 +312,8 @@ pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
                 }
             }
 
-            impl Display for #struct_name {
-                fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            impl std::fmt::Display for #struct_name {
+                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                     write!(f, "{} {} {} {}", Self::NAME, self.dest, self.src1, self.src2)
                 }
             }
@@ -342,3 +342,4 @@ fn get_attr(attrs: &Vec<Attribute>, attr_name: &str) -> Option<Attribute> {
 
     None
 }
+

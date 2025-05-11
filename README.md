@@ -18,6 +18,9 @@ also includes great developer support and tooling.
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
 - Write comments
 
+## Tests
+- Add failure tests
+
 # Notes
 
 I want to name everything in the language on based on the Pine theme (inspired by Rust).

@@ -27,6 +27,8 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, String> {
             ModInst::NAME => ModInst::parse(line),
             PowInst::NAME => PowInst::parse(line),
             PrintiInst::NAME => PrintiInst::parse(line),
+            PrintcInst::NAME => PrintcInst::parse(line),
+            PrintlnInst::NAME => PrintlnInst::parse(line),
             code => Err(format!(
                 "Error on line {}: instruction code {} not recognized",
                 line.line, code

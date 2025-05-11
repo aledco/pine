@@ -2,7 +2,7 @@ use crate::env::Environment;
 use crate::operand::*;
 use crate::parse::{Parse, Line, Token, Literal};
 use crate::inst::Instruction;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::Debug;
 
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
@@ -33,6 +33,7 @@ pub struct PowInst {}
 
 #[cfg(test)]
 mod tests {
+    use crate::ExecuteConfig;
     use super::*;
 
     #[test]
@@ -48,7 +49,8 @@ mod tests {
     #[test]
     fn test_add_inst() {
         let mut i = 0;
-        let mut context = Environment::new(32);
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -96,7 +98,8 @@ mod tests {
     #[test]
     fn test_sub_inst() {
         let mut i = 0;
-        let mut context = Environment::new(32);
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -144,7 +147,8 @@ mod tests {
     #[test]
     fn test_mul_inst() {
         let mut i = 0;
-        let mut context = Environment::new(32);
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -192,7 +196,8 @@ mod tests {
     #[test]
     fn test_div_inst() {
         let mut i = 0;
-        let mut context = Environment::new(32);
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 if v2 == 0 {
@@ -244,7 +249,8 @@ mod tests {
     #[test]
     fn test_mod_inst() {
         let mut i = 0;
-        let mut context = Environment::new(32);
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 if v2 == 0 {
@@ -296,7 +302,8 @@ mod tests {
     #[test]
     fn test_pow_inst() {
         let mut i = 0;
-        let mut context = Environment::new(32);
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;

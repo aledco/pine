@@ -1,3 +1,4 @@
+use std::ffi::c_char;
 use crate::parse::token::*;
 
 pub(crate) fn lex(input: &str) -> Result<Vec<Line>, String> {
@@ -20,7 +21,7 @@ fn lex_line(i: usize, line: &str) -> Option<Result<Line, String>> {
     if inst.starts_with('#') {
         return None;
     } else if inst.is_empty() {
-        return Some(Err(format!("Error at line {}: empty instruction", i)));
+        return Some(Err(format!("Error at line {}: empty instruction", i+1)));
     }
 
     let inst_token = Token::Identifier(inst.to_string());
@@ -33,11 +34,11 @@ fn lex_line(i: usize, line: &str) -> Option<Result<Line, String>> {
         .collect();
     
     if operand_tokens.iter().any(|r| r.is_err()) {
-        return Some(Err(format!("Error at line {}: invalid operand", i)));
+        return Some(Err(format!("Error at line {}: invalid operand", i+1)));
     }
     
     let operand_tokens = operand_tokens.into_iter().map(|r| r.unwrap()).collect();
-    Some(Ok(Line::new(inst_token, operand_tokens, i)))
+    Some(Ok(Line::new(inst_token, operand_tokens, i+1)))
 }
 
 fn lex_operand(mut value: &str) -> Option<Result<Token, ()>> {
@@ -62,6 +63,27 @@ fn lex_operand(mut value: &str) -> Option<Result<Token, ()>> {
             Some(Ok(Token::Literal(Literal::Float(v))))
         } else {
             Some(Err(()))
+        }
+    } else if value.chars().nth(0).unwrap() == '\'' {
+        let c = value.replace('\'', "");
+        if c.is_empty() {
+            Some(Err(()))
+        } else if c.len() > 2 {
+            Some(Err(()))
+        } else if c.len() == 1 {
+            let v = c.chars().nth(0).unwrap();
+            Some(Ok(Token::Literal(Literal::Char(v))))
+        } else {
+            // if c.chars().nth(0).unwrap() != '\\' {
+            //     Some(Err(()))
+            // } else {
+            //     let escaped_c = c.chars().nth(1).unwrap();
+            //     let v = format!("\\{}", escaped_c);
+            //     println!("v = {:?}", v);
+            //     Some(Ok(Token::Literal(Literal::Char('a'))))
+            // }
+            
+            unimplemented!() // TODO need to parse escaped chars here
         }
     } else {
         return Some(Err(()));
