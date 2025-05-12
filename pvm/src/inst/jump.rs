@@ -10,7 +10,7 @@ use pvm_proc_macros::*;
 
 #[inst(name = "jump", operands = [OperandFormat::Label])]
 pub struct JumpInst {
-    pub src: Operand,
+    pub lab: Operand,
 }
 
 impl Instruction for JumpInst {
@@ -19,7 +19,7 @@ impl Instruction for JumpInst {
     }
 
     fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), String> {
-        let label = self.src.label()?;
+        let label = self.lab.label()?;
         let addr = env.labels.get(&label);
         match addr {
             Some(addr) => {
@@ -31,7 +31,7 @@ impl Instruction for JumpInst {
     }
     
     fn validate(&self) -> Result<(), String> {
-        if !matches!(self.src, Operand::Label(_)) {
+        if !matches!(self.lab, Operand::Label(_)) {
             Err("src must be a label".to_string())
         } else {
             Ok(())
@@ -41,7 +41,56 @@ impl Instruction for JumpInst {
 
 impl Display for JumpInst {
     fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.src)
+        write!(f, "{} {}", Self::NAME, self.lab)
+    }
+}
+
+#[inst(name = "jumpz", operands = [OperandFormat::Value, OperandFormat::Label])]
+pub struct JumpZeroInst {
+    pub src: Operand,
+    pub lab: Operand,
+}
+
+impl Instruction for JumpZeroInst {
+    fn execute(&mut self, _env: &mut Environment) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), String> {
+        let value = self.src.value(env)?;
+        if value == 0 {
+            let label = self.lab.label()?;
+            let addr = env.labels.get(&label);
+
+            match addr {
+                Some(addr) => {
+                    env.inst_ptr = *addr;
+                    Ok(())
+                },
+                None => Err(format!("Label {} does not exist", label))?,
+            }
+        } else {
+            env.inst_ptr += 1;
+            Ok(())
+        }
+    }
+
+    fn validate(&self) -> Result<(), String> {
+        if matches!(self.src, Operand::Label(_)) { // TODO use OperandFormat to validate
+            return Err("src must be a constant or variable".to_string());
+        }
+        
+        if !matches!(self.lab, Operand::Label(_)) {
+            return Err("src must be a label".to_string());
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for JumpZeroInst {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{} {} {}", Self::NAME, self.src, self.lab)
     }
 }
 
@@ -82,5 +131,47 @@ mod tests {
         let inst = JumpInst::new(d);
         let display = format!("{}", inst);
         assert_eq!(display, "jump test");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_jumpz_validation() {
+        let s = Operand::Constant(0);
+        let l = Operand::Constant(0);
+        let inst = JumpZeroInst::new(s, l);
+        inst.validate().unwrap();
+    }
+
+    #[test]
+    fn test_jumpz_inst() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+
+        let lab = "test".to_string();
+        context.labels.insert(lab.clone(), 100);
+
+        let s1 = Operand::Constant(0);
+        let l = Operand::Label(lab.clone());
+        let mut inst = JumpZeroInst::new(s1, l);
+        inst.execute(&mut context).unwrap();
+        inst.inc_inst_ptr(&mut context).unwrap();
+        assert_eq!(context.inst_ptr, 100);
+
+        let s1 = Operand::Constant(1);
+        let l = Operand::Label(lab.clone());
+        let mut inst = JumpZeroInst::new(s1, l);
+        inst.execute(&mut context).unwrap();
+        inst.inc_inst_ptr(&mut context).unwrap();
+        assert_eq!(context.inst_ptr, 101);
+    }
+
+    #[test]
+    fn test_jumpz_display() {
+        let s = Operand::Constant(0);
+        let lab = "test".to_string();
+        let l = Operand::Label(lab.clone());
+        let inst = JumpZeroInst::new(s, l);
+        let display = format!("{}", inst);
+        assert_eq!(display, "jumpz 0 test");
     }
 }

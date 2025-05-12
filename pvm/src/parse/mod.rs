@@ -40,6 +40,7 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, String> {
             GteInst::NAME => GteInst::parse(line),
             MoveInst::NAME => MoveInst::parse(line),
             JumpInst::NAME => JumpInst::parse(line),
+            JumpZeroInst::NAME => JumpZeroInst::parse(line),
             LabelInst::NAME => LabelInst::parse(line),
             PrintiInst::NAME => PrintiInst::parse(line),
             PrintfInst::NAME => PrintfInst::parse(line),
