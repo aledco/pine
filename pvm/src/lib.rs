@@ -22,14 +22,18 @@ pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: 
     // initial pass
     for (i, instruction) in instructions.iter().enumerate() {
         if let Some(label) = instruction.defined_label() {
-            context.labels.insert(label, (i+1) as u64);
+            if context.labels.contains_key(&label) {
+                return Err(format!("Label {} was already defined", label));
+            }
+            
+            context.labels.insert(label, i+1);
         }
 
         let used_vars = instruction.used_vars();
         for var in used_vars {
             let name = var.var_name()?;
             if !context.variables.contains_key(&name) {
-                panic!("Variable {} was never defined", name);
+                return Err(format!("Variable {} was never defined", name));
             }
         }
 

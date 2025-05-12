@@ -9,7 +9,7 @@ use std::rc::Rc;
 pub struct Environment {
     //pub memory: Memory,
     pub variables: HashMap<String, u64>,
-    pub labels: HashMap<String, u64>,
+    pub labels: HashMap<String, usize>,
     pub global_strings: HashMap<String, String>, // TODO do global constants instead?\
     pub stdout: Rc<RefCell<dyn Write>>,
     pub inst_ptr: usize,

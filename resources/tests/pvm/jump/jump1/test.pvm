@@ -1,0 +1,7 @@
+move x 1
+jump L1
+sub x x 1
+label L1
+add x x 1
+printi x # 2
+println
