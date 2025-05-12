@@ -50,6 +50,12 @@ impl Instruction for PrintcInst {
     }
 }
 
+impl Display for PrintcInst {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{} {}", Self::NAME, self.src)
+    }
+}
+
 #[inst(name = "println", operands = [])]
 pub struct PrintlnInst {}
 
@@ -66,12 +72,6 @@ impl Instruction for PrintlnInst {
 impl Display for PrintlnInst {
     fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
         write!(f, "{}", Self::NAME)
-    }
-}
-
-impl Display for PrintcInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.src)
     }
 }
 

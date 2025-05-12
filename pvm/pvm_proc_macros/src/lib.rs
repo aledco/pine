@@ -100,7 +100,7 @@ pub fn bin_op(args: TokenStream, input: TokenStream) -> TokenStream {
 // TODO move below to seperate module?
 #[derive(Default)]
 struct BinOpAttributes {
-    pub operator: Option<syn::Ident>,
+    pub operator: Option<syn::Path>,
     pub val1_ty: Option<syn::Type>,
     pub val2_ty: Option<syn::Type>
 }
@@ -309,7 +309,7 @@ pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
                 fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
                     let val1 = crate::cast::from_u64!(self.src1.value(env)?; #val1_ty);
                     let val2 = crate::cast::from_u64!(self.src2.value(env)?; #val2_ty);
-                    let res = crate::cast::to_u64!(val1.#operator(val2));
+                    let res = crate::cast::to_u64!(#operator(val1, val2));
                     self.dest.set_value(res, env);
                     Ok(())
                 }

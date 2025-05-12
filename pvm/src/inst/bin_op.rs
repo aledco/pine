@@ -1,7 +1,7 @@
 use crate::env::Environment;
-use crate::operand::*;
-use crate::parse::{Parse, Line, Token, Literal};
 use crate::inst::Instruction;
+use crate::operand::*;
+use crate::parse::{Line, Literal, Parse, Token};
 use std::fmt::Debug;
 use std::ops::*;
 
@@ -11,58 +11,101 @@ use pvm_proc_macros::*;
 // TODO currently cannot perform an operation on a float and int, such as `addf 1.1 1`.
 
 #[inst(name = "add", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = wrapping_add, ty1 = i64, ty2 = i64)]
+#[bin_op(op = i64::wrapping_add, ty1 = i64, ty2 = i64)]
 pub struct AddInst {}
 
 #[inst(name = "addf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = add, ty1 = f64, ty2 = f64)]
+#[bin_op(op = f64::add, ty1 = f64, ty2 = f64)]
 pub struct AddfInst {}
 
 #[inst(name = "sub", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = wrapping_sub, ty1 = i64, ty2 = i64)]
+#[bin_op(op = i64::wrapping_sub, ty1 = i64, ty2 = i64)]
 pub struct SubInst {}
 
 #[inst(name = "subf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = sub, ty1 = f64, ty2 = f64)]
+#[bin_op(op = f64::sub, ty1 = f64, ty2 = f64)]
 pub struct SubfInst {}
 
 #[inst(name = "mul", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = wrapping_mul, ty1 = i64, ty2 = i64)]
+#[bin_op(op = i64::wrapping_mul, ty1 = i64, ty2 = i64)]
 pub struct MulInst {}
 
 #[inst(name = "mulf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = mul, ty1 = f64, ty2 = f64)]
+#[bin_op(op = f64::mul, ty1 = f64, ty2 = f64)]
 pub struct MulfInst {}
 
 #[inst(name = "div", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = wrapping_div, ty1 = i64, ty2 = i64)]
+#[bin_op(op = i64::wrapping_div, ty1 = i64, ty2 = i64)]
 pub struct DivInst {}
 
 #[inst(name = "divf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = div, ty1 = f64, ty2 = f64)]
+#[bin_op(op = f64::div, ty1 = f64, ty2 = f64)]
 pub struct DivfInst {}
 
 #[inst(name = "mod", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = wrapping_rem, ty1 = i64, ty2 = i64)]
+#[bin_op(op = i64::wrapping_rem, ty1 = i64, ty2 = i64)]
 pub struct ModInst {}
 
 #[inst(name = "modf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = rem, ty1 = f64, ty2 = f64)]
+#[bin_op(op = f64::rem, ty1 = f64, ty2 = f64)]
 pub struct ModfInst {}
 
 #[inst(name = "pow", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = wrapping_pow, ty1 = i64, ty2 = u32)]
+#[bin_op(op = i64::wrapping_pow, ty1 = i64, ty2 = u32)]
 pub struct PowInst {}
 
 #[inst(name = "powf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
-#[bin_op(op = powf, ty1 = f64, ty2 = f64)]
+#[bin_op(op = f64::powf, ty1 = f64, ty2 = f64)]
 pub struct PowfInst {}
+
+fn eq(v1: u64, v2: u64) -> u64 {
+    (v1 == v2) as u64
+}
+fn neq(v1: u64, v2: u64) -> u64 {
+    (v1 != v2) as u64
+}
+fn lt(v1: u64, v2: u64) -> u64 {
+    (v1 < v2) as u64
+}
+fn lte(v1: u64, v2: u64) -> u64 {
+    (v1 <= v2) as u64
+}
+fn gt(v1: u64, v2: u64) -> u64 {
+    (v1 > v2) as u64
+}
+fn gte(v1: u64, v2: u64) -> u64 {
+    (v1 >= v2) as u64
+}
+
+#[inst(name = "eq", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = eq, ty1 = u64, ty2 = u64)]
+pub struct EqInst {}
+
+#[inst(name = "neq", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = neq, ty1 = u64, ty2 = u64)]
+pub struct NeqInst {}
+
+#[inst(name = "lt", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = lt, ty1 = u64, ty2 = u64)]
+pub struct LtInst {}
+
+#[inst(name = "lte", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = lte, ty1 = u64, ty2 = u64)]
+pub struct LteInst {}
+
+#[inst(name = "gt", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = gt, ty1 = u64, ty2 = u64)]
+pub struct GtInst {}
+
+#[inst(name = "gte", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = gte, ty1 = u64, ty2 = u64)]
+pub struct GteInst {}
 
 #[cfg(test)]
 mod tests {
-    use crate::ExecuteConfig;
-    use crate::cast::*;
     use super::*;
+    use crate::cast::*;
+    use crate::ExecuteConfig;
 
     #[test]
     #[should_panic]
@@ -683,5 +726,239 @@ mod tests {
         let display = format!("{}", inst);
         let expected = format!("powf x {} {}", to_u64!(100.14_f64), to_u64!(0.02_f64));
         assert_eq!(display, expected);
+    }
+
+    #[test]
+    fn test_eq_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(to_u64!(v1));
+                let s2 = Operand::Constant(to_u64!(v2));
+                let mut inst = EqInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    eq(to_u64!(v1), to_u64!(v2)),
+                    "{} != {} == {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_eq_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = EqInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "eq x 2 3");
+    }
+
+    #[test]
+    fn test_neq_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(to_u64!(v1));
+                let s2 = Operand::Constant(to_u64!(v2));
+                let mut inst = NeqInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    neq(to_u64!(v1), to_u64!(v2)),
+                    "{} != {} != {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_neq_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = NeqInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "neq x 2 3");
+    }
+
+    #[test]
+    fn test_lt_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(to_u64!(v1));
+                let s2 = Operand::Constant(to_u64!(v2));
+                let mut inst = LtInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    lt(to_u64!(v1), to_u64!(v2)),
+                    "{} != {} < {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_lt_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = LtInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "lt x 2 3");
+    }
+
+    #[test]
+    fn test_lte_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(to_u64!(v1));
+                let s2 = Operand::Constant(to_u64!(v2));
+                let mut inst = LteInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    lte(to_u64!(v1), to_u64!(v2)),
+                    "{} != {} <= {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_lte_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = LteInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "lte x 2 3");
+    }
+
+    #[test]
+    fn test_gt_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(to_u64!(v1));
+                let s2 = Operand::Constant(to_u64!(v2));
+                let mut inst = GtInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    gt(to_u64!(v1), to_u64!(v2)),
+                    "{} != {} > {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_gt_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = GtInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "gt x 2 3");
+    }
+
+    #[test]
+    fn test_gte_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in -32i64..32 {
+            for v2 in -32i64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(to_u64!(v1));
+                let s2 = Operand::Constant(to_u64!(v2));
+                let mut inst = GteInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    gte(to_u64!(v1), to_u64!(v2)),
+                    "{} != {} >= {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_gte_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = GteInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "gte x 2 3");
     }
 }
