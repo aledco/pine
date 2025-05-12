@@ -87,7 +87,7 @@ pub struct NeqInst {}
 
 #[inst(name = "lt", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = lt, ty1 = u64, ty2 = u64)]
-pub struct LtInst {}
+pub struct LtInst {} // TODO probably need float versions of these
 
 #[inst(name = "lte", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = lte, ty1 = u64, ty2 = u64)]

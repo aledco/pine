@@ -38,6 +38,11 @@ pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: 
             context.variables.insert(name, 0);
         }
     }
+    
+    // validation pass
+    for instruction in &instructions {
+        instruction.validate()?;
+    }
 
     // execute loop
     loop {

@@ -43,6 +43,13 @@ impl Operand {
             _ => Err("Operand is not a variable".to_string()),
         }
     }
+
+    pub fn label(&self) -> Result<String, String>{
+        match self {
+            Operand::Label(l) => Ok(l.clone()),
+            _ => Err("Operand is not a label".to_string()),
+        }
+    }
 }
 
 impl Display for Operand {
