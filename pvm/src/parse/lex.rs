@@ -23,7 +23,7 @@ fn lex_line(i: usize, line: &str) -> Option<Result<Line, String>> {
     } else if inst.is_empty() {
         return Some(Err(format!("Error at line {}: empty instruction", i+1)));
     }
-
+    
     let inst_token = Token::Identifier(inst.to_string());
     let operand_tokens: Vec<Result<Token, ()>> = parts
         .iter()
@@ -57,6 +57,15 @@ fn lex_operand(mut value: &str) -> Option<Result<Token, ()>> {
             Some(Err(()))
         }
     } else if value.chars().nth(0).unwrap().is_numeric() {
+        if value.chars().last().unwrap() == 'f' {
+            value = &value[0..value.len()-1];
+            return if let Ok(v) = value.parse::<f64>() {
+                Some(Ok(Token::Literal(Literal::Float(v))))
+            } else {
+                Some(Err(()))
+            };
+        }
+        
         if let Ok(v) = value.parse::<i64>() {
             Some(Ok(Token::Literal(Literal::Integer(v))))
         } else if let Ok(v) = value.parse::<f64>() {

@@ -14,9 +14,18 @@ also includes great developer support and tooling.
 - VS Code syntax highlighting
 
 # TODO
+## pvm
+- bit ops (and, or, etc)
+- other syscall ops (read, write file, etc)
+- Add unsigned instructions
+- Add arrays and strings
+  - Implement memory which supports allocate and dealloc instructions.
+- Add function support (push and pop args, call)
+
 ## Refactors
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
 - Write comments
+- Refactor proc macros as much as possible
 
 ## Tests
 - Add failure tests

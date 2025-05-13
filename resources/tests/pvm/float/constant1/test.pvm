@@ -1,0 +1,4 @@
+addf x 1f 2.0
+printf x # 3.0
+println
+
