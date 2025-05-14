@@ -31,3 +31,17 @@ impl Display for AllocInst { // TODO can auto derive this in inst too
         write!(f, "{} {}", Self::NAME, self.src)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic]
+    fn test_alloc_validation() {
+        let d = Operand::Constant(0);
+        let s1 = Operand::Constant(2);
+        let inst = AllocInst::new(d, s1);
+        inst.validate().unwrap();
+    }
+}
