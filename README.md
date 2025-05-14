@@ -21,6 +21,8 @@ also includes great developer support and tooling.
 - Add arrays and strings
   - Implement memory which supports allocate and dealloc instructions.
 - Add function support (push and pop args, call)
+- Add parsing tests
+- Make operands private
 
 ## Refactors
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages

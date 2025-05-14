@@ -10,6 +10,7 @@ pub(crate) use un_op::*;
 pub(crate) use print::*;
 pub(crate) use jump::*;
 pub(crate) use label::*;
+pub(crate) use alloc::*;
 use crate::env::Environment;
 use std::fmt::{Debug, Display};
 

@@ -43,6 +43,7 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, String> {
             JumpZeroInst::NAME => JumpZeroInst::parse(line),
             JumpNotZeroInst::NAME => JumpNotZeroInst::parse(line),
             LabelInst::NAME => LabelInst::parse(line),
+            AllocInst::NAME => AllocInst::parse(line),
             PrintiInst::NAME => PrintiInst::parse(line),
             PrintfInst::NAME => PrintfInst::parse(line),
             PrintcInst::NAME => PrintcInst::parse(line),

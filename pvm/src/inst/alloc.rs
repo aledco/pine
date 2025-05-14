@@ -9,7 +9,7 @@ use std::fmt::{Debug, Display, Formatter};
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
-// TODO implement dealloc, add tests, implement load and store
+// TODO add tests, implement load and store
 
 #[inst(name = "alloc", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct AllocInst {
@@ -28,20 +28,115 @@ impl Instruction for AllocInst {
 
 impl Display for AllocInst { // TODO can auto derive this in inst too
     fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
+    }
+}
+
+#[inst(name = "dealloc", operands = [OperandFormat::Variable])]
+pub struct DeallocInst {
+    pub src: Operand,
+}
+
+impl Instruction for DeallocInst {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+        let addr = from_u64!(self.src.value(env)?; usize);
+        env.memory.deallocate(addr)?;
+        Ok(())
+    }
+}
+
+impl Display for DeallocInst {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
         write!(f, "{} {}", Self::NAME, self.src)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::ExecuteConfig;
     use super::*;
 
     #[test]
     #[should_panic]
     fn test_alloc_validation() {
         let d = Operand::Constant(0);
-        let s1 = Operand::Constant(2);
-        let inst = AllocInst::new(d, s1);
+        let s = Operand::Constant(2);
+        let inst = AllocInst::new(d, s);
         inst.validate().unwrap();
+    }
+
+    #[test]
+    fn test_alloc() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+
+        let vals: Vec<usize> = vec![1, 2, 5, 10, 20];
+        for v in &vals {
+            i += 1;
+
+            let d = Operand::Variable(String::from("x"));
+            let s = Operand::Constant(to_u64!(*v));
+            let mut inst = AllocInst::new(d, s);
+
+            inst.execute(&mut context).unwrap();
+            inst.inc_inst_ptr(&mut context).unwrap();
+            let _ = from_u64!(inst.dest.value(&mut context).unwrap(); usize); // no way to verify address
+            assert_eq!(context.inst_ptr, i);
+        }
+    }
+
+    #[test]
+    fn test_alloc_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s = Operand::Constant(2);
+        let inst = AllocInst::new(d, s);
+        let display = format!("{}", inst);
+        assert_eq!(display, "alloc x 2");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_dealloc_validation() {
+        let d = Operand::Constant(0);
+        let inst = DeallocInst::new(d);
+        inst.validate().unwrap();
+    }
+
+    #[test]
+    fn test_dealloc() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+
+        let vals: Vec<usize> = vec![1, 2, 5, 10, 20];
+        for v in &vals {
+            i += 1;
+
+            // create allocation
+            let d = Operand::Variable(String::from("x"));
+            let s = Operand::Constant(to_u64!(*v));
+            let mut inst = AllocInst::new(d, s);
+            inst.execute(&mut context).unwrap();
+            inst.inc_inst_ptr(&mut context).unwrap();
+            let addr = from_u64!(inst.dest.value(&mut context).unwrap(); usize);
+            assert_eq!(context.inst_ptr, i);
+            i += 1;
+
+            // test deallocation
+            let d = Operand::Constant(to_u64!(addr));
+            let mut inst = DeallocInst::new(d);
+            inst.execute(&mut context).unwrap();
+            inst.inc_inst_ptr(&mut context).unwrap(); // no way to verify deallocation
+            assert_eq!(context.inst_ptr, i);
+        }
+    }
+
+    #[test]
+    fn test_dealloc_display() {
+        let d = Operand::Variable(String::from("x"));
+        let inst = DeallocInst::new(d);
+        let display = format!("{}", inst);
+        assert_eq!(display, "dealloc x");
     }
 }
