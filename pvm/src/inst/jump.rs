@@ -1,6 +1,6 @@
 use pvm_proc_macros::Inst;
 use crate::env::Environment;
-use crate::inst::Instruction;
+use crate::inst::*;
 use crate::operand::*;
 use crate::parse::{Line, Literal, Parse, Token};
 use std::fmt::{Debug, Display, Formatter};
@@ -27,14 +27,6 @@ impl Instruction for JumpInst {
                 Ok(())
             },
             None => Err(format!("Label {} does not exist", label))?,
-        }
-    }
-    
-    fn validate(&self) -> Result<(), String> {
-        if !matches!(self.lab, Operand::Label(_)) {
-            Err("src must be a label".to_string())
-        } else {
-            Ok(())
         }
     }
 }
@@ -74,18 +66,6 @@ impl Instruction for JumpZeroInst {
             Ok(())
         }
     }
-
-    fn validate(&self) -> Result<(), String> {
-        if matches!(self.src, Operand::Label(_)) { // TODO use OperandFormat to validate
-            return Err("src must be a constant or variable".to_string());
-        }
-
-        if !matches!(self.lab, Operand::Label(_)) {
-            return Err("src must be a label".to_string());
-        }
-
-        Ok(())
-    }
 }
 
 impl Display for JumpZeroInst {
@@ -122,18 +102,6 @@ impl Instruction for JumpNotZeroInst {
             env.inst_ptr += 1;
             Ok(())
         }
-    }
-
-    fn validate(&self) -> Result<(), String> {
-        if matches!(self.src, Operand::Label(_)) { // TODO use OperandFormat to validate
-            return Err("src must be a constant or variable".to_string());
-        }
-
-        if !matches!(self.lab, Operand::Label(_)) {
-            return Err("src must be a label".to_string());
-        }
-
-        Ok(())
     }
 }
 

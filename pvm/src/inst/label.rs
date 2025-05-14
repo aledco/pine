@@ -1,6 +1,6 @@
 use pvm_proc_macros::Inst;
 use crate::env::Environment;
-use crate::inst::Instruction;
+use crate::inst::*;
 use crate::operand::*;
 use crate::parse::{Line, Literal, Parse, Token};
 use std::fmt::{Debug, Display, Formatter};
@@ -22,14 +22,6 @@ impl Instruction for LabelInst {
         match self.lab.label() {
             Ok(label) => Some(label),
             Err(_) => None
-        }
-    }
-
-    fn validate(&self) -> Result<(), String> {
-        if !matches!(self.lab, Operand::Label(_)) {
-            Err("lab must be a label".to_string())
-        } else {
-            Ok(())
         }
     }
 }

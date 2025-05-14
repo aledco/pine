@@ -61,3 +61,38 @@ impl Display for Operand {
         }
     }
 }
+
+impl OperandFormat {
+    pub fn validate(&self, operand: &Operand) -> Result<(), String> {
+        match self {
+            OperandFormat::Constant => {
+                if matches!(operand, Operand::Constant(_)) {
+                    Ok(())
+                } else {
+                    Err("Operand must be a constant".to_string())
+                }
+            }
+            OperandFormat::Variable => {
+                if matches!(operand, Operand::Variable(_)) {
+                    Ok(())
+                } else {
+                    Err("Operand must be a variable".to_string())
+                }
+            }
+            OperandFormat::Value => {
+                if matches!(operand, Operand::Constant(_)) || matches!(operand, Operand::Variable(_)) {
+                    Ok(())
+                } else {
+                    Err("Operand must be a constant or a variable".to_string())
+                }
+            }
+            OperandFormat::Label => {
+                if matches!(operand, Operand::Label(_)) {
+                    Ok(())
+                } else {
+                    Err("Operand must be a label".to_string())
+                }
+            }
+        }
+    }
+}

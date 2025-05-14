@@ -1,7 +1,7 @@
 extern crate proc_macro;
 use proc_macro2::Span;
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::{parse::Parser, parse_macro_input, Attribute, Expr, ExprReturn, ExprStruct, Field, FieldValue, FnArg, ItemFn, ItemStruct, LitStr};
 
 #[proc_macro_attribute]
@@ -63,21 +63,6 @@ pub fn bin_op(args: TokenStream, input: TokenStream) -> TokenStream {
         panic!()
     }
 
-    if let syn::Fields::Named(ref mut fields) = item_struct.fields {
-        fields
-            .named
-            .push(
-            Field::parse_named.parse2(quote! { dest: Operand }).unwrap());
-
-        fields
-            .named
-            .push(Field::parse_named.parse2(quote! { src1: Operand }).unwrap());
-
-        fields
-            .named
-            .push(Field::parse_named.parse2(quote! { src2: Operand }).unwrap());
-    }
-
     let mut attrs = BinOpAttributes::default();
     let bin_op_parser = syn::meta::parser(|meta| attrs.parse(meta));
     parse_macro_input!(args with bin_op_parser);
@@ -133,15 +118,7 @@ pub fn print(args: TokenStream, input: TokenStream) -> TokenStream {
         panic!()
     }
 
-    if let syn::Fields::Named(ref mut fields) = item_struct.fields {
-        fields
-            .named
-            .push(
-                Field::parse_named.parse2(quote! { src: Operand }).unwrap());
-    }
-
     let ty: syn::Type = syn::parse_macro_input!(args);
-
     let helper_attr: Attribute = syn::parse_quote! { #[print_helper(#ty)] };
     item_struct.attrs.insert(0, helper_attr);
     let derive_attr: Attribute = syn::parse_quote! { #[derive(PrintInst)] };
@@ -161,15 +138,19 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
         let mut attrs = InstAttributes::default();
         inst_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
         let inst_name = attrs.inst_name.unwrap().value();
-        let operands = attrs.operands.unwrap();
-        let n_operands: usize = operands.elems.len();
-        let parse_impl = create_parse_impl(item_struct, n_operands);
+        let operand_formats = attrs.operands.unwrap();
+        let n_operands: usize = operand_formats.elems.len();
+
+        let validate_impl = create_validate_impl(&item_struct, &operand_formats);
+        let parse_impl = create_parse_impl(&item_struct, n_operands);
         return quote! {
             impl #struct_name {
                 pub const NAME: &'static str = #inst_name;
-                pub const OPERAND_FORMATS: [OperandFormat;#n_operands] = #operands;
+                pub const OPERAND_FORMATS: [OperandFormat;#n_operands] = #operand_formats;
                 pub const N_OPERANDS: usize = #n_operands;
             }
+
+            #validate_impl
 
             #parse_impl
         }.into();
@@ -178,7 +159,42 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
     panic!("Deriving Inst requires inst helper attribute");
 }
 
-fn create_parse_impl(item_struct: ItemStruct, n_operands: usize) -> syn::ItemImpl {
+fn create_validate_impl(item_struct: &ItemStruct, operand_formats: &syn::ExprArray) -> syn::ItemImpl {
+    let struct_name = &item_struct.ident.clone();
+
+    let mut operands = Vec::new();
+    if let syn::Fields::Named(ref fields) = item_struct.fields {
+        for f in &fields.named {
+            let ty = f.ty.clone();
+            if ty.clone().into_token_stream().to_string() == stringify!(Operand) {
+                let name = f.ident.clone().unwrap();
+                operands.push(name);
+            }
+        }
+    }
+
+    let mut validate_fn: syn::ItemFn = syn::parse_quote! {
+            fn validate(&self) -> Result<(), String> {
+                Ok(())
+            }
+        };
+
+    for (operand, format) in operands.iter().zip(&operand_formats.elems).rev() {
+        let validate_stmt: syn::Stmt = syn::parse_quote! {
+                (#format).validate(&self.#operand)?;
+            };
+
+        validate_fn.block.stmts.insert(0, validate_stmt);
+    }
+
+    syn::parse_quote! {
+        impl Validate for #struct_name {
+            #validate_fn
+        }
+    }
+}
+
+fn create_parse_impl(item_struct: &ItemStruct, n_operands: usize) -> syn::ItemImpl {
     let struct_name = &item_struct.ident.clone();
 
     let mut inst_creation_block: syn::Block = syn::parse_quote!({});
@@ -188,7 +204,6 @@ fn create_parse_impl(item_struct: ItemStruct, n_operands: usize) -> syn::ItemImp
         let operand_set_stmt = syn::parse_quote! { let #operand_name = operands.remove(0); };
         inst_creation_block.stmts.push(operand_set_stmt);
         new_expr.args.push(syn::parse_quote! { #operand_name });
-
     }
 
     let return_stmt: syn::Stmt = syn::parse_quote! { return Ok(Box::new(#new_expr)); };
@@ -313,18 +328,6 @@ pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
                     self.dest.set_value(res, env);
                     Ok(())
                 }
-                
-                fn validate(&self) -> Result<(), String> {
-                    if !matches!(self.dest, Operand::Variable(_)) {
-                        Err("dest must be a variable".to_string())
-                    } else if matches!(self.src1, Operand::Label(_)) {
-                        Err("src1 must be a variable or constant".to_string())
-                    } else if matches!(self.src2, Operand::Label(_)) {
-                        Err("src2 must be a variable or constant".to_string())
-                    }else {
-                        Ok(())
-                    }
-                }
             }
 
             impl std::fmt::Display for #struct_name {
@@ -355,14 +358,6 @@ pub fn derive_print_inst(input: TokenStream) -> TokenStream {
                     match res {
                         Ok(_) => Ok(()),
                         Err(e) => Err(format!("{}", e)),
-                    }
-                }
-                
-                fn validate(&self) -> Result<(), String> {
-                    if matches!(self.src, Operand::Label(_)) {
-                        Err("src must be a variable or constant".to_string())
-                    } else {
-                        Ok(())
                     }
                 }
             }

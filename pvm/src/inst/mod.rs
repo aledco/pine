@@ -3,6 +3,7 @@ mod print;
 mod jump;
 mod label;
 mod un_op;
+mod alloc;
 
 pub(crate) use bin_op::*;
 pub(crate) use un_op::*;
@@ -23,6 +24,12 @@ pub trait Instruction: Debug + Display {
     fn defined_label(&self) -> Option<String> {
         None
     }
-    
+}
+
+pub trait Validate {
+    fn validate(&self) -> Result<(), String>;
+}
+
+impl Validate for dyn Instruction {
     fn validate(&self) -> Result<(), String> { Ok(()) }
 }
