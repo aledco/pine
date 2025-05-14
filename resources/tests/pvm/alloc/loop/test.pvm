@@ -1,0 +1,28 @@
+alloc a 80
+div len 80 8 # TODO should use len instruction for this
+
+move i 0
+label top1
+lt b i len
+jumpz b bottom1
+mul x i i
+mul j i 8
+add p a j
+store p x
+add i i 1
+jump top1
+label bottom1
+
+
+move i 0
+label top2
+lt b i len
+jumpz b bottom2
+mul j i 8
+add p a j
+load x p
+printi x
+println
+add i i 1
+jump top2
+label bottom2

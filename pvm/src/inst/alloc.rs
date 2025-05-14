@@ -9,7 +9,7 @@ use std::fmt::{Debug, Display, Formatter};
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
-// TODO add tests, implement load and store
+// TODO add len instruction to get length of allocation
 
 #[inst(name = "alloc", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct AllocInst {

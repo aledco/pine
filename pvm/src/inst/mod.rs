@@ -4,6 +4,8 @@ mod jump;
 mod label;
 mod un_op;
 mod alloc;
+mod load;
+mod store;
 
 pub(crate) use bin_op::*;
 pub(crate) use un_op::*;
@@ -11,6 +13,8 @@ pub(crate) use print::*;
 pub(crate) use jump::*;
 pub(crate) use label::*;
 pub(crate) use alloc::*;
+pub(crate) use load::*;
+pub(crate) use store::*;
 use crate::env::Environment;
 use std::fmt::{Debug, Display};
 

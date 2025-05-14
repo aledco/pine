@@ -45,6 +45,8 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, String> {
             LabelInst::NAME => LabelInst::parse(line),
             AllocInst::NAME => AllocInst::parse(line),
             DeallocInst::NAME => DeallocInst::parse(line),
+            LoadInst::NAME => LoadInst::parse(line),
+            StoreInst::NAME => StoreInst::parse(line),
             PrintiInst::NAME => PrintiInst::parse(line),
             PrintfInst::NAME => PrintfInst::parse(line),
             PrintcInst::NAME => PrintcInst::parse(line),
