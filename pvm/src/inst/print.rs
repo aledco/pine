@@ -32,15 +32,7 @@ impl Instruction for PrintcInst {
             Err(e) => Err(format!("{}", e)),
         }
     }
-
-    fn used_vars(&self) -> Vec<Operand> {
-        if let Operand::Variable(_) = self.src {
-            return vec![self.src.clone()];
-        }
-
-        vec![]
-    }
-
+    
     fn validate(&self) -> Result<(), String> {
         if matches!(self.src, Operand::Label(_)) {
             Err("src must be a variable or constant".to_string())

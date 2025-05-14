@@ -313,24 +313,7 @@ pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
                     self.dest.set_value(res, env);
                     Ok(())
                 }
-
-                fn defined_var(&self) -> Option<Operand> {
-                    Some(self.dest.clone())
-                }
-
-                fn used_vars(&self) -> Vec<Operand> {
-                    let mut vars = vec![];
-                    if let Operand::Variable(_) = self.src1 {
-                        vars.push(self.src1.clone());
-                    }
-
-                    if let Operand::Variable(_) = self.src2 {
-                        vars.push(self.src2.clone());
-                    }
-
-                    vars
-                }
-
+                
                 fn validate(&self) -> Result<(), String> {
                     if !matches!(self.dest, Operand::Variable(_)) {
                         Err("dest must be a variable".to_string())
@@ -374,15 +357,7 @@ pub fn derive_print_inst(input: TokenStream) -> TokenStream {
                         Err(e) => Err(format!("{}", e)),
                     }
                 }
-
-                fn used_vars(&self) -> Vec<Operand> {
-                    if let Operand::Variable(_) = self.src {
-                        return vec![self.src.clone()];
-                    }
-
-                    vec![]
-                }
-
+                
                 fn validate(&self) -> Result<(), String> {
                     if matches!(self.src, Operand::Label(_)) {
                         Err("src must be a variable or constant".to_string())

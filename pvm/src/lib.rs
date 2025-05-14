@@ -28,19 +28,6 @@ pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: 
             
             context.labels.insert(label, i+1);
         }
-
-        let used_vars = instruction.used_vars();
-        for var in used_vars {
-            let name = var.var_name()?;
-            if !context.variables.contains_key(&name) {
-                return Err(format!("Variable {} was never defined", name));
-            }
-        }
-
-        if let Some(var) = instruction.defined_var() {
-            let name = var.var_name()?;
-            context.variables.insert(name, 0);
-        }
     }
     
     // validation pass

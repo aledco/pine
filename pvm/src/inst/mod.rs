@@ -10,7 +10,6 @@ pub(crate) use print::*;
 pub(crate) use jump::*;
 pub(crate) use label::*;
 use crate::env::Environment;
-use crate::operand::*;
 use std::fmt::{Debug, Display};
 
 pub trait Instruction: Debug + Display {
@@ -23,14 +22,6 @@ pub trait Instruction: Debug + Display {
 
     fn defined_label(&self) -> Option<String> {
         None
-    }
-    
-    fn defined_var(&self) -> Option<Operand> {
-        None
-    }
-
-    fn used_vars(&self) -> Vec<Operand> {
-        Vec::new()
     }
     
     fn validate(&self) -> Result<(), String> { Ok(()) }

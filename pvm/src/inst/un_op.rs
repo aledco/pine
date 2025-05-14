@@ -22,20 +22,7 @@ impl Instruction for MoveInst {
         self.dest.set_value(val, env);
         Ok(())
     }
-
-    fn defined_var(&self) -> Option<Operand> {
-        Some(self.dest.clone())
-    }
-
-    fn used_vars(&self) -> Vec<Operand> {
-        let mut vars = vec![];
-        if let Operand::Variable(_) = self.src {
-            vars.push(self.src.clone());
-        }
-
-        vars
-    }
-
+    
     fn validate(&self) -> Result<(), String> {
         if !matches!(self.dest, Operand::Variable(_)) {
             Err("dest must be a label".to_string())
