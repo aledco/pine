@@ -44,6 +44,7 @@ are used to read and write memory.
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
 - Write comments
 - Refactor proc macros as much as possible
+  - pvm done, need to work on test_util and ast still
 
 ## Tests
 - Add failure tests
