@@ -31,16 +31,13 @@ impl Operand {
         }
     }
     
-    pub fn set_value(&mut self, value: u64, env: &mut Environment) {
-        if let Operand::Variable(n) = self {
-            env.variables.insert(n.clone(), value);
-        }
-    }
-
-    pub fn var_name(&self) -> Result<String, String>{
+    pub fn set_value(&mut self, value: u64, env: &mut Environment) -> Result<(), String> {
         match self {
-            Operand::Variable(n) => Ok(n.clone()),
-            _ => Err("Operand is not a variable".to_string()),
+            Operand::Variable(n) => {
+                env.variables.insert(n.clone(), value);
+                Ok(())
+            }
+            _ => Err("Operand is not a variable".to_string())
         }
     }
 
@@ -58,6 +55,41 @@ impl Display for Operand {
             Operand::Constant(c) => write!(f, "{}", c),
             Operand::Variable(n) => write!(f, "{}", n),
             Operand::Label(l) => write!(f, "{}", l),
+        }
+    }
+}
+
+impl OperandFormat {
+    pub fn validate(&self, operand: &Operand) -> Result<(), String> {
+        match self {
+            OperandFormat::Constant => {
+                if matches!(operand, Operand::Constant(_)) {
+                    Ok(())
+                } else {
+                    Err("Operand must be a constant".to_string())
+                }
+            }
+            OperandFormat::Variable => {
+                if matches!(operand, Operand::Variable(_)) {
+                    Ok(())
+                } else {
+                    Err("Operand must be a variable".to_string())
+                }
+            }
+            OperandFormat::Value => {
+                if matches!(operand, Operand::Constant(_)) || matches!(operand, Operand::Variable(_)) {
+                    Ok(())
+                } else {
+                    Err("Operand must be a constant or a variable".to_string())
+                }
+            }
+            OperandFormat::Label => {
+                if matches!(operand, Operand::Label(_)) {
+                    Ok(())
+                } else {
+                    Err("Operand must be a label".to_string())
+                }
+            }
         }
     }
 }

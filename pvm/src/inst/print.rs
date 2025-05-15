@@ -1,5 +1,5 @@
 use crate::env::Environment;
-use crate::inst::Instruction;
+use crate::inst::*;
 use crate::operand::*;
 use crate::parse::{Line, Literal, Parse, Token};
 use std::fmt::{Debug, Display, Formatter};
@@ -9,11 +9,15 @@ use pvm_proc_macros::*;
 
 #[inst(name = "printi", operands = [OperandFormat::Value])]
 #[print(i64)]
-pub struct PrintiInst {}
+pub struct PrintiInst {
+    pub src: Operand,
+}
 
 #[inst(name = "printf", operands = [OperandFormat::Value])]
 #[print(f64)]
-pub struct PrintfInst {}
+pub struct PrintfInst {
+    pub src: Operand,
+}
 
 #[inst(name = "printc", operands = [OperandFormat::Value])]
 pub struct PrintcInst {
@@ -30,14 +34,6 @@ impl Instruction for PrintcInst {
         match res {
             Ok(_) => Ok(()),
             Err(e) => Err(format!("{}", e)),
-        }
-    }
-    
-    fn validate(&self) -> Result<(), String> {
-        if matches!(self.src, Operand::Label(_)) {
-            Err("src must be a variable or constant".to_string())
-        } else {
-            Ok(())
         }
     }
 }

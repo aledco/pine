@@ -115,4 +115,22 @@ mod tests {
         let c = from_u64!(b; Type);
         assert_eq!(i, c);
     }
+
+    #[test]
+    fn test_usize() {
+        type Type = usize;
+        let i: Type = 1000 * 1000 * 100;
+        let b = to_u64!(i);
+        let c = from_u64!(b; Type);
+        assert_eq!(i, c);
+    }
+
+    #[test]
+    fn test_isize() {
+        type Type = isize;
+        let i: Type = -1000 * 1000 * 100;
+        let b = to_u64!(i);
+        let c = from_u64!(b; Type);
+        assert_eq!(i, c);
+    }
 }

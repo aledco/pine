@@ -1,5 +1,5 @@
 use crate::env::Environment;
-use crate::inst::Instruction;
+use crate::inst::*;
 use crate::operand::*;
 use crate::parse::{Line, Literal, Parse, Token};
 use std::fmt::{Debug, Display, Formatter};
@@ -19,18 +19,8 @@ pub struct MoveInst {
 impl Instruction for MoveInst {
     fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
         let val = self.src.value(env)?;
-        self.dest.set_value(val, env);
+        self.dest.set_value(val, env)?;
         Ok(())
-    }
-    
-    fn validate(&self) -> Result<(), String> {
-        if !matches!(self.dest, Operand::Variable(_)) {
-            Err("dest must be a label".to_string())
-        } else if matches!(self.src, Operand::Label(_)) {
-            Err("src must be a constant or variable".to_string())
-        } else {
-            Ok(())
-        }
     }
 }
 
