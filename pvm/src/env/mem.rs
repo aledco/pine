@@ -83,6 +83,15 @@ impl Memory {
         
         Ok(())
     }
+    
+    /// Gets the length of an allocation in bytes. 
+    /// `addr` must point to a valid allocation.
+    pub fn len(&self, addr: usize) -> Result<usize, String> {
+        match self.in_use.get(&addr) {
+            Some(s) => Ok(*s),
+            None => Err("Memory Error: Invalid address".to_string()),
+        }
+    }
 
     pub fn load(&self, addr: usize) -> Result<u64, String> {
         if addr + WORD_SIZE - 1 >= self.bytes.len() {
@@ -90,7 +99,7 @@ impl Memory {
         } else {
             let bytes: [u8; WORD_SIZE] = match self.bytes[addr..addr + WORD_SIZE].try_into() {
                 Ok(bytes) => bytes,
-                Err(_) => return Err("Memory Error: invalid address".to_string()),
+                Err(_) => return Err("Memory Error: Invalid address".to_string()),
             };
             Ok(u64::from_be_bytes(bytes))
         }

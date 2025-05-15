@@ -18,7 +18,7 @@ pub(crate) use store::*;
 use crate::env::Environment;
 use std::fmt::{Debug, Display};
 
-pub trait Instruction: Debug + Display {
+pub trait Instruction: Validate + Debug + Display {
     fn execute(&mut self, env: &mut Environment) -> Result<(), String>;
 
     fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), String> {
@@ -33,8 +33,4 @@ pub trait Instruction: Debug + Display {
 
 pub trait Validate {
     fn validate(&self) -> Result<(), String>;
-}
-
-impl Validate for dyn Instruction {
-    fn validate(&self) -> Result<(), String> { Ok(()) }
 }

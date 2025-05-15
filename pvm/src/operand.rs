@@ -31,16 +31,13 @@ impl Operand {
         }
     }
     
-    pub fn set_value(&mut self, value: u64, env: &mut Environment) {
-        if let Operand::Variable(n) = self {
-            env.variables.insert(n.clone(), value);
-        }
-    }
-
-    pub fn var_name(&self) -> Result<String, String>{
+    pub fn set_value(&mut self, value: u64, env: &mut Environment) -> Result<(), String> {
         match self {
-            Operand::Variable(n) => Ok(n.clone()),
-            _ => Err("Operand is not a variable".to_string()),
+            Operand::Variable(n) => {
+                env.variables.insert(n.clone(), value);
+                Ok(())
+            }
+            _ => Err("Operand is not a variable".to_string())
         }
     }
 

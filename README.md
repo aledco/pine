@@ -38,6 +38,7 @@ are used to read and write memory.
 - Add function support (push and pop args, call)
 - Add parsing tests
 - Make operands private
+- Can make a variable and label with same name, should this be allowed?
 
 ## Refactors
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages

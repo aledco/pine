@@ -1,5 +1,6 @@
 alloc a 80
-div len 80 8 # TODO should use len instruction for this
+len len a
+div len len 8
 
 move i 0
 label top1

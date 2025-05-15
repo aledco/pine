@@ -1,17 +1,19 @@
+mod inst;
+mod common;
+
 extern crate proc_macro;
 use proc_macro2::Span;
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse::Parser, parse_macro_input, Attribute, Expr, ExprReturn, ExprStruct, Field, FieldValue, FnArg, ItemFn, ItemStruct, LitStr};
 
 #[proc_macro_attribute]
 pub fn inst(args: TokenStream, input: TokenStream) -> TokenStream {
-    let mut item_struct = parse_macro_input!(input as ItemStruct);
+    let mut item_struct = syn::parse_macro_input!(input as syn::ItemStruct);
 
     // parse args
     let mut attrs = InstAttributes::default();
     let inst_parser = syn::meta::parser(|meta| attrs.parse(meta));
-    parse_macro_input!(args with inst_parser);
+    syn::parse_macro_input!(args with inst_parser);
 
     let inst_name = attrs.inst_name.unwrap().value();
     if inst_name.is_empty() {
@@ -20,11 +22,11 @@ pub fn inst(args: TokenStream, input: TokenStream) -> TokenStream {
 
     let operands: syn::ExprArray = attrs.operands.unwrap();
 
-    let helper_attr: Attribute = syn::parse_quote! { #[inst_helper(name = #inst_name, operands = #operands)] };
+    let helper_attr: syn::Attribute = syn::parse_quote! { #[inst_helper(name = #inst_name, operands = #operands)] };
     item_struct.attrs.insert(0, helper_attr);
-    let derive_attr: Attribute = syn::parse_quote! { #[derive(Inst, Debug)] };
+    let derive_attr: syn::Attribute = syn::parse_quote! { #[derive(Inst, Debug)] };
     item_struct.attrs.insert(0, derive_attr);
-    let new_derive_attr: Attribute = syn::parse_quote! { #[derive(NewInst)] };
+    let new_derive_attr: syn::Attribute = syn::parse_quote! { #[derive(NewInst)] };
     item_struct.attrs.push(new_derive_attr);
     quote! {
         #item_struct
@@ -34,7 +36,7 @@ pub fn inst(args: TokenStream, input: TokenStream) -> TokenStream {
 // TODO move below to seperate module?
 #[derive(Default)]
 struct InstAttributes {
-    pub inst_name: Option<LitStr>,
+    pub inst_name: Option<syn::LitStr>,
     pub operands: Option<syn::ExprArray>
 }
 
@@ -54,10 +56,10 @@ impl InstAttributes {
 
 #[proc_macro_attribute]
 pub fn bin_op(args: TokenStream, input: TokenStream) -> TokenStream {
-    let mut item_struct = parse_macro_input!(input as ItemStruct);
+    let mut item_struct = syn::parse_macro_input!(input as syn::ItemStruct);
 
     let mut attrs = InstAttributes::default();
-    if let Some(inst_attr) = get_attr(&item_struct.attrs, "inst_helper") {
+    if let Some(inst_attr) = common::get_attr(&item_struct.attrs, "inst_helper") {
         inst_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
     } else {
         panic!()
@@ -65,15 +67,15 @@ pub fn bin_op(args: TokenStream, input: TokenStream) -> TokenStream {
 
     let mut attrs = BinOpAttributes::default();
     let bin_op_parser = syn::meta::parser(|meta| attrs.parse(meta));
-    parse_macro_input!(args with bin_op_parser);
+    syn::parse_macro_input!(args with bin_op_parser);
 
     let op = attrs.operator.unwrap();
     let ty1 = attrs.val1_ty.unwrap_or_else(|| syn::parse_quote!(u64));
     let ty2 = attrs.val2_ty.unwrap_or_else(|| syn::parse_quote!(u64));
 
-    let helper_attr: Attribute = syn::parse_quote! { #[bin_op_helper(op = #op, ty1 = #ty1, ty2 = #ty2)] };
+    let helper_attr: syn::Attribute = syn::parse_quote! { #[bin_op_helper(op = #op, ty1 = #ty1, ty2 = #ty2)] };
     item_struct.attrs.insert(0, helper_attr);
-    let derive_attr: Attribute = syn::parse_quote! { #[derive(BinOpInst)] };
+    let derive_attr: syn::Attribute = syn::parse_quote! { #[derive(BinOpInst)] };
     item_struct.attrs.insert(0, derive_attr);
 
     quote! {
@@ -109,19 +111,19 @@ impl BinOpAttributes {
 
 #[proc_macro_attribute]
 pub fn print(args: TokenStream, input: TokenStream) -> TokenStream {
-    let mut item_struct = parse_macro_input!(input as ItemStruct);
+    let mut item_struct = syn::parse_macro_input!(input as syn::ItemStruct);
 
     let mut attrs = InstAttributes::default();
-    if let Some(inst_attr) = get_attr(&item_struct.attrs, "inst_helper") {
+    if let Some(inst_attr) = common::get_attr(&item_struct.attrs, "inst_helper") {
         inst_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
     } else {
         panic!()
     }
 
     let ty: syn::Type = syn::parse_macro_input!(args);
-    let helper_attr: Attribute = syn::parse_quote! { #[print_helper(#ty)] };
+    let helper_attr: syn::Attribute = syn::parse_quote! { #[print_helper(#ty)] };
     item_struct.attrs.insert(0, helper_attr);
-    let derive_attr: Attribute = syn::parse_quote! { #[derive(PrintInst)] };
+    let derive_attr: syn::Attribute = syn::parse_quote! { #[derive(PrintInst)] };
     item_struct.attrs.insert(0, derive_attr);
 
     quote! {
@@ -132,9 +134,9 @@ pub fn print(args: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(Inst, attributes(inst_helper))]
 pub fn derive_inst(input: TokenStream) -> TokenStream {
-    let item_struct = parse_macro_input!(input as ItemStruct);
+    let item_struct = syn::parse_macro_input!(input as syn::ItemStruct);
     let struct_name = &item_struct.ident.clone();
-    if let Some(inst_attr) = get_attr(&item_struct.attrs, "inst_helper") {
+    if let Some(inst_attr) = common::get_attr(&item_struct.attrs, "inst_helper") {
         let mut attrs = InstAttributes::default();
         inst_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
         let inst_name = attrs.inst_name.unwrap().value();
@@ -159,7 +161,7 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
     panic!("Deriving Inst requires inst helper attribute");
 }
 
-fn create_validate_impl(item_struct: &ItemStruct, operand_formats: &syn::ExprArray) -> syn::ItemImpl {
+fn create_validate_impl(item_struct: &syn::ItemStruct, operand_formats: &syn::ExprArray) -> syn::ItemImpl {
     let struct_name = &item_struct.ident.clone();
 
     let mut operands = Vec::new();
@@ -194,7 +196,7 @@ fn create_validate_impl(item_struct: &ItemStruct, operand_formats: &syn::ExprArr
     }
 }
 
-fn create_parse_impl(item_struct: &ItemStruct, n_operands: usize) -> syn::ItemImpl {
+fn create_parse_impl(item_struct: &syn::ItemStruct, n_operands: usize) -> syn::ItemImpl {
     let struct_name = &item_struct.ident.clone();
 
     let mut inst_creation_block: syn::Block = syn::parse_quote!({});
@@ -266,35 +268,35 @@ fn create_parse_impl(item_struct: &ItemStruct, n_operands: usize) -> syn::ItemIm
 
 #[proc_macro_derive(NewInst)]
 pub fn derive_new_inst(input: TokenStream) -> TokenStream {
-    let item_struct = parse_macro_input!(input as ItemStruct);
+    let item_struct = syn::parse_macro_input!(input as syn::ItemStruct);
     let struct_name = &item_struct.ident.clone();
 
-    let mut new_fn: ItemFn = syn::parse_quote! {
+    let mut new_fn: syn::ItemFn = syn::parse_quote! {
         pub fn new() -> Self {
 
         }
     };
 
-    let mut self_expr: ExprStruct = syn::parse_quote! { Self {} };
+    let mut self_expr: syn::ExprStruct = syn::parse_quote! { Self {} };
     if let syn::Fields::Named(ref fields) = item_struct.fields {
         for f in &fields.named {
             let name = f.ident.clone();
             let ty = f.ty.clone();
 
             // add the function argument
-            let fn_arg: FnArg = syn::parse_quote! { #name: #ty };
+            let fn_arg: syn::FnArg = syn::parse_quote! { #name: #ty };
             new_fn.sig.inputs.push(fn_arg);
 
             // add the initializer to the struct
-            let value: FieldValue = syn::parse_quote! { #name };
+            let value: syn::FieldValue = syn::parse_quote! { #name };
             self_expr.fields.push(value);
         }
     }
 
-    let return_expr = Expr::Return(ExprReturn {
+    let return_expr = syn::Expr::Return(syn::ExprReturn {
         attrs: vec![],
         return_token: Default::default(),
-        expr: Some(Box::new(Expr::Struct(self_expr))),
+        expr: Some(Box::new(syn::Expr::Struct(self_expr))),
     });
     let return_stmt = syn::Stmt::Expr(return_expr, None);
     new_fn.block.stmts.push(return_stmt);
@@ -309,10 +311,10 @@ pub fn derive_new_inst(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(BinOpInst, attributes(bin_op_helper))]
 pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
-    let item_struct = parse_macro_input!(input as ItemStruct);
+    let item_struct = syn::parse_macro_input!(input as syn::ItemStruct);
     let struct_name = &item_struct.ident.clone();
     
-    if let Some(bin_op_attr) = get_attr(&item_struct.attrs, "bin_op_helper") {
+    if let Some(bin_op_attr) = common::get_attr(&item_struct.attrs, "bin_op_helper") {
         let mut attrs = BinOpAttributes::default();
         bin_op_attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
         let operator = attrs.operator.unwrap();
@@ -325,7 +327,7 @@ pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
                     let val1 = crate::cast::from_u64!(self.src1.value(env)?; #val1_ty);
                     let val2 = crate::cast::from_u64!(self.src2.value(env)?; #val2_ty);
                     let res = crate::cast::to_u64!(#operator(val1, val2));
-                    self.dest.set_value(res, env);
+                    self.dest.set_value(res, env)?;
                     Ok(())
                 }
             }
@@ -343,10 +345,10 @@ pub fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(PrintInst, attributes(print_helper))]
 pub fn derive_print_inst(input: TokenStream) -> TokenStream {
-    let item_struct = parse_macro_input!(input as ItemStruct);
+    let item_struct = syn::parse_macro_input!(input as syn::ItemStruct);
     let struct_name = &item_struct.ident.clone();
 
-    if let Some(print_attr) = get_attr(&item_struct.attrs, "print_helper") {
+    if let Some(print_attr) = common::get_attr(&item_struct.attrs, "print_helper") {
 
         let ty: syn::Type = print_attr.parse_args().unwrap();
 
@@ -371,14 +373,4 @@ pub fn derive_print_inst(input: TokenStream) -> TokenStream {
     }
 
     unimplemented!()
-}
-
-fn get_attr(attrs: &Vec<Attribute>, attr_name: &str) -> Option<Attribute> {
-    for attr in attrs {
-        if attr.path().is_ident(attr_name) {
-            return Some(attr.clone());
-        }
-    }
-
-    None
 }
