@@ -1,6 +1,7 @@
+use std::fmt::{Debug, Display, Formatter};
 use crate::error::Error;
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct ValidateError {
     pub msg: String,
 }
@@ -34,7 +35,19 @@ impl ValidateError {
     }
 }
 
-#[derive(Debug)]
+impl Display for ValidateError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Validation Error: {}", self.msg)
+    }
+}
+
+impl Debug for ValidateError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Validation Error: {}", self.msg)
+    }
+}
+
+#[derive(Clone)]
 pub struct ExecuteError {
     pub msg: String,
 }
@@ -65,5 +78,17 @@ impl ExecuteError {
 
     pub(crate) fn operand_is_not_label() -> Error {
         Self::error("operand is not a label")
+    }
+}
+
+impl Display for ExecuteError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Runtime Error: {}", self.msg)
+    }
+}
+
+impl Debug for ExecuteError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Runtime Error: {}", self.msg)
     }
 }

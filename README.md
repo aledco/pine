@@ -42,6 +42,7 @@ are used to read and write memory.
 
 ## Refactors
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
+  - pvm done, need to work on ast still
 - Write comments
 - Refactor proc macros as much as possible
   - pvm done, need to work on test_util and ast still

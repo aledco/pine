@@ -1,6 +1,7 @@
+use std::fmt::{Debug, Display, Formatter};
 use crate::error::Error;
 
-#[derive(Debug)]
+#[derive(Clone)]
 pub struct MemoryError {
     pub msg: String,
 }
@@ -27,5 +28,17 @@ impl MemoryError {
 
     pub(crate) fn invalid_address() -> Error {
         Self::error("invalid address")
+    }
+}
+
+impl Display for MemoryError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Memory Error: {}", self.msg)
+    }
+}
+
+impl Debug for MemoryError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Memory Error: {}", self.msg)
     }
 }

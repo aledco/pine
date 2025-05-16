@@ -1,6 +1,7 @@
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use crate::error::Error;
 
+#[derive(Clone)]
 pub struct ParseError {
     pub msg: String,
     pub line: usize,
@@ -33,6 +34,12 @@ impl ParseError {
     
     pub(crate) fn invalid_operand(line: usize) -> Error {
         Self::error("invalid operand", line)
+    }
+}
+
+impl Display for ParseError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Parse Error at line {}: {}", self.line, self.msg)
     }
 }
 
