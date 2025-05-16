@@ -51,7 +51,7 @@ are used to read and write memory.
 - Add failure tests
 
 ## README
-- Write better descriptions, move to separate docs file
+- Write better descriptions, move to separate docs file using typst
 
 # Notes
 
