@@ -4,6 +4,7 @@ mod inst;
 mod operand;
 mod parse;
 mod cast;
+mod error;
 
 pub use crate::conf::ExecuteConfig;
 pub use crate::inst::*;

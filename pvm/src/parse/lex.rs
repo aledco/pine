@@ -1,7 +1,8 @@
-use std::ffi::c_char;
+use crate::error::Error;
+use crate::parse::error::ParseError;
 use crate::parse::token::*;
 
-pub(crate) fn lex(input: &str) -> Result<Vec<Line>, String> {
+pub(crate) fn lex(input: &str) -> Result<Vec<Line>, Error> {
     input
         .lines()
         .enumerate()
@@ -11,17 +12,15 @@ pub(crate) fn lex(input: &str) -> Result<Vec<Line>, String> {
         .collect()
 }
 
-fn lex_line(i: usize, line: &str) -> Option<Result<Line, String>> {
+fn lex_line(i: usize, line: &str) -> Option<Result<Line, Error>> {
     let parts = line.split_whitespace().collect::<Vec<_>>();
-    if parts.is_empty() {
-        return None;
-    }
-
-    let inst = parts.first().unwrap();
+    let inst = match parts.first() {
+        Some(part) => *part,
+        None => return None,
+    };
+    
     if inst.starts_with('#') {
         return None;
-    } else if inst.is_empty() {
-        return Some(Err(format!("Error at line {}: empty instruction", i+1)));
     }
     
     let inst_token = Token::Identifier(inst.to_string());
@@ -34,7 +33,7 @@ fn lex_line(i: usize, line: &str) -> Option<Result<Line, String>> {
         .collect();
     
     if operand_tokens.iter().any(|r| r.is_err()) {
-        return Some(Err(format!("Error at line {}: invalid operand", i+1)));
+        return Some(Err(ParseError::invalid_operand(i+1)));
     }
     
     let operand_tokens = operand_tokens.into_iter().map(|r| r.unwrap()).collect();
