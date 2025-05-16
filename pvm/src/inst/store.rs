@@ -11,8 +11,8 @@ use pvm_proc_macros::*;
 
 #[inst(name = "store", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct StoreInst {
-    pub dest: Operand,
-    pub src: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for StoreInst {
@@ -32,8 +32,8 @@ impl Display for StoreInst {
 
 #[inst(name = "storeb", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct StoreByteInst {
-    pub dest: Operand,
-    pub src: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for StoreByteInst {

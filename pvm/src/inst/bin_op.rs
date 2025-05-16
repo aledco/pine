@@ -11,97 +11,97 @@ use pvm_proc_macros::*;
 #[inst(name = "add", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_add, ty1 = i64, ty2 = i64)]
 pub struct AddInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "addf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::add, ty1 = f64, ty2 = f64)]
 pub struct AddfInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "sub", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_sub, ty1 = i64, ty2 = i64)]
 pub struct SubInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "subf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::sub, ty1 = f64, ty2 = f64)]
 pub struct SubfInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "mul", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_mul, ty1 = i64, ty2 = i64)]
 pub struct MulInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "mulf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::mul, ty1 = f64, ty2 = f64)]
 pub struct MulfInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "div", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_div, ty1 = i64, ty2 = i64)]
 pub struct DivInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "divf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::div, ty1 = f64, ty2 = f64)]
 pub struct DivfInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "mod", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_rem, ty1 = i64, ty2 = i64)]
 pub struct ModInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "modf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::rem, ty1 = f64, ty2 = f64)]
 pub struct ModfInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "pow", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_pow, ty1 = i64, ty2 = u32)]
 pub struct PowInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "powf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::powf, ty1 = f64, ty2 = f64)]
 pub struct PowfInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 fn eq(v1: u64, v2: u64) -> u64 {
@@ -126,17 +126,17 @@ fn gte(v1: u64, v2: u64) -> u64 {
 #[inst(name = "eq", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = eq, ty1 = u64, ty2 = u64)]
 pub struct EqInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "neq", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = neq, ty1 = u64, ty2 = u64)]
 pub struct NeqInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "lt", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
@@ -150,25 +150,25 @@ pub struct LtInst {
 #[inst(name = "lte", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = lte, ty1 = u64, ty2 = u64)]
 pub struct LteInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "gt", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = gt, ty1 = u64, ty2 = u64)]
 pub struct GtInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[inst(name = "gte", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = gte, ty1 = u64, ty2 = u64)]
 pub struct GteInst {
-    pub dest: Operand,
-    pub src1: Operand,
-    pub src2: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
 }
 
 #[cfg(test)]

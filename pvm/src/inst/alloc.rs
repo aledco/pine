@@ -11,8 +11,8 @@ use pvm_proc_macros::*;
 
 #[inst(name = "alloc", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct AllocInst {
-    pub dest: Operand,
-    pub src: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for AllocInst {
@@ -32,7 +32,7 @@ impl Display for AllocInst { // TODO can auto derive this in inst too
 
 #[inst(name = "dealloc", operands = [OperandFormat::Variable])]
 pub struct DeallocInst {
-    pub src: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for DeallocInst {
@@ -51,8 +51,8 @@ impl Display for DeallocInst {
 
 #[inst(name = "len", operands = [OperandFormat::Variable, OperandFormat::Variable])]
 pub struct LenInst {
-    pub dest: Operand,
-    pub src: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for LenInst {

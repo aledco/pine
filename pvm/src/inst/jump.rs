@@ -10,7 +10,7 @@ use pvm_proc_macros::*;
 
 #[inst(name = "jump", operands = [OperandFormat::Label])]
 pub struct JumpInst {
-    pub lab: Operand,
+    pub(crate) lab: Operand,
 }
 
 impl Instruction for JumpInst {
@@ -39,8 +39,8 @@ impl Display for JumpInst {
 
 #[inst(name = "jumpz", operands = [OperandFormat::Value, OperandFormat::Label])]
 pub struct JumpZeroInst {
-    pub src: Operand,
-    pub lab: Operand,
+    pub(crate) src: Operand,
+    pub(crate) lab: Operand,
 }
 
 impl Instruction for JumpZeroInst {
@@ -76,8 +76,8 @@ impl Display for JumpZeroInst {
 
 #[inst(name = "jumpnz", operands = [OperandFormat::Value, OperandFormat::Label])]
 pub struct JumpNotZeroInst {
-    pub src: Operand,
-    pub lab: Operand,
+    pub(crate) src: Operand,
+    pub(crate) lab: Operand,
 }
 
 impl Instruction for JumpNotZeroInst {

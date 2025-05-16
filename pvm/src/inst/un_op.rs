@@ -12,8 +12,8 @@ use pvm_proc_macros::*;
 
 #[inst(name = "move", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct MoveInst {
-    pub dest: Operand,
-    pub src: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for MoveInst {

@@ -10,18 +10,18 @@ use pvm_proc_macros::*;
 #[inst(name = "printi", operands = [OperandFormat::Value])]
 #[print(i64)]
 pub struct PrintiInst {
-    pub src: Operand,
+    pub(crate) src: Operand,
 }
 
 #[inst(name = "printf", operands = [OperandFormat::Value])]
 #[print(f64)]
 pub struct PrintfInst {
-    pub src: Operand,
+    pub(crate) src: Operand,
 }
 
 #[inst(name = "printc", operands = [OperandFormat::Value])]
 pub struct PrintcInst {
-    pub src: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for PrintcInst {

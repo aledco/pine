@@ -11,7 +11,7 @@ use crate::inst::error::ValidateError;
 
 #[inst(name = "label", operands = [OperandFormat::Label])]
 pub struct LabelInst {
-    pub lab: Operand,
+    pub(crate) lab: Operand,
 }
 
 impl Instruction for LabelInst {

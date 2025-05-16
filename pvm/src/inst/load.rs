@@ -11,8 +11,8 @@ use pvm_proc_macros::*;
 
 #[inst(name = "load", operands = [OperandFormat::Variable, OperandFormat::Variable])]
 pub struct LoadInst {
-    pub dest: Operand,
-    pub src: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for LoadInst {
@@ -32,8 +32,8 @@ impl Display for LoadInst {
 
 #[inst(name = "loadb", operands = [OperandFormat::Variable, OperandFormat::Variable])]
 pub struct LoadByteInst {
-    pub dest: Operand,
-    pub src: Operand,
+    pub(crate) dest: Operand,
+    pub(crate) src: Operand,
 }
 
 impl Instruction for LoadByteInst {
