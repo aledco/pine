@@ -7,6 +7,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
+use crate::inst::error::ValidateError;
 
 #[inst(name = "label", operands = [OperandFormat::Label])]
 pub struct LabelInst {
@@ -14,15 +15,18 @@ pub struct LabelInst {
 }
 
 impl Instruction for LabelInst {
-    fn execute(&mut self, _env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, _env: &mut Environment) -> Result<(), Error> {
         Ok(())
     }
-
-    fn defined_label(&self) -> Option<String> {
-        match self.lab.label() {
-            Ok(label) => Some(label),
-            Err(_) => None
+    
+    fn initialize(&self, env: &mut Environment, i: usize) -> Result<(), Error> {
+        let label = self.lab.label()?;
+        if env.labels.contains_key(&label) {
+            return Err(ValidateError::label_already_defined(&label));
         }
+
+        env.labels.insert(label, i+1);
+        Ok(())
     }
 }
 

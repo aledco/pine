@@ -13,13 +13,10 @@ pub(crate) fn derive_print_inst(input: TokenStream) -> TokenStream {
 
         return quote! {
             impl Instruction for #struct_name {
-                fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+                fn execute(&mut self, env: &mut Environment) -> Result<(), crate::error::Error> {
                     let value: #ty = crate::from_u64!(self.src.value(env)?; #ty);
-                    let res = write!(env.stdout.borrow_mut(), "{}", value);
-                    match res {
-                        Ok(_) => Ok(()),
-                        Err(e) => Err(format!("{}", e)),
-                    }
+                    write!(env.stdout.borrow_mut(), "{}", value).unwrap();
+                    Ok(())
                 }
             }
 

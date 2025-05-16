@@ -17,7 +17,7 @@ pub(crate) fn derive_bin_op_inst(input: TokenStream) -> TokenStream {
 
         return quote! {
             impl Instruction for #struct_name {
-                fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+                fn execute(&mut self, env: &mut Environment) -> Result<(), crate::error::Error> {
                     let val1 = crate::cast::from_u64!(self.src1.value(env)?; #val1_ty);
                     let val2 = crate::cast::from_u64!(self.src2.value(env)?; #val2_ty);
                     let res = crate::cast::to_u64!(#operator(val1, val2));

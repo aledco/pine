@@ -9,33 +9,28 @@ mod error;
 pub use crate::conf::ExecuteConfig;
 pub use crate::inst::*;
 pub use crate::parse::*;
+pub use crate::error::*;
 
 use crate::env::Environment;
 
-pub fn execute(instructions: Vec<Box<dyn Instruction>>)  -> Result<(), String> {
+pub fn execute(instructions: Vec<Box<dyn Instruction>>)  -> Result<(), Error> {
     let config = ExecuteConfig::default();
     execute_with_config(instructions, config)
 }
 
-pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: ExecuteConfig) -> Result<(), String> {
+pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: ExecuteConfig) -> Result<(), Error> {
     let mut context = Environment::new(config.memory_size, config.stdout);
 
-    // initial pass
-    for (i, instruction) in instructions.iter().enumerate() {
-        if let Some(label) = instruction.defined_label() {
-            if context.labels.contains_key(&label) {
-                return Err(format!("Label {} was already defined", label));
-            }
-            
-            context.labels.insert(label, i+1);
-        }
-    }
-    
     // validation pass
     for instruction in &instructions {
         instruction.validate()?;
     }
-
+    
+    // initialization pass
+    for (i, instruction) in instructions.iter().enumerate() {
+        instruction.initialize(&mut context, i)?;
+    }
+    
     // execute loop
     loop {
         if context.inst_ptr >= instructions.len() {

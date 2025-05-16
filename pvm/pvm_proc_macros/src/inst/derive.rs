@@ -98,7 +98,7 @@ fn create_validate_impl(
     }
 
     let mut validate_fn: syn::ItemFn = syn::parse_quote! {
-        fn validate(&self) -> Result<(), String> {
+        fn validate(&self) -> Result<(), crate::error::Error> {
             Ok(())
         }
     };

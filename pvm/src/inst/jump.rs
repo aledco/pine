@@ -14,11 +14,11 @@ pub struct JumpInst {
 }
 
 impl Instruction for JumpInst {
-    fn execute(&mut self, _env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, _env: &mut Environment) -> Result<(), Error> {
         Ok(())
     }
 
-    fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), String> {
+    fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), Error> {
         let label = self.lab.label()?;
         let addr = env.labels.get(&label);
         match addr {
@@ -26,7 +26,7 @@ impl Instruction for JumpInst {
                 env.inst_ptr = *addr;
                 Ok(())
             },
-            None => Err(format!("Label {} does not exist", label))?,
+            None => Err(ExecuteError::label_does_not_exist(&label)),
         }
     }
 }
@@ -44,11 +44,11 @@ pub struct JumpZeroInst {
 }
 
 impl Instruction for JumpZeroInst {
-    fn execute(&mut self, _env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, _env: &mut Environment) -> Result<(), Error> {
         Ok(())
     }
 
-    fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), String> {
+    fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), Error> {
         let value = self.src.value(env)?;
         if value == 0 {
             let label = self.lab.label()?;
@@ -59,7 +59,7 @@ impl Instruction for JumpZeroInst {
                     env.inst_ptr = *addr;
                     Ok(())
                 },
-                None => Err(format!("Label {} does not exist", label))?,
+                None => Err(ExecuteError::label_does_not_exist(&label)),
             }
         } else {
             env.inst_ptr += 1;
@@ -81,11 +81,11 @@ pub struct JumpNotZeroInst {
 }
 
 impl Instruction for JumpNotZeroInst {
-    fn execute(&mut self, _env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, _env: &mut Environment) -> Result<(), Error> {
         Ok(())
     }
 
-    fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), String> {
+    fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), Error> {
         let value = self.src.value(env)?;
         if value != 0 {
             let label = self.lab.label()?;
@@ -96,7 +96,7 @@ impl Instruction for JumpNotZeroInst {
                     env.inst_ptr = *addr;
                     Ok(())
                 },
-                None => Err(format!("Label {} does not exist", label))?,
+                None => Err(ExecuteError::label_does_not_exist(&label)),
             }
         } else {
             env.inst_ptr += 1;

@@ -17,7 +17,7 @@ pub struct MoveInst {
 }
 
 impl Instruction for MoveInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let val = self.src.value(env)?;
         self.dest.set_value(val, env)?;
         Ok(())

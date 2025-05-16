@@ -16,7 +16,7 @@ pub struct AllocInst {
 }
 
 impl Instruction for AllocInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let size = from_u64!(self.src.value(env)?; usize);
         let addr = to_u64!(env.memory.allocate(size)?);
         self.dest.set_value(addr, env)?;
@@ -36,7 +36,7 @@ pub struct DeallocInst {
 }
 
 impl Instruction for DeallocInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let addr = from_u64!(self.src.value(env)?; usize);
         env.memory.deallocate(addr)?;
         Ok(())
@@ -56,7 +56,7 @@ pub struct LenInst {
 }
 
 impl Instruction for LenInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let addr = from_u64!(self.src.value(env)?; usize);
         let len = to_u64!(env.memory.len(addr)?);
         self.dest.set_value(len, env)?;

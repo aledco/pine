@@ -16,7 +16,7 @@ pub struct StoreInst {
 }
 
 impl Instruction for StoreInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let value = self.src.value(env)?;
         let addr = from_u64!(self.dest.value(env)?; usize);
         env.memory.store(addr, value)?;
@@ -37,7 +37,7 @@ pub struct StoreByteInst {
 }
 
 impl Instruction for StoreByteInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let value = from_u64!(self.src.value(env)?; u8);
         let addr = from_u64!(self.dest.value(env)?; usize);
         env.memory.store_byte(addr, value)?;

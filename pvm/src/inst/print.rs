@@ -25,16 +25,11 @@ pub struct PrintcInst {
 }
 
 impl Instruction for PrintcInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let value = crate::cast::from_u64!(self.src.value(env)?; u8);
-        let res = {
-            let c = char::try_from(value).unwrap_or('?');
-            write!(env.stdout.borrow_mut(), "{}", c)
-        };
-        match res {
-            Ok(_) => Ok(()),
-            Err(e) => Err(format!("{}", e)),
-        }
+        let c = char::try_from(value).unwrap_or('?');
+        write!(env.stdout.borrow_mut(), "{}", c).unwrap();
+        Ok(())
     }
 }
 
@@ -48,12 +43,9 @@ impl Display for PrintcInst {
 pub struct PrintlnInst {}
 
 impl Instruction for PrintlnInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
-        let res = { writeln!(env.stdout.borrow_mut()) };
-        match res {
-            Ok(_) => Ok(()),
-            Err(e) => Err(format!("{}", e)),
-        }
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
+        writeln!(env.stdout.borrow_mut()).unwrap();
+        Ok(())
     }
 }
 
