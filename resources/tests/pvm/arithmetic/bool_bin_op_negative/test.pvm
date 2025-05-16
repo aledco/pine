@@ -1,0 +1,4 @@
+sub x 0 5
+lt y x 5 # y = -5 < 5
+printi y # 1
+println
