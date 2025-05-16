@@ -1,4 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
+use crate::env::MemoryError;
+use crate::Error;
 
 const WORD_SIZE: usize = size_of::<u64>();
 
@@ -17,9 +19,9 @@ impl Memory {
         }
     }
 
-    pub fn allocate(&mut self, size: usize) -> Result<usize, String> {
+    pub fn allocate(&mut self, size: usize) -> Result<usize, Error> {
         if size == 0 {
-            return Err("Memory Error: Cannot allocate 0 bytes".to_string());
+            return Err(MemoryError::cannot_allocate_zero_bytes());
         }
 
         let mut addr = None::<usize>;
@@ -42,13 +44,13 @@ impl Memory {
                 self.in_use.insert(a, size);
                 Ok(a)
             }
-            None => Err("Memory Error: Out of memory.".to_string()),
+            None => Err(MemoryError::out_of_memory()),
         }
     }
 
-    pub fn deallocate(&mut self, addr: usize) -> Result<(), String> {
+    pub fn deallocate(&mut self, addr: usize) -> Result<(), Error> {
         if addr >= self.bytes.len() {
-            return Err("Memory Error: Address out of bounds".to_string());
+            return Err(MemoryError::address_out_of_bounds());
         }
 
         let size = match self.in_use.remove(&addr) {
@@ -86,28 +88,28 @@ impl Memory {
     
     /// Gets the length of an allocation in bytes. 
     /// `addr` must point to a valid allocation.
-    pub fn len(&self, addr: usize) -> Result<usize, String> {
+    pub fn len(&self, addr: usize) -> Result<usize, Error> {
         match self.in_use.get(&addr) {
             Some(s) => Ok(*s),
-            None => Err("Memory Error: Invalid address".to_string()),
+            None => Err(MemoryError::invalid_address()),
         }
     }
 
-    pub fn load(&self, addr: usize) -> Result<u64, String> {
+    pub fn load(&self, addr: usize) -> Result<u64, Error> {
         if addr + WORD_SIZE - 1 >= self.bytes.len() {
-            Err("Memory Error: Address out of bounds".to_string())
+            Err(MemoryError::address_out_of_bounds())
         } else {
             let bytes: [u8; WORD_SIZE] = match self.bytes[addr..addr + WORD_SIZE].try_into() {
                 Ok(bytes) => bytes,
-                Err(_) => return Err("Memory Error: Invalid address".to_string()),
+                Err(_) => return Err(MemoryError::invalid_address()),
             };
             Ok(u64::from_be_bytes(bytes))
         }
     }
 
-    pub fn store(&mut self, addr: usize, word: u64) -> Result<(), String> {
+    pub fn store(&mut self, addr: usize, word: u64) -> Result<(), Error> {
         if addr + WORD_SIZE - 1 >= self.bytes.len() {
-            Err("Address out of bounds".to_string())
+            Err(MemoryError::address_out_of_bounds())
         } else {
             let bytes: [u8; WORD_SIZE] = word.to_be_bytes();
             for i in 0..WORD_SIZE {
@@ -118,17 +120,17 @@ impl Memory {
         }
     }
 
-    pub fn load_byte(&self, addr: usize) -> Result<u8, String> {
+    pub fn load_byte(&self, addr: usize) -> Result<u8, Error> {
         if addr >= self.bytes.len() {
-            Err("Address out of bounds".to_string())
+            Err(MemoryError::address_out_of_bounds())
         } else {
             Ok(self.bytes[addr])
         }
     }
 
-    pub fn store_byte(&mut self, addr: usize, byte: u8) -> Result<(), String> {
+    pub fn store_byte(&mut self, addr: usize, byte: u8) -> Result<(), Error> {
         if addr >= self.bytes.len() {
-            Err("Address out of bounds".to_string())
+            Err(MemoryError::address_out_of_bounds())
         } else {
             self.bytes[addr] = byte;
             Ok(())

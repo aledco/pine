@@ -98,7 +98,7 @@ fn create_validate_impl(
     }
 
     let mut validate_fn: syn::ItemFn = syn::parse_quote! {
-        fn validate(&self) -> Result<(), String> {
+        fn validate(&self) -> Result<(), crate::error::Error> {
             Ok(())
         }
     };
@@ -137,18 +137,17 @@ fn create_parse_impl(item_struct: &syn::ItemStruct, n_operands: usize) -> syn::I
 
     syn::parse_quote! {
         impl Parse for #struct_name {
-            fn parse(line: &Line) -> Result<Box<dyn Instruction>, String> {
+            fn parse(line: &Line) -> Result<Box<dyn Instruction>, crate::error::Error> {
                 if line.inst_token != Token::Identifier(String::from(Self::NAME)) {
-                    return Err(format!("Error at line {}: Cannot parse instruction", line.line));
+                    return Err(crate::parse::ParseError::invalid_token(line.line));
                 }
 
                 if line.operand_tokens.len() != Self::N_OPERANDS {
-                    return Err(format!(
-                        "Error at line {}: Invalid number of operands for {}. Expected {} but got {}",
-                        line.line,
+                    return Err(crate::parse::ParseError::invalid_number_of_operands(
                         Self::NAME,
                         Self::N_OPERANDS,
-                        line.operand_tokens.len()
+                        line.operand_tokens.len(),
+                        line.line,
                     ));
                 }
 
@@ -159,7 +158,7 @@ fn create_parse_impl(item_struct: &syn::ItemStruct, n_operands: usize) -> syn::I
                             match operand_format {
                                 OperandFormat::Variable | OperandFormat::Value  => Ok(Operand::Variable(v.clone())),
                                 OperandFormat::Label => Ok(Operand::Label(v.clone())),
-                                _=> Err(format!("Error at line {}: Invalid operand format", line.line)),
+                                _=> Err(crate::parse::ParseError::invalid_operand_format(line.line)),
                             }
                         }
                         Token::Literal(l) => {
@@ -172,7 +171,7 @@ fn create_parse_impl(item_struct: &syn::ItemStruct, n_operands: usize) -> syn::I
                                         Literal::String(_) => unimplemented!(),
                                     }
                                 }
-                                _ => Err(format!("Error at line {}: Invalid operand format", line.line))
+                                _ => Err(crate::parse::ParseError::invalid_operand_format(line.line))
                             }
                         },
                     };

@@ -16,7 +16,7 @@ pub struct LoadInst {
 }
 
 impl Instruction for LoadInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let addr = from_u64!(self.src.value(env)?; usize);
         let value = env.memory.load(addr)?;
         self.dest.set_value(value, env)?;
@@ -37,7 +37,7 @@ pub struct LoadByteInst {
 }
 
 impl Instruction for LoadByteInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), String> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let addr = from_u64!(self.src.value(env)?; usize);
         let value = to_u64!(env.memory.load_byte(addr)?);
         self.dest.set_value(value, env)?;

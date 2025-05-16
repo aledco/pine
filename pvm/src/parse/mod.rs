@@ -1,12 +1,14 @@
 mod lex;
 pub(crate) mod token;
+pub(crate) mod error;
 
 use lex::*;
 pub(crate) use token::*;
-
+pub(crate) use error::*;
 use crate::inst::*;
+use crate::error::Error;
 
-pub fn parse(input: &str) -> Result<Vec<Box<dyn Instruction>>, String> {
+pub fn parse(input: &str) -> Result<Vec<Box<dyn Instruction>>, Error> {
     let lines = lex(input)?;
     let mut instructions: Vec<Box<dyn Instruction>> = Vec::new();
     for line in &lines {
@@ -17,7 +19,7 @@ pub fn parse(input: &str) -> Result<Vec<Box<dyn Instruction>>, String> {
     Ok(instructions)
 }
 
-fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, String> {
+fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, Error> {
     match &line.inst_token {
         Token::Identifier(inst) => match inst.as_str() {
             AddInst::NAME => AddInst::parse(line),
@@ -54,18 +56,12 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, String> {
             PrintfInst::NAME => PrintfInst::parse(line),
             PrintcInst::NAME => PrintcInst::parse(line),
             PrintlnInst::NAME => PrintlnInst::parse(line),
-            code => Err(format!(
-                "Error on line {}: instruction code {} not recognized",
-                line.line, code
-            )),
+            inst => Err(ParseError::inst_not_recognized(inst, line.line))
         },
-        _ => Err(format!(
-            "Error on line {}: line must begin with a valid instruction code",
-            line.line
-        )),
+        _ => Err(ParseError::invalid_token(line.line)),
     }
 }
 
 pub(crate) trait Parse {
-    fn parse(line: &Line) -> Result<Box<dyn Instruction>, String>;
+    fn parse(line: &Line) -> Result<Box<dyn Instruction>, Error>;
 }

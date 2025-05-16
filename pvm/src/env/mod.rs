@@ -1,5 +1,7 @@
 mod mem;
+mod error;
 
+pub(crate) use error::*;
 use std::cell::RefCell;
 use crate::env::mem::Memory;
 use std::collections::HashMap;
