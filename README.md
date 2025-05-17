@@ -32,6 +32,7 @@ are used to read and write memory.
 ## pvm
 - bit ops (and, or, etc)
 - other syscall ops (read, write file, etc)
+- finish unary ops
 - Add arrays and strings
   - Still need to implement strings
 - Add function support (push and pop args, call)
