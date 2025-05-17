@@ -1,7 +1,7 @@
-use std::fmt::{Debug, Display};
-use crate::parse::ParseError;
-use crate::inst::{ValidateError, ExecuteError};
 use crate::env::MemoryError;
+use crate::inst::{ExecuteError, ValidateError};
+use crate::parse::ParseError;
+use std::fmt::{Debug, Display};
 
 #[derive(Clone)]
 pub enum Error {
@@ -9,16 +9,16 @@ pub enum Error {
     ValidateError(ValidateError),
     ExecuteError(ExecuteError),
     MemoryError(MemoryError),
-    WrappedError(Box<Error>, usize)
+    WrappedError(Box<Error>, usize),
 }
 
 impl Error {
     pub(crate) fn wrap(&self, i: usize) -> Error {
         match self {
-            Error::ValidateError(e) => Error::WrappedError(Box::new(self.clone()), i),
-            Error::ExecuteError(e) => Error::WrappedError(Box::new(self.clone()), i),
-            Error::MemoryError(e) => Error::WrappedError(Box::new(self.clone()), i),
-            e => e.clone()
+            Error::ValidateError(_) | Error::ExecuteError(_) | Error::MemoryError(_) => {
+                Error::WrappedError(Box::new(self.clone()), i)
+            }
+            e => e.clone(),
         }
     }
 }

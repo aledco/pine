@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub(crate) struct Line {
     pub inst_token: Token,
     pub operand_tokens: Vec<Token>,
@@ -15,13 +15,13 @@ impl Line {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub(crate) enum Token {
     Identifier(String),
     Literal(Literal),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub(crate) enum Literal {
     Integer(i64),
     Float(f64),
