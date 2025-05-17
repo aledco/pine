@@ -23,7 +23,7 @@ pub(crate) enum Token {
 
 #[derive(PartialEq)]
 pub(crate) enum Literal {
-    Integer(i64),
+    Integer(u64),
     Float(f64),
     Char(u8),
     String(String),

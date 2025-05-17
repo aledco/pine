@@ -1,0 +1,25 @@
+and x 1 0
+printi x # 0
+println
+
+or x 1 0
+printi x # 1
+println
+
+xor x 5 5
+printi x # 0
+println
+
+shl x 1 1
+printi x # 2
+println
+
+sub x 0 1
+shr x x 1
+printi x # 9223372036854775807
+println
+
+sub x 0 1
+shra x x 1
+printi x # -1
+println

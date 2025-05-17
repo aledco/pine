@@ -351,6 +351,54 @@ pub struct GtefInst {
     pub(crate) src2: Operand,
 }
 
+#[inst(name = "and", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = u64::bitand, ty1 = u64, ty2 = u64)]
+pub struct AndInst {
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
+}
+
+#[inst(name = "or", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = u64::bitor, ty1 = u64, ty2 = u64)]
+pub struct OrInst {
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
+}
+
+#[inst(name = "xor", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = u64::bitxor, ty1 = u64, ty2 = u64)]
+pub struct XorInst {
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
+}
+
+#[inst(name = "shl", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = u64::shl, ty1 = u64, ty2 = u64)]
+pub struct ShlInst {
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
+}
+
+#[inst(name = "shr", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = u64::shr, ty1 = u64, ty2 = u64)]
+pub struct ShrInst {
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
+}
+
+#[inst(name = "shra", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
+#[bin_op(op = i64::shr, ty1 = i64, ty2 = u64)]
+pub struct ShraInst {
+    pub(crate) dest: Operand,
+    pub(crate) src1: Operand,
+    pub(crate) src2: Operand,
+} // TODO tests and add to parser
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1988,5 +2036,239 @@ mod tests {
         let display = format!("{}", inst);
         let expected = format!("gtef x {} {}", to_u64!(100.14_f64), to_u64!(0.02_f64));
         assert_eq!(display, expected);
+    }
+
+    #[test]
+    fn test_and_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in 0u64..32 {
+            for v2 in 0u64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(v1);
+                let s2 = Operand::Constant(v2);
+                let mut inst = AndInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    u64::bitand(v1, v2),
+                    "{} != {} and {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_and_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = AndInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "and x 2 3");
+    }
+
+    #[test]
+    fn test_or_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in 0u64..32 {
+            for v2 in 0u64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(v1);
+                let s2 = Operand::Constant(v2);
+                let mut inst = OrInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    u64::bitor(v1, v2),
+                    "{} != {} or {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_or_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = OrInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "or x 2 3");
+    }
+
+    #[test]
+    fn test_xor_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in 0u64..32 {
+            for v2 in 0u64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(v1);
+                let s2 = Operand::Constant(v2);
+                let mut inst = XorInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    u64::bitxor(v1, v2),
+                    "{} != {} xor {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_xor_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = XorInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "xor x 2 3");
+    }
+
+    #[test]
+    fn test_shl_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in 0u64..32 {
+            for v2 in 0u64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(v1);
+                let s2 = Operand::Constant(v2);
+                let mut inst = ShlInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    u64::shl(v1, v2),
+                    "{} != {} shl {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_shl_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = ShlInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "shl x 2 3");
+    }
+
+    #[test]
+    fn test_shr_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in 0u64..32 {
+            for v2 in 0u64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(v1);
+                let s2 = Operand::Constant(v2);
+                let mut inst = ShrInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    inst.dest.value(&mut context).unwrap(),
+                    u64::shr(v1, v2),
+                    "{} != {} shr {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_shr_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = ShrInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "shr x 2 3");
+    }
+
+    #[test]
+    fn test_shra_inst() {
+        let mut i = 0;
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        for v1 in 0i64..32 {
+            for v2 in 0u64..32 {
+                i += 1;
+
+                let d = Operand::Variable(String::from("x"));
+                let s1 = Operand::Constant(to_u64!(v1));
+                let s2 = Operand::Constant(v2);
+                let mut inst = ShraInst::new(d, s1, s2);
+
+                inst.execute(&mut context).unwrap();
+                inst.inc_inst_ptr(&mut context).unwrap();
+                assert_eq!(
+                    from_u64!(inst.dest.value(&mut context).unwrap(); i64),
+                    i64::shr(v1, v2),
+                    "{} != {} shra {}",
+                    inst.dest.value(&mut context).unwrap(),
+                    v1,
+                    v2
+                );
+                assert_eq!(context.inst_ptr, i);
+            }
+        }
+    }
+
+    #[test]
+    fn test_shra_display() {
+        let d = Operand::Variable(String::from("x"));
+        let s1 = Operand::Constant(2);
+        let s2 = Operand::Constant(3);
+        let inst = ShraInst::new(d, s1, s2);
+        let display = format!("{}", inst);
+        assert_eq!(display, "shra x 2 3");
     }
 }

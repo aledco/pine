@@ -30,7 +30,7 @@ are used to read and write memory.
 
 # TODO
 ## pvm
-- bit ops (and, or, etc)
+- Add print unsigned, print hex, print binary
 - other syscall ops (read, write file, etc)
 - finish unary ops
 - Add arrays and strings
