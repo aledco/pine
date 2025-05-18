@@ -1,4 +1,3 @@
-use std::env::var;
 use pvm_proc_macros::Inst;
 use crate::env::Environment;
 use crate::inst::*;
@@ -7,8 +6,6 @@ use crate::parse::{Line, Literal, Parse, Token};
 
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
-
-// TODO write tests
 
 #[inst(name = "fun", operands = [OperandFormat::Label])]
 pub struct FunInst {
@@ -180,4 +177,11 @@ impl Instruction for RestoreInst {
             None => Err(ExecuteError::local_var_not_saved(&var_name))
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // TODO write tests
 }

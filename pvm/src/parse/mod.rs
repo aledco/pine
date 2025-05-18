@@ -85,6 +85,8 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, Error> {
             PoprInst::NAME => PoprInst::parse(line),
             CallInst::NAME => CallInst::parse(line),
             RetInst::NAME => RetInst::parse(line),
+            SaveInst::NAME => SaveInst::parse(line),
+            RestoreInst::NAME => RestoreInst::parse(line),
             PrintiInst::NAME => PrintiInst::parse(line),
             PrintuInst::NAME => PrintuInst::parse(line),
             PrintfInst::NAME => PrintfInst::parse(line),
