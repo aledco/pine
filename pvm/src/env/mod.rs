@@ -12,7 +12,9 @@ pub struct Environment {
     pub memory: Memory,
     pub variables: HashMap<String, u64>,
     pub labels: HashMap<String, usize>,
-    pub global_strings: HashMap<String, String>, // TODO do global constants instead?\
+    pub fun_labels: HashMap<String, usize>,
+    pub arg_stack: Vec<u64>,
+    pub ret_val: u64,
     pub stdout: Rc<RefCell<dyn Write>>,
     pub inst_ptr: usize,
 }
@@ -23,7 +25,9 @@ impl Environment {
             memory: Memory::new(memory_size),
             variables: HashMap::new(),
             labels: HashMap::new(),
-            global_strings: HashMap::new(),
+            fun_labels: HashMap::new(),
+            arg_stack: Vec::new(),
+            ret_val: 0,
             stdout,
             inst_ptr: 0,
         }

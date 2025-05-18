@@ -3,6 +3,7 @@ use crate::inst::InstAttributes;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::{quote, ToTokens};
+use syn::StmtMacro;
 
 /// Implements the `Inst` derive macro.
 pub fn derive_inst(input: TokenStream) -> TokenStream {
@@ -19,6 +20,7 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
 
         let validate_impl = create_validate_impl(&item_struct, &operand_formats);
         let parse_impl = create_parse_impl(&item_struct, n_operands);
+        let display_impl = create_display_impl(&item_struct);
         return quote! {
             impl #struct_name {
                 pub const NAME: &'static str = #inst_name;
@@ -29,6 +31,8 @@ pub fn derive_inst(input: TokenStream) -> TokenStream {
             #validate_impl
 
             #parse_impl
+
+            #display_impl
         }
         .into();
     }
@@ -86,16 +90,7 @@ fn create_validate_impl(
 ) -> syn::ItemImpl {
     let struct_name = &item_struct.ident.clone();
 
-    let mut operands = Vec::new();
-    if let syn::Fields::Named(ref fields) = item_struct.fields {
-        for f in &fields.named {
-            let ty = f.ty.clone();
-            if ty.clone().into_token_stream().to_string() == stringify!(Operand) {
-                let name = f.ident.clone().unwrap();
-                operands.push(name);
-            }
-        }
-    }
+    let operands = get_operands(item_struct);
 
     let mut validate_fn: syn::ItemFn = syn::parse_quote! {
         fn validate(&self) -> Result<(), crate::error::Error> {
@@ -186,4 +181,66 @@ fn create_parse_impl(item_struct: &syn::ItemStruct, n_operands: usize) -> syn::I
             }
         }
     }
+}
+
+/// Creates the impl block for the `Display` trait.
+fn create_display_impl(item_struct: &syn::ItemStruct) -> syn::ItemImpl {
+    let struct_name = &item_struct.ident.clone();
+
+    let operands = get_operands(item_struct);
+
+    let operands_format_str: String = operands
+        .iter()
+        .map(|o| format!("{{{}}}", o))
+        .enumerate()
+        .map(|(i, s)| if i == 0 { s } else { format!(" {}", s) })
+        .collect();
+    let format_str =  if operands_format_str.is_empty() {
+        "{}".to_string()
+    } else {
+        format!("{{}} {}", operands_format_str)
+    };
+    
+    let operand_stmts = operands
+        .iter()
+        .map(|o| syn::parse_quote! {
+            let #o = self.#o.clone();
+        })
+        .collect::<Vec<syn::Stmt>>();
+
+    let write_macro: syn::ExprMacro = syn::parse_quote! {
+        write!(f, #format_str, Self::NAME)
+    };
+
+    let mut fmt_fn: syn::ItemFn = syn::parse_quote! {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+            #write_macro
+        }
+    };
+
+    for stmt in operand_stmts.into_iter().rev() {
+        fmt_fn.block.stmts.insert(0, stmt);
+    }
+
+    syn::parse_quote! {
+        impl std::fmt::Display for #struct_name {
+            #fmt_fn
+        }
+    }
+}
+
+/// Gets the identifiers of the operands of the instruction.
+fn get_operands(item_struct: &syn::ItemStruct) -> Vec<syn::Ident> {
+    let mut operands = Vec::new();
+    if let syn::Fields::Named(ref fields) = item_struct.fields {
+        for f in &fields.named {
+            let ty = f.ty.clone();
+            if ty.clone().into_token_stream().to_string() == stringify!(Operand) {
+                let name = f.ident.clone().unwrap();
+                operands.push(name);
+            }
+        }
+    }
+
+    operands
 }

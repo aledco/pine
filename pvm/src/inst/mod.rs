@@ -7,6 +7,7 @@ mod alloc;
 mod load;
 mod store;
 mod error;
+mod fun;
 
 pub(crate) use bin_op::*;
 pub(crate) use un_op::*;

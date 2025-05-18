@@ -4,7 +4,7 @@ use crate::inst::*;
 use crate::operand::*;
 use crate::cast::*;
 use crate::parse::{Line, Literal, Parse, Token};
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::Debug;
 
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
@@ -24,12 +24,6 @@ impl Instruction for AllocInst {
     }
 }
 
-impl Display for AllocInst { // TODO can auto derive this in inst too
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
-    }
-}
-
 #[inst(name = "dealloc", operands = [OperandFormat::Variable])]
 pub struct DeallocInst {
     pub(crate) src: Operand,
@@ -40,12 +34,6 @@ impl Instruction for DeallocInst {
         let addr = from_u64!(self.src.value(env)?; usize);
         env.memory.deallocate(addr)?;
         Ok(())
-    }
-}
-
-impl Display for DeallocInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.src)
     }
 }
 
@@ -61,12 +49,6 @@ impl Instruction for LenInst {
         let len = to_u64!(env.memory.len(addr)?);
         self.dest.set_value(len, env)?;
         Ok(())
-    }
-}
-
-impl Display for LenInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
     }
 }
 

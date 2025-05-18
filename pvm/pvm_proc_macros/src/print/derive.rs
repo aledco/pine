@@ -19,12 +19,6 @@ pub(crate) fn derive_print_inst(input: TokenStream) -> TokenStream {
                     Ok(())
                 }
             }
-
-            impl Display for #struct_name {
-                fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-                    write!(f, "{} {}", Self::NAME, self.src)
-                }
-            }
         }.into();
     }
 

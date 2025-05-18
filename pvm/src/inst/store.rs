@@ -24,12 +24,6 @@ impl Instruction for StoreInst {
     }
 }
 
-impl Display for StoreInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
-    }
-}
-
 #[inst(name = "storeb", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct StoreByteInst {
     pub(crate) dest: Operand,
@@ -42,12 +36,6 @@ impl Instruction for StoreByteInst {
         let addr = from_u64!(self.dest.value(env)?; usize);
         env.memory.store_byte(addr, value)?;
         Ok(())
-    }
-}
-
-impl Display for StoreByteInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
     }
 }
 

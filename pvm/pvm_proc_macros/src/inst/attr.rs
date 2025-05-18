@@ -20,7 +20,7 @@ pub(crate) fn inst_attr(args: TokenStream, input: TokenStream) -> TokenStream {
 
     let helper_attr: syn::Attribute = syn::parse_quote! { #[inst_helper(name = #inst_name, operands = #operands)] };
     item_struct.attrs.insert(0, helper_attr);
-    let derive_attr: syn::Attribute = syn::parse_quote! { #[derive(Inst, Debug)] };
+    let derive_attr: syn::Attribute = syn::parse_quote! { #[derive(Inst, std::fmt::Debug)] };
     item_struct.attrs.insert(0, derive_attr);
     let new_derive_attr: syn::Attribute = syn::parse_quote! { #[derive(NewInst)] };
     item_struct.attrs.push(new_derive_attr);

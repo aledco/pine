@@ -23,12 +23,6 @@ impl Instruction for MoveInst {
     }
 }
 
-impl Display for MoveInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
-    }
-}
-
 #[inst(name = "neg", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct NegInst {
     pub(crate) dest: Operand,
@@ -44,12 +38,6 @@ impl Instruction for NegInst {
     }
 }
 
-impl Display for NegInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
-    }
-}
-
 #[inst(name = "negf", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct NegfInst {
     pub(crate) dest: Operand,
@@ -62,12 +50,6 @@ impl Instruction for NegfInst {
         let res = f64::neg(val);
         self.dest.set_value(to_u64!(res), env)?;
         Ok(())
-    }
-}
-
-impl Display for NegfInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
     }
 }
 

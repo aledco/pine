@@ -24,12 +24,6 @@ impl Instruction for LoadInst {
     }
 }
 
-impl Display for LoadInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
-    }
-}
-
 #[inst(name = "loadb", operands = [OperandFormat::Variable, OperandFormat::Variable])]
 pub struct LoadByteInst {
     pub(crate) dest: Operand,
@@ -44,13 +38,6 @@ impl Instruction for LoadByteInst {
         Ok(())
     }
 }
-
-impl Display for LoadByteInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.dest, self.src)
-    }
-}
-
 
 #[cfg(test)]
 mod tests {

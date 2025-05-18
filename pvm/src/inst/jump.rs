@@ -3,7 +3,7 @@ use crate::env::Environment;
 use crate::inst::*;
 use crate::operand::*;
 use crate::parse::{Line, Literal, Parse, Token};
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::Debug;
 
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
@@ -28,12 +28,6 @@ impl Instruction for JumpInst {
             },
             None => Err(ExecuteError::label_does_not_exist(&label)),
         }
-    }
-}
-
-impl Display for JumpInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.lab)
     }
 }
 
@@ -68,12 +62,6 @@ impl Instruction for JumpZeroInst {
     }
 }
 
-impl Display for JumpZeroInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.src, self.lab)
-    }
-}
-
 #[inst(name = "jumpnz", operands = [OperandFormat::Value, OperandFormat::Label])]
 pub struct JumpNotZeroInst {
     pub(crate) src: Operand,
@@ -102,12 +90,6 @@ impl Instruction for JumpNotZeroInst {
             env.inst_ptr += 1;
             Ok(())
         }
-    }
-}
-
-impl Display for JumpNotZeroInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {} {}", Self::NAME, self.src, self.lab)
     }
 }
 

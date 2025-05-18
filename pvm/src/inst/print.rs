@@ -38,12 +38,6 @@ impl Instruction for PrinthInst {
     }
 }
 
-impl Display for PrinthInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.src)
-    }
-}
-
 #[inst(name = "printb", operands = [OperandFormat::Value])]
 pub struct PrintbInst {
     pub(crate) src: Operand,
@@ -54,12 +48,6 @@ impl Instruction for PrintbInst {
         let val = self.src.value(env)?;
         write!(env.stdout.borrow_mut(), "{:b}", val).unwrap();
         Ok(())
-    }
-}
-
-impl Display for PrintbInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.src)
     }
 }
 
@@ -77,12 +65,6 @@ impl Instruction for PrintcInst {
     }
 }
 
-impl Display for PrintcInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.src)
-    }
-}
-
 #[inst(name = "prints", operands = [OperandFormat::Value])]
 pub struct PrintsInst {
     pub(crate) src: Operand,
@@ -90,6 +72,7 @@ pub struct PrintsInst {
 
 impl Instruction for PrintsInst {
     fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
+        // TODO is a string null terminated or determined by the size of the allocation?
         let start = from_u64!(self.src.value(env)?; usize);
         let len: Option<usize> = env.memory.len(start).ok();
         let mut c = env.memory.load_byte(start)?;
@@ -111,12 +94,6 @@ impl Instruction for PrintsInst {
     }
 }
 
-impl Display for PrintsInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.src)
-    }
-}
-
 #[inst(name = "println", operands = [])]
 pub struct PrintlnInst {}
 
@@ -127,17 +104,10 @@ impl Instruction for PrintlnInst {
     }
 }
 
-impl Display for PrintlnInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{}", Self::NAME)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::to_u64;
-    use crate::inst::*;
     use std::cell::RefCell;
     use std::rc::Rc;
 

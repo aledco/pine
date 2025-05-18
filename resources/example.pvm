@@ -1,0 +1,32 @@
+callv main
+jump end
+
+fun main
+push 10
+push 'a'
+call s repeat
+prints s
+dealloc s
+ret 0
+
+
+
+fun repeat
+pop n
+pop c
+
+alloc str n
+move i 0
+
+label top
+lt b i n
+jumpnz b bottom
+add p str i
+storeb p c
+add i i 1
+jump top
+label bottom
+
+ret str
+
+label end

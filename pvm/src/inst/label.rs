@@ -30,12 +30,6 @@ impl Instruction for LabelInst {
     }
 }
 
-impl Display for LabelInst {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{} {}", Self::NAME, self.lab)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
