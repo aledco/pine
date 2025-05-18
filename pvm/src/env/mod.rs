@@ -16,6 +16,7 @@ pub struct Environment {
     pub arg_queue: VecDeque<u64>,
     pub ret_queue: VecDeque<u64>,
     pub ret_addr_stack: Vec<usize>,
+    pub local_var_store: HashMap<String, Vec<u64>>,
     pub stdout: Rc<RefCell<dyn Write>>,
     pub inst_ptr: usize,
 }
@@ -30,6 +31,7 @@ impl Environment {
             arg_queue: VecDeque::new(),
             ret_queue: VecDeque::new(),
             ret_addr_stack: Vec::new(),
+            local_var_store: HashMap::new(),
             stdout,
             inst_ptr: 0,
         }

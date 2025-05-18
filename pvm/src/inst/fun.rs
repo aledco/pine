@@ -1,3 +1,4 @@
+use std::env::var;
 use pvm_proc_macros::Inst;
 use crate::env::Environment;
 use crate::inst::*;
@@ -137,3 +138,46 @@ impl Instruction for RetInst {
     }
 }
 
+#[inst(name = "save", operands = [OperandFormat::Variable])]
+pub struct SaveInst {
+    pub(crate) src: Operand,
+}
+
+impl Instruction for SaveInst {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
+        let var_name = self.src.var_name()?;
+        let val = self.src.value(env)?;
+        match env.local_var_store.get_mut(&var_name) {
+            Some(vals) => vals.push(val),
+            None => {
+                let mut vals = Vec::new();
+                vals.push(val);
+                env.local_var_store.insert(var_name, vals);
+            }
+        }
+        Ok(())
+    }
+}
+
+#[inst(name = "rest", operands = [OperandFormat::Variable])]
+pub struct RestoreInst {
+    pub(crate) dest: Operand,
+}
+
+impl Instruction for RestoreInst {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
+        let var_name = self.dest.var_name()?;
+        match env.local_var_store.get_mut(&var_name) {
+            Some(vals) => {
+                match vals.pop() {
+                    Some(val) => {
+                        self.dest.set_value(val, env)?;
+                        Ok(())
+                    }
+                    None => Err(ExecuteError::local_var_not_saved(&var_name))
+                }
+            }
+            None => Err(ExecuteError::local_var_not_saved(&var_name))
+        }
+    }
+}

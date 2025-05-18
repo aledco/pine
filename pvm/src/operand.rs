@@ -45,6 +45,13 @@ impl Operand {
         }
     }
 
+    pub fn var_name(&self) -> Result<String, Error>{
+        match self {
+            Operand::Variable(n) => Ok(n.clone()),
+            _ => Err(ExecuteError::operand_is_not_variable()),
+        }
+    }
+
     pub fn label(&self) -> Result<String, Error>{
         match self {
             Operand::Label(l) => Ok(l.clone()),

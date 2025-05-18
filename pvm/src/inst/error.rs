@@ -91,6 +91,10 @@ impl ExecuteError {
     pub(crate) fn ret_addr_stack_is_empty() -> Error {
         Self::error("return address stack is empty")
     }
+    
+    pub(crate) fn local_var_not_saved(name: &str) -> Error {
+        Self::error(format!("local variable {} not saved", name))
+    }
 }
 
 impl Display for ExecuteError {

@@ -32,9 +32,11 @@ ret
 
 label rec
 sub m n 1
+save n
 pusha m
 call fact
 popr a
+rest n
 printc 'a'
 printc '1'
 printc ':'
