@@ -31,7 +31,7 @@ impl Operand {
                 Some(v) => Ok(v.clone()),
                 None => Err(ExecuteError::variable_does_not_exist(&n))
             },
-            Operand::Label(_) => Err(ExecuteError::operand_has_no_value()),
+            _ => Err(ExecuteError::operand_has_no_value()),
         }
     }
     

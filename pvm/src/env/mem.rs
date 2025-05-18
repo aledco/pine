@@ -4,6 +4,7 @@ use crate::Error;
 
 const WORD_SIZE: usize = size_of::<u64>();
 
+#[derive(Debug)]
 pub struct Memory {
     bytes: Box<[u8]>,
     in_use: HashMap<usize, usize>,

@@ -30,15 +30,11 @@ are used to read and write memory.
 
 # TODO
 ## pvm
-- Add print unsigned, print hex, print binary
 - other syscall ops (read, write file, etc)
-- finish unary ops
-- Add arrays and strings
-  - Still need to implement strings
 - Add function support (push and pop args, call)
-- Add parsing tests
 - Can make a variable and label with same name, should this be allowed?
 - Add failure tests
+- Add comments
 
 ## Refactors
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
