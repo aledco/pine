@@ -21,10 +21,6 @@ impl ValidateError {
     pub(crate) fn operand_must_be_constant() -> Error {
         Self::error("operand must be a constant")
     }
-
-    pub(crate) fn operand_must_be_string() -> Error {
-        Self::error("operand must be a string")
-    }
     
     pub(crate) fn operand_must_be_variable() -> Error {
         Self::error("operand must be a variable")
