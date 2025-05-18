@@ -3,7 +3,6 @@ use crate::inst::InstAttributes;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::{quote, ToTokens};
-use syn::StmtMacro;
 
 /// Implements the `Inst` derive macro.
 pub fn derive_inst(input: TokenStream) -> TokenStream {
@@ -200,7 +199,7 @@ fn create_display_impl(item_struct: &syn::ItemStruct) -> syn::ItemImpl {
     } else {
         format!("{{}} {}", operands_format_str)
     };
-    
+
     let operand_stmts = operands
         .iter()
         .map(|o| syn::parse_quote! {

@@ -2,7 +2,6 @@ use crate::env::Environment;
 use crate::inst::*;
 use crate::operand::*;
 use crate::parse::{Line, Literal, Parse, Token};
-use std::fmt::{Debug, Display, Formatter};
 
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;

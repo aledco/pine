@@ -3,7 +3,6 @@ use crate::inst::*;
 use crate::operand::*;
 use crate::parse::{Line, Literal, Parse, Token};
 use crate::cast::*;
-use std::fmt::{Debug, Display, Formatter};
 use std::ops::Neg;
 
 extern crate pvm_proc_macros;
