@@ -1,9 +1,13 @@
 use std::fmt::Display;
 use std::fs;
+use std::env;
 use pvm::{parse, execute};
 
 fn main() {
-    let input = fs::read_to_string("/tmp/test.pvm").unwrap();
+    let args: Vec<String> = env::args().collect();
+    let input_file = args.get(1).expect("input file not provided");
+    
+    let input = fs::read_to_string(input_file).unwrap();
 
     let instructions_result = parse(&input);
     let instructions = handle_result(instructions_result);

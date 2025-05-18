@@ -32,6 +32,7 @@ are used to read and write memory.
 ## pvm
 - other syscall ops (read, write file, etc)
 - Add function support (push and pop args, call)
+  - TODO need a way to save local vars before func call, look at example.pvm
 - Can make a variable and label with same name, should this be allowed?
 - Add failure tests
 - Add comments

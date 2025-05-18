@@ -32,7 +32,7 @@ pub struct PrinthInst {
 impl Instruction for PrinthInst {
     fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let val = self.src.value(env)?;
-        write!(env.stdout.borrow_mut(), "{:X}", val).unwrap();
+        write!(env.stdout.borrow_mut(), "0x{:X}", val).unwrap();
         Ok(())
     }
 }
@@ -45,7 +45,7 @@ pub struct PrintbInst {
 impl Instruction for PrintbInst {
     fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let val = self.src.value(env)?;
-        write!(env.stdout.borrow_mut(), "{:b}", val).unwrap();
+        write!(env.stdout.borrow_mut(), "0b{:b}", val).unwrap();
         Ok(())
     }
 }
@@ -201,7 +201,7 @@ mod tests {
         inst.execute(&mut context).unwrap();
 
         let output: String = buffer.borrow().iter().map(|b| *b as char).collect();
-        assert_eq!("A", output);
+        assert_eq!("0xA", output);
     }
 
     #[test]
@@ -213,7 +213,7 @@ mod tests {
         inst.execute(&mut context).unwrap();
 
         let output: String = buffer.borrow().iter().map(|b| *b as char).collect();
-        assert_eq!("1010", output);
+        assert_eq!("0b1010", output);
     }
 
     #[test]

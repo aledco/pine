@@ -1,0 +1,43 @@
+call main
+jump end
+
+fun main
+
+pusha 10
+pusha 'a'
+call repeat
+popr s
+prints s
+println
+dealloc s
+
+pusha 5
+pusha 'b'
+call repeat
+popr s
+prints s
+println
+dealloc s
+
+ret
+
+fun repeat
+popa n
+popa c
+
+alloc str n
+move i 0
+
+label top
+lt b i n
+jumpz b bottom
+add p str i
+storeb p c
+add i i 1
+jump top
+label bottom
+
+pushr str
+ret
+
+label end

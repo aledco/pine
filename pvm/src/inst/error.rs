@@ -79,6 +79,18 @@ impl ExecuteError {
     pub(crate) fn operand_is_not_label() -> Error {
         Self::error("operand is not a label")
     }
+    
+    pub(crate) fn arg_queue_is_empty() -> Error {
+        Self::error("argument queue is empty")
+    }
+
+    pub(crate) fn ret_queue_is_empty() -> Error {
+        Self::error("return value queue is empty")
+    }
+    
+    pub(crate) fn ret_addr_stack_is_empty() -> Error {
+        Self::error("return address stack is empty")
+    }
 }
 
 impl Display for ExecuteError {

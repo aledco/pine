@@ -17,6 +17,7 @@ pub(crate) use label::*;
 pub(crate) use alloc::*;
 pub(crate) use load::*;
 pub(crate) use store::*;
+pub(crate) use fun::*;
 pub(crate) use error::*;
 use crate::env::Environment;
 use crate::error::Error;
