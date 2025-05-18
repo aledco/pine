@@ -7,6 +7,7 @@ use std::ops::*;
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
+/// Adds two signed integers.
 #[inst(name = "add", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_add, ty1 = i64, ty2 = i64)]
 pub struct AddInst {
@@ -15,6 +16,7 @@ pub struct AddInst {
     pub(crate) src2: Operand,
 }
 
+/// Adds two unsigned integers.
 #[inst(name = "addu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::wrapping_add, ty1 = u64, ty2 = u64)]
 pub struct AdduInst {
@@ -23,6 +25,7 @@ pub struct AdduInst {
     pub(crate) src2: Operand,
 }
 
+/// Adds two floating point numbers.
 #[inst(name = "addf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::add, ty1 = f64, ty2 = f64)]
 pub struct AddfInst {
@@ -31,6 +34,7 @@ pub struct AddfInst {
     pub(crate) src2: Operand,
 }
 
+/// Subtracts two signed integers.
 #[inst(name = "sub", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_sub, ty1 = i64, ty2 = i64)]
 pub struct SubInst {
@@ -39,6 +43,7 @@ pub struct SubInst {
     pub(crate) src2: Operand,
 }
 
+/// Subtracts two unsigned integers.
 #[inst(name = "subu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::wrapping_sub, ty1 = u64, ty2 = u64)]
 pub struct SubuInst {
@@ -47,6 +52,7 @@ pub struct SubuInst {
     pub(crate) src2: Operand,
 }
 
+/// Subtracts two floating point numbers.
 #[inst(name = "subf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::sub, ty1 = f64, ty2 = f64)]
 pub struct SubfInst {
@@ -55,6 +61,7 @@ pub struct SubfInst {
     pub(crate) src2: Operand,
 }
 
+/// Multiplies two signed integers.
 #[inst(name = "mul", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_mul, ty1 = i64, ty2 = i64)]
 pub struct MulInst {
@@ -63,6 +70,7 @@ pub struct MulInst {
     pub(crate) src2: Operand,
 }
 
+/// Multiplies two unsigned integers.
 #[inst(name = "mulu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::wrapping_mul, ty1 = u64, ty2 = u64)]
 pub struct MuluInst {
@@ -71,6 +79,7 @@ pub struct MuluInst {
     pub(crate) src2: Operand,
 }
 
+/// Multiplies two floating point numbers.
 #[inst(name = "mulf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::mul, ty1 = f64, ty2 = f64)]
 pub struct MulfInst {
@@ -79,6 +88,7 @@ pub struct MulfInst {
     pub(crate) src2: Operand,
 }
 
+/// Divides two signed integers.
 #[inst(name = "div", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_div, ty1 = i64, ty2 = i64)]
 pub struct DivInst {
@@ -87,6 +97,7 @@ pub struct DivInst {
     pub(crate) src2: Operand,
 }
 
+/// Divides two unsigned integers.
 #[inst(name = "divu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::wrapping_div, ty1 = u64, ty2 = u64)]
 pub struct DivuInst {
@@ -95,6 +106,7 @@ pub struct DivuInst {
     pub(crate) src2: Operand,
 }
 
+/// Divides two floating point numbers.
 #[inst(name = "divf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::div, ty1 = f64, ty2 = f64)]
 pub struct DivfInst {
@@ -103,6 +115,7 @@ pub struct DivfInst {
     pub(crate) src2: Operand,
 }
 
+/// Takes the modulo of two signed integers.
 #[inst(name = "mod", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_rem, ty1 = i64, ty2 = i64)]
 pub struct ModInst {
@@ -111,6 +124,7 @@ pub struct ModInst {
     pub(crate) src2: Operand,
 }
 
+/// Takes the modulo of two unsigned integers.
 #[inst(name = "modu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::wrapping_rem, ty1 = u64, ty2 = u64)]
 pub struct ModuInst {
@@ -119,6 +133,7 @@ pub struct ModuInst {
     pub(crate) src2: Operand,
 }
 
+/// Takes the modulo of two floating point numbers.
 #[inst(name = "modf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::rem, ty1 = f64, ty2 = f64)]
 pub struct ModfInst {
@@ -127,6 +142,7 @@ pub struct ModfInst {
     pub(crate) src2: Operand,
 }
 
+/// Takes the power of a signed integer.
 #[inst(name = "pow", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::wrapping_pow, ty1 = i64, ty2 = u32)]
 pub struct PowInst {
@@ -135,6 +151,7 @@ pub struct PowInst {
     pub(crate) src2: Operand,
 }
 
+/// Takes the power of an unsigned integer.
 #[inst(name = "powu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::wrapping_pow, ty1 = u64, ty2 = u32)]
 pub struct PowuInst {
@@ -143,6 +160,7 @@ pub struct PowuInst {
     pub(crate) src2: Operand,
 }
 
+/// Takes the power of a floating point number.
 #[inst(name = "powf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = f64::powf, ty1 = f64, ty2 = f64)]
 pub struct PowfInst {
@@ -206,6 +224,7 @@ fn gtef(v1: f64, v2: f64) -> u8 {
     (v1 >= v2) as u8
 }
 
+/// Determines if one signed integer is equal to another.
 #[inst(name = "eq", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = eq, ty1 = i64, ty2 = i64)]
 pub struct EqInst {
@@ -214,6 +233,7 @@ pub struct EqInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one unsigned integer is equal to another.
 #[inst(name = "equ", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = equ, ty1 = u64, ty2 = u64)]
 pub struct EquInst {
@@ -222,6 +242,7 @@ pub struct EquInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one floating point number is equal to another.
 #[inst(name = "eqf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = eqf, ty1 = f64, ty2 = f64)]
 pub struct EqfInst {
@@ -230,6 +251,7 @@ pub struct EqfInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one signed integer is not equal to another.
 #[inst(name = "neq", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = neq, ty1 = i64, ty2 = i64)]
 pub struct NeqInst {
@@ -238,6 +260,7 @@ pub struct NeqInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one unsigned integer is not equal to another.
 #[inst(name = "nequ", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = nequ, ty1 = u64, ty2 = u64)]
 pub struct NequInst {
@@ -246,6 +269,7 @@ pub struct NequInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one floating point number is not equal to another.
 #[inst(name = "neqf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = neqf, ty1 = f64, ty2 = f64)]
 pub struct NeqfInst {
@@ -254,6 +278,7 @@ pub struct NeqfInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one signed integer is less than another.
 #[inst(name = "lt", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = lt, ty1 = i64, ty2 = i64)]
 pub struct LtInst {
@@ -262,6 +287,7 @@ pub struct LtInst {
     pub src2: Operand,
 }
 
+/// Determines if one unsigned integer is less than another.
 #[inst(name = "ltu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = ltu, ty1 = u64, ty2 = u64)]
 pub struct LtuInst {
@@ -270,6 +296,7 @@ pub struct LtuInst {
     pub src2: Operand,
 }
 
+/// Determines if one floating point number is less than another.
 #[inst(name = "ltf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = ltf, ty1 = f64, ty2 = f64)]
 pub struct LtfInst {
@@ -278,6 +305,7 @@ pub struct LtfInst {
     pub src2: Operand,
 }
 
+/// Determines if one signed integer is less than or equal to another.
 #[inst(name = "lte", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = lte, ty1 = i64, ty2 = i64)]
 pub struct LteInst {
@@ -286,6 +314,7 @@ pub struct LteInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one unsigned integer is less than or equal to another.
 #[inst(name = "lteu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = lteu, ty1 = u64, ty2 = u64)]
 pub struct LteuInst {
@@ -294,6 +323,7 @@ pub struct LteuInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one floating point number is less than or equal to another.
 #[inst(name = "ltef", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = ltef, ty1 = f64, ty2 = f64)]
 pub struct LtefInst {
@@ -302,6 +332,7 @@ pub struct LtefInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one signed integer is greater than another.
 #[inst(name = "gt", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = gt, ty1 = i64, ty2 = i64)]
 pub struct GtInst {
@@ -310,6 +341,7 @@ pub struct GtInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one unsigned integer is greater than another.
 #[inst(name = "gtu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = gtu, ty1 = u64, ty2 = u64)]
 pub struct GtuInst {
@@ -318,6 +350,7 @@ pub struct GtuInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one floating point number is greater than another.
 #[inst(name = "gtf", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = gtf, ty1 = f64, ty2 = f64)]
 pub struct GtfInst {
@@ -326,6 +359,7 @@ pub struct GtfInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one signed integer is greater than or equal to another.
 #[inst(name = "gte", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = gte, ty1 = i64, ty2 = i64)]
 pub struct GteInst {
@@ -334,6 +368,7 @@ pub struct GteInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one unsigned integer is greater than or equal to another.
 #[inst(name = "gteu", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = gteu, ty1 = u64, ty2 = u64)]
 pub struct GteuInst {
@@ -342,6 +377,7 @@ pub struct GteuInst {
     pub(crate) src2: Operand,
 }
 
+/// Determines if one floating point number is greater than or equal to another.
 #[inst(name = "gtef", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = gtef, ty1 = f64, ty2 = f64)]
 pub struct GtefInst {
@@ -350,6 +386,7 @@ pub struct GtefInst {
     pub(crate) src2: Operand,
 }
 
+/// Applies the and bitwise operation.
 #[inst(name = "and", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::bitand, ty1 = u64, ty2 = u64)]
 pub struct AndInst {
@@ -358,6 +395,7 @@ pub struct AndInst {
     pub(crate) src2: Operand,
 }
 
+/// Applies the or bitwise operation.
 #[inst(name = "or", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::bitor, ty1 = u64, ty2 = u64)]
 pub struct OrInst {
@@ -366,6 +404,7 @@ pub struct OrInst {
     pub(crate) src2: Operand,
 }
 
+/// Applies the exclusive or bitwise operation.
 #[inst(name = "xor", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::bitxor, ty1 = u64, ty2 = u64)]
 pub struct XorInst {
@@ -374,6 +413,7 @@ pub struct XorInst {
     pub(crate) src2: Operand,
 }
 
+/// Applies the shift left bitwise operation.
 #[inst(name = "shl", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::shl, ty1 = u64, ty2 = u64)]
 pub struct ShlInst {
@@ -382,6 +422,7 @@ pub struct ShlInst {
     pub(crate) src2: Operand,
 }
 
+/// Applies the shift right bitwise operation.
 #[inst(name = "shr", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = u64::shr, ty1 = u64, ty2 = u64)]
 pub struct ShrInst {
@@ -390,13 +431,14 @@ pub struct ShrInst {
     pub(crate) src2: Operand,
 }
 
+/// Applies the arithmetic shift right bitwise operation.
 #[inst(name = "shra", operands = [OperandFormat::Variable, OperandFormat::Value, OperandFormat::Value])]
 #[bin_op(op = i64::shr, ty1 = i64, ty2 = u64)]
 pub struct ShraInst {
     pub(crate) dest: Operand,
     pub(crate) src1: Operand,
     pub(crate) src2: Operand,
-} // TODO tests and add to parser
+}
 
 #[cfg(test)]
 mod tests {

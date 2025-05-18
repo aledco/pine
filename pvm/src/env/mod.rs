@@ -22,7 +22,7 @@ pub struct Environment {
 }
 
 impl Environment {
-    pub fn new(memory_size: usize, stdout:  Rc<RefCell<dyn Write>>) -> Self {
+    pub fn new(memory_size: usize, stdout: Rc<RefCell<dyn Write>>) -> Self {
         Self {
             memory: Memory::new(memory_size),
             variables: HashMap::new(),

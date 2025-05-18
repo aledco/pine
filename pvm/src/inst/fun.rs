@@ -181,7 +181,125 @@ impl Instruction for RestoreInst {
 
 #[cfg(test)]
 mod tests {
+    use crate::ExecuteConfig;
     use super::*;
 
-    // TODO write tests
+    #[test]
+    fn test_fun_initialization() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        let inst = FunInst::new(Operand::Label("test".to_string()));
+        inst.initialize(&mut context, 0).unwrap();
+        assert_eq!(context.fun_labels.get("test"), Some(&1));
+    }
+
+    #[test]
+    fn test_pusha() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut inst = PushaInst::new(Operand::Constant(10));
+        inst.execute(&mut context).unwrap();
+        assert_eq!(context.arg_queue.pop_front(), Some(10));
+    }
+
+    #[test]
+    fn test_popa() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut inst = PushaInst::new(Operand::Constant(10));
+        inst.execute(&mut context).unwrap();
+
+        let mut inst = PopaInst::new(Operand::Variable("test".to_string()));
+        inst.execute(&mut context).unwrap();
+        let val = inst.dest.value(&context).unwrap();
+        assert_eq!(val, 10);
+    }
+
+    #[test]
+    fn test_pushr() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut inst = PushrInst::new(Operand::Constant(10));
+        inst.execute(&mut context).unwrap();
+        assert_eq!(context.ret_queue.pop_front(), Some(10));
+    }
+
+    #[test]
+    fn test_popr() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut inst = PushrInst::new(Operand::Constant(10));
+        inst.execute(&mut context).unwrap();
+
+        let mut inst = PoprInst::new(Operand::Variable("test".to_string()));
+        inst.execute(&mut context).unwrap();
+        let val = inst.dest.value(&context).unwrap();
+        assert_eq!(val, 10);
+    }
+
+    #[test]
+    fn test_call() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+
+        let inst = FunInst::new(Operand::Label("test".to_string()));
+        inst.initialize(&mut context, 0).unwrap();
+        inst.inc_inst_ptr(&mut context).unwrap();
+
+        let mut inst = CallInst::new(Operand::Label("test".to_string()));
+        inst.execute(&mut context).unwrap();
+        inst.inc_inst_ptr(&mut context).unwrap();
+        assert_eq!(context.ret_addr_stack.pop(), Some(2));
+        assert_eq!(context.inst_ptr, 1);
+    }
+
+    #[test]
+    fn test_ret() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+
+        let inst = FunInst::new(Operand::Label("test".to_string()));
+        inst.initialize(&mut context, 0).unwrap();
+        inst.inc_inst_ptr(&mut context).unwrap();
+
+        let mut inst = CallInst::new(Operand::Label("test".to_string()));
+        inst.execute(&mut context).unwrap();
+        inst.inc_inst_ptr(&mut context).unwrap();
+
+        let mut inst = RetInst::new();
+        inst.execute(&mut context).unwrap();
+        inst.inc_inst_ptr(&mut context).unwrap();
+        assert_eq!(context.inst_ptr, 2);
+    }
+
+    #[test]
+    fn test_save() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(10));
+        inst.execute(&mut context).unwrap();
+
+        let mut inst = SaveInst::new(Operand::Variable("test".to_string()));
+        inst.execute(&mut context).unwrap();
+        assert_eq!(context.local_var_store.get("test"), Some(&vec![10]));
+    }
+
+    #[test]
+    fn test_rest() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(10));
+        inst.execute(&mut context).unwrap();
+
+        let mut inst = SaveInst::new(Operand::Variable("test".to_string()));
+        inst.execute(&mut context).unwrap();
+
+        let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(20));
+        inst.execute(&mut context).unwrap();
+        
+        let mut inst = RestoreInst::new(Operand::Variable("test".to_string()));
+        inst.execute(&mut context).unwrap();
+        let val = inst.dest.value(&context).unwrap();
+        assert_eq!(val, 10);
+    }
 }

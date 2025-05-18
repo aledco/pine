@@ -31,7 +31,6 @@ are used to read and write memory.
 # TODO
 ## pvm
 - other syscall ops (read, write file, etc)
-- Write unit tests for fun.rs
 - Add failure tests
 - Add comments
 

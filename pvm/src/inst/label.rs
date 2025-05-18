@@ -31,6 +31,7 @@ impl Instruction for LabelInst {
 
 #[cfg(test)]
 mod tests {
+    use crate::ExecuteConfig;
     use super::*;
 
     #[test]
@@ -39,6 +40,15 @@ mod tests {
         let d = Operand::Constant(0);
         let inst = LabelInst::new(d);
         inst.validate().unwrap();
+    }
+
+    #[test]
+    fn test_label_initialization() {
+        let config = ExecuteConfig::default();
+        let mut context = Environment::new(config.memory_size, config.stdout);
+        let inst = LabelInst::new(Operand::Label("test".to_string()));
+        inst.initialize(&mut context, 0).unwrap();
+        assert_eq!(context.labels.get("test"), Some(&1));
     }
 
     #[test]
