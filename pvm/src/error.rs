@@ -1,5 +1,5 @@
 use crate::env::MemoryError;
-use crate::inst::{ExecuteError, ValidateError};
+use crate::inst::{ExecuteError, ExitError, ValidateError};
 use crate::parse::ParseError;
 use std::fmt::{Debug, Display};
 
@@ -9,6 +9,7 @@ pub enum Error {
     ParseError(ParseError),
     ValidateError(ValidateError),
     ExecuteError(ExecuteError),
+    ExitError(ExitError),
     MemoryError(MemoryError),
     WrappedError(Box<Error>, usize),
 }
@@ -30,6 +31,7 @@ impl Display for Error {
             Error::ParseError(e) => Display::fmt(&e, f),
             Error::ValidateError(e) => Display::fmt(&e, f),
             Error::ExecuteError(e) => Display::fmt(&e, f),
+            Error::ExitError(e) => Display::fmt(&e, f),
             Error::MemoryError(e) => Display::fmt(&e, f),
             Error::WrappedError(e, i) => write!(f, "{} - instruction {}", e, i),
         }
@@ -42,6 +44,7 @@ impl Debug for Error {
             Error::ParseError(e) => Debug::fmt(&e, f),
             Error::ValidateError(e) => Debug::fmt(&e, f),
             Error::ExecuteError(e) => Debug::fmt(&e, f),
+            Error::ExitError(e) => Debug::fmt(&e, f),
             Error::MemoryError(e) => Debug::fmt(&e, f),
             Error::WrappedError(e, i) => write!(f, "{:?} - instruction {}", e, i),
         }

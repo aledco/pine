@@ -110,3 +110,28 @@ impl Debug for ExecuteError {
         write!(f, "Runtime Error: {}", self.msg)
     }
 }
+
+#[derive(Clone)]
+pub struct ExitError {
+    pub exit_code: i32,
+}
+
+impl ExitError {
+    pub(crate) fn exit(code: i32) -> Error {
+        Error::ExitError(Self {
+            exit_code: code,
+        })
+    }
+}
+
+impl Display for ExitError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "process exited with code {}", self.exit_code)
+    }
+}
+
+impl Debug for ExitError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "process exited with code {}", self.exit_code)
+    }
+}

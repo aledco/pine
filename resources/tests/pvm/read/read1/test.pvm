@@ -1,0 +1,22 @@
+alloc buf 10
+read n buf
+pusha buf
+call print_string
+dealloc buf
+exit 0
+
+fun print_string
+popa s
+len n s
+move i 0
+label print_string_top1
+lt b i n
+jumpz b print_string_bottom1
+add p s i
+loadb c p
+printc c
+add i i 1
+jump print_string_top1
+label print_string_bottom1
+println
+ret

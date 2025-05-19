@@ -16,6 +16,6 @@ pub struct ExitInst {
 impl Instruction for ExitInst {
     fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         let val = from_u64!(self.src.value(env)?; i32);
-        std::process::exit(val);
+        Err(ExitError::exit(val))
     }
 }

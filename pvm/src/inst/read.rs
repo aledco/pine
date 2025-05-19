@@ -41,18 +41,18 @@ mod tests {
         let stdin = Rc::new(RefCell::new(bytes));
         let stdout = Rc::new(RefCell::new(std::io::stdout()));
         let mut context = Environment::new(32, stdin, stdout);
-        
+
         let addr = Operand::Variable("addr".to_string());
         let mut inst = AllocInst::new(addr.clone(), Operand::Constant(3));
         inst.execute(&mut context).unwrap();
-        
+
         let d = Operand::Variable("x".to_string());
         let mut inst = ReadInst::new(d.clone(), addr.clone());
         inst.execute(&mut context).unwrap();
-        
+
         let n = d.value(&context).unwrap();
         assert_eq!(n, 3);
-        
+
         let addr = from_u64!(addr.value(&context).unwrap(); usize);
         let v = context.memory.load_byte(addr).unwrap();
         assert_eq!(v, 97);

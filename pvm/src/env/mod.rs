@@ -41,7 +41,7 @@ impl Environment {
             local_var_store: HashMap::new(),
             stdin,
             stdout,
-            inst_ptr: 0,
+            inst_ptr: 0
         }
     }
 }
