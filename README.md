@@ -29,6 +29,20 @@ are used to read and write memory.
 - VS Code syntax highlighting
 
 # TODO
+## ast
+- Return results rather than panic
+- Finish parsing the rest of the Pine constructs
+  - objects
+  - enums
+  - iterators
+  - collections
+    - lists
+    - sets
+    - maps
+  - range objects
+  - for loops
+  - make it so (expr).function() == function(expr)
+
 ## pvm
 - other syscall ops (read and write file, etc)
 - Add failure tests
@@ -38,7 +52,7 @@ are used to read and write memory.
   - pvm done, need to work on ast still
 - Write comments
 - Refactor proc macros as much as possible
-  - pvm done, need to work on test_util and ast still
+  - pvm and ast done, need to work on test_util
 
 ## Tests
 - Add failure tests
