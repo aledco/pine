@@ -8,6 +8,7 @@ extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 use crate::inst::error::ValidateError;
 
+/// Creates a label.
 #[inst(name = "label", operands = [OperandFormat::Label])]
 pub struct LabelInst {
     pub(crate) lab: Operand,

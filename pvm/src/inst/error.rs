@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 use crate::error::Error;
 
+/// The validate error.
 #[derive(Clone)]
 pub struct ValidateError {
     pub msg: String,
@@ -47,6 +48,7 @@ impl Debug for ValidateError {
     }
 }
 
+/// The execute error.
 #[derive(Clone)]
 pub struct ExecuteError {
     pub msg: String,

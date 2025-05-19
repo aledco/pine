@@ -8,6 +8,7 @@ use crate::parse::{Line, Literal, Parse, Token};
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
+/// Stores a value into memory.
 #[inst(name = "store", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct StoreInst {
     pub(crate) dest: Operand,
@@ -23,6 +24,7 @@ impl Instruction for StoreInst {
     }
 }
 
+/// Stores a byte into memory.
 #[inst(name = "storeb", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct StoreByteInst {
     pub(crate) dest: Operand,

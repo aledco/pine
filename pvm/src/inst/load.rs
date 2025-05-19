@@ -8,6 +8,7 @@ use crate::parse::{Line, Literal, Parse, Token};
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
+/// Loads a value from memory.
 #[inst(name = "load", operands = [OperandFormat::Variable, OperandFormat::Variable])]
 pub struct LoadInst {
     pub(crate) dest: Operand,
@@ -23,6 +24,7 @@ impl Instruction for LoadInst {
     }
 }
 
+/// Loads a byte from memory.
 #[inst(name = "loadb", operands = [OperandFormat::Variable, OperandFormat::Variable])]
 pub struct LoadByteInst {
     pub(crate) dest: Operand,

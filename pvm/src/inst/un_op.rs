@@ -8,6 +8,7 @@ use std::ops::Neg;
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
+/// Moves a value into a variable.
 #[inst(name = "move", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct MoveInst {
     pub(crate) dest: Operand,
@@ -22,6 +23,7 @@ impl Instruction for MoveInst {
     }
 }
 
+/// Negates a signed integer.
 #[inst(name = "neg", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct NegInst {
     pub(crate) dest: Operand,
@@ -37,6 +39,7 @@ impl Instruction for NegInst {
     }
 }
 
+/// Negates a floating point number.
 #[inst(name = "negf", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct NegfInst {
     pub(crate) dest: Operand,

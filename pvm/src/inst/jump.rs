@@ -7,6 +7,7 @@ use crate::parse::{Line, Literal, Parse, Token};
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
+/// Unconditionally jumps to a label.
 #[inst(name = "jump", operands = [OperandFormat::Label])]
 pub struct JumpInst {
     pub(crate) lab: Operand,
@@ -30,6 +31,7 @@ impl Instruction for JumpInst {
     }
 }
 
+/// Jumps to a label if the argument is zero.
 #[inst(name = "jumpz", operands = [OperandFormat::Value, OperandFormat::Label])]
 pub struct JumpZeroInst {
     pub(crate) src: Operand,
@@ -61,6 +63,7 @@ impl Instruction for JumpZeroInst {
     }
 }
 
+/// Jumps to a label if the argument is not zero.
 #[inst(name = "jumpnz", operands = [OperandFormat::Value, OperandFormat::Label])]
 pub struct JumpNotZeroInst {
     pub(crate) src: Operand,

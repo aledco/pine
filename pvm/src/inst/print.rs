@@ -7,23 +7,28 @@ extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 use crate::from_u64;
 
+/// Prints a signed integer.
 #[inst(name = "printi", operands = [OperandFormat::Value])]
 #[print(i64)]
 pub struct PrintiInst {
     pub(crate) src: Operand,
 }
 
+/// Prints an unsigned integer.
 #[inst(name = "printu", operands = [OperandFormat::Value])]
 #[print(u64)]
 pub struct PrintuInst {
     pub(crate) src: Operand,
 }
+
+/// Prints a floating point number.
 #[inst(name = "printf", operands = [OperandFormat::Value])]
 #[print(f64)]
 pub struct PrintfInst {
     pub(crate) src: Operand,
 }
 
+/// Prints a hexadecimal integer.
 #[inst(name = "printh", operands = [OperandFormat::Value])]
 pub struct PrinthInst {
     pub(crate) src: Operand,
@@ -37,6 +42,7 @@ impl Instruction for PrinthInst {
     }
 }
 
+/// Prints a binary integer.
 #[inst(name = "printb", operands = [OperandFormat::Value])]
 pub struct PrintbInst {
     pub(crate) src: Operand,
@@ -50,6 +56,7 @@ impl Instruction for PrintbInst {
     }
 }
 
+/// Prints an ascii character.
 #[inst(name = "printc", operands = [OperandFormat::Value])]
 pub struct PrintcInst {
     pub(crate) src: Operand,
@@ -64,6 +71,8 @@ impl Instruction for PrintcInst {
     }
 }
 
+/// Prints a string.
+/// TODO should this be an instruction?
 #[inst(name = "prints", operands = [OperandFormat::Value])]
 pub struct PrintsInst {
     pub(crate) src: Operand,
@@ -93,6 +102,7 @@ impl Instruction for PrintsInst {
     }
 }
 
+/// Prints a newline character.
 #[inst(name = "println", operands = [])]
 pub struct PrintlnInst {}
 

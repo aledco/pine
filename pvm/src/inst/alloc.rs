@@ -8,6 +8,7 @@ use crate::parse::{Line, Literal, Parse, Token};
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
+/// Allocates memory.
 #[inst(name = "alloc", operands = [OperandFormat::Variable, OperandFormat::Value])]
 pub struct AllocInst {
     pub(crate) dest: Operand,
@@ -23,6 +24,7 @@ impl Instruction for AllocInst {
     }
 }
 
+/// Delallocates memory.
 #[inst(name = "dealloc", operands = [OperandFormat::Variable])]
 pub struct DeallocInst {
     pub(crate) src: Operand,
@@ -36,6 +38,7 @@ impl Instruction for DeallocInst {
     }
 }
 
+/// Gets the length in bytes of allocated memory.
 #[inst(name = "len", operands = [OperandFormat::Variable, OperandFormat::Variable])]
 pub struct LenInst {
     pub(crate) dest: Operand,

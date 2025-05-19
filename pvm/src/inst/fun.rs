@@ -7,6 +7,7 @@ use crate::parse::{Line, Literal, Parse, Token};
 extern crate pvm_proc_macros;
 use pvm_proc_macros::*;
 
+/// Creates a label for a function.
 #[inst(name = "fun", operands = [OperandFormat::Label])]
 pub struct FunInst {
     pub(crate) lab: Operand,
@@ -28,6 +29,7 @@ impl Instruction for FunInst {
     }
 }
 
+/// Pushes an argument to the argument queue.
 #[inst(name = "pusha", operands = [OperandFormat::Value])]
 pub struct PushaInst {
     pub(crate) src: Operand,
@@ -41,6 +43,7 @@ impl Instruction for PushaInst {
     }
 }
 
+/// Pops an argument from the argument queue.
 #[inst(name = "popa", operands = [OperandFormat::Variable])]
 pub struct PopaInst {
     pub(crate) dest: Operand,
@@ -58,6 +61,7 @@ impl Instruction for PopaInst {
     }
 }
 
+/// Pushes a return value to the ret val queue.
 #[inst(name = "pushr", operands = [OperandFormat::Value])]
 pub struct PushrInst {
     pub(crate) src: Operand,
@@ -71,6 +75,7 @@ impl Instruction for PushrInst {
     }
 }
 
+/// Pops a return value from the ret val queue.
 #[inst(name = "popr", operands = [OperandFormat::Variable])]
 pub struct PoprInst {
     pub(crate) dest: Operand,
@@ -88,6 +93,7 @@ impl Instruction for PoprInst {
     }
 }
 
+/// Calls a function.
 #[inst(name = "call", operands = [OperandFormat::Label])]
 pub struct CallInst {
     pub(crate) lab: Operand,
@@ -113,6 +119,7 @@ impl Instruction for CallInst {
     }
 }
 
+/// Returns from a function to the call point.
 #[inst(name = "ret", operands = [])]
 pub struct RetInst {
 }
@@ -135,6 +142,7 @@ impl Instruction for RetInst {
     }
 }
 
+/// Saves a local variable to the local var store.
 #[inst(name = "save", operands = [OperandFormat::Variable])]
 pub struct SaveInst {
     pub(crate) src: Operand,
@@ -156,6 +164,7 @@ impl Instruction for SaveInst {
     }
 }
 
+/// Restores a local variable from the local var store.
 #[inst(name = "rest", operands = [OperandFormat::Variable])]
 pub struct RestoreInst {
     pub(crate) dest: Operand,
@@ -296,7 +305,7 @@ mod tests {
 
         let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(20));
         inst.execute(&mut context).unwrap();
-        
+
         let mut inst = RestoreInst::new(Operand::Variable("test".to_string()));
         inst.execute(&mut context).unwrap();
         let val = inst.dest.value(&context).unwrap();
