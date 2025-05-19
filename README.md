@@ -31,6 +31,9 @@ are used to read and write memory.
 # TODO
 ## ast
 - Return results rather than panic
+- Move semantic tree traversals to another crate called sem
+- Write comments
+- Add failure tests
 - Finish parsing the rest of the Pine constructs
   - objects
   - enums
@@ -45,16 +48,6 @@ are used to read and write memory.
 
 ## pvm
 - other syscall ops (read and write file, etc)
-- Add failure tests
-
-## Refactors
-- Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
-  - pvm done, need to work on ast still
-- Write comments
-- Refactor proc macros as much as possible
-  - pvm and ast done, need to work on test_util
-
-## Tests
 - Add failure tests
 
 ## README
