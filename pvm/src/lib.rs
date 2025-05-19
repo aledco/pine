@@ -1,7 +1,6 @@
 mod conf;
 mod env;
 mod inst;
-mod operand;
 mod parse;
 mod cast;
 mod error;

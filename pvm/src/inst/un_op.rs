@@ -1,6 +1,5 @@
 use crate::env::Environment;
 use crate::inst::*;
-use crate::operand::*;
 use crate::parse::{Line, Literal, Parse, Token};
 use crate::cast::*;
 use std::ops::Neg;

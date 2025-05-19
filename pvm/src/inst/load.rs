@@ -1,7 +1,6 @@
 use pvm_proc_macros::Inst;
 use crate::env::Environment;
 use crate::inst::*;
-use crate::operand::*;
 use crate::cast::*;
 use crate::parse::{Line, Literal, Parse, Token};
 

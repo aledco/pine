@@ -3,8 +3,6 @@ use crate::env::Environment;
 use crate::Error;
 use crate::inst::{ValidateError, ExecuteError};
 
-// TODO move mod into inst
-
 /// An operand of an instruction.
 #[derive(Debug, Clone)]
 pub enum Operand {

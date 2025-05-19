@@ -9,17 +9,17 @@ use std::io::{Write};
 use std::rc::Rc;
 
 /// The execution environment.
-pub(crate) struct Environment {
-    pub memory: Memory,
-    pub variables: HashMap<String, u64>,
-    pub labels: HashMap<String, usize>,
-    pub fun_labels: HashMap<String, usize>,
-    pub arg_queue: VecDeque<u64>,
-    pub ret_queue: VecDeque<u64>,
-    pub ret_addr_stack: Vec<usize>,
-    pub local_var_store: HashMap<String, Vec<u64>>,
-    pub stdout: Rc<RefCell<dyn Write>>,
-    pub inst_ptr: usize,
+pub struct Environment {
+    pub(crate) memory: Memory,
+    pub(crate) variables: HashMap<String, u64>,
+    pub(crate) labels: HashMap<String, usize>,
+    pub(crate) fun_labels: HashMap<String, usize>,
+    pub(crate) arg_queue: VecDeque<u64>,
+    pub(crate) ret_queue: VecDeque<u64>,
+    pub(crate) ret_addr_stack: Vec<usize>,
+    pub(crate) local_var_store: HashMap<String, Vec<u64>>,
+    pub(crate) stdout: Rc<RefCell<dyn Write>>,
+    pub(crate) inst_ptr: usize,
 }
 
 impl Environment {

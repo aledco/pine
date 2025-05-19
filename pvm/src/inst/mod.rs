@@ -8,7 +8,9 @@ mod load;
 mod store;
 mod error;
 mod fun;
+mod operand;
 
+pub(crate) use operand::*;
 pub(crate) use bin_op::*;
 pub(crate) use un_op::*;
 pub(crate) use print::*;
@@ -27,13 +29,13 @@ use std::fmt::{Debug, Display};
 pub trait Instruction: Validate + Debug + Display {
     /// Executes the instruction.
     fn execute(&mut self, env: &mut Environment) -> Result<(), Error>;
-    
+
     /// Increments the instruction pointer.
     fn inc_inst_ptr(&self, env: &mut Environment) -> Result<(), Error> {
         env.inst_ptr += 1;
         Ok(())
     }
-    
+
     /// Initializes the instruction.
     fn initialize(&self, _env: &mut Environment, _i: usize) -> Result<(), Error> { Ok(()) }
 }
