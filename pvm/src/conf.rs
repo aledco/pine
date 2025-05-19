@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 const DEFAULT_MEMORY_SIZE: usize = 1024 * 1024;
 
+/// The execution configuration.
 pub struct ExecuteConfig {
     pub memory_size: usize,
     pub stdout: Rc<RefCell<dyn Write>>,

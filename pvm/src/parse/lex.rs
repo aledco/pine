@@ -2,6 +2,7 @@ use crate::error::Error;
 use crate::parse::error::ParseError;
 use crate::parse::token::*;
 
+/// Scans the input and produces a sequence of lines.
 pub(crate) fn lex(input: &str) -> Result<Vec<Line>, Error> {
     input
         .lines()
@@ -12,6 +13,7 @@ pub(crate) fn lex(input: &str) -> Result<Vec<Line>, Error> {
         .collect()
 }
 
+/// Scans a line.
 fn lex_line(i: usize, line: &str) -> Option<Result<Line, Error>> {
     let parts = line.split_whitespace().collect::<Vec<_>>();
     let inst = match parts.first() {
@@ -40,6 +42,7 @@ fn lex_line(i: usize, line: &str) -> Option<Result<Line, Error>> {
     Some(Ok(Line::new(inst_token, operand_tokens, i+1)))
 }
 
+/// Scans an operand.
 fn lex_operand(mut value: &str) -> Option<Result<Token, ()>> {
     if value.starts_with('#') {
         return None;
@@ -60,14 +63,21 @@ fn lex_operand(mut value: &str) -> Option<Result<Token, ()>> {
     }
 }
 
+/// Scans an identifer.
 fn lex_identifier(value: &str) -> Result<Token, ()> {
-    if value.chars().all(|c| c.is_alphanumeric() || c == '_') { // TODO add function to test if char is valid identifier
+    if value.chars().all(|c| is_valid_identifier_char(c)) {
         Ok(Token::Identifier(value.to_string()))
     } else {
         Err(())
     }
 }
 
+/// Determines if a character is a valid identifier character.
+fn is_valid_identifier_char(c: char) -> bool {
+    c.is_alphanumeric() || c == '_' || c == '.'
+}
+
+/// Scans a number.
 fn lex_number(mut value: &str) -> Result<Token, ()> {
     if value.starts_with("0x") {
         value = value.trim_start_matches("0x");
@@ -96,6 +106,7 @@ fn lex_number(mut value: &str) -> Result<Token, ()> {
     }
 }
 
+/// Scans a char.
 fn lex_char(value: &str)  -> Result<Token, ()> {
     let c = value.replace('\'', "");
     if c.len() != 1 { // only support one character ascii chars. escaped chars like '\n' must be specified with ascii code

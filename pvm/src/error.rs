@@ -3,6 +3,7 @@ use crate::inst::{ExecuteError, ValidateError};
 use crate::parse::ParseError;
 use std::fmt::{Debug, Display};
 
+/// The PVM error.
 #[derive(Clone)]
 pub enum Error {
     ParseError(ParseError),

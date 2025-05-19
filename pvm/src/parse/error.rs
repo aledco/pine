@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 use crate::error::Error;
 
+/// The parse error.
 #[derive(Clone)]
 pub struct ParseError {
     pub msg: String,

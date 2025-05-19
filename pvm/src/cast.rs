@@ -1,3 +1,4 @@
+/// Converts any number to u64.
 #[macro_export]
 macro_rules! to_u64 {
     ($e:expr) => {
@@ -14,6 +15,7 @@ macro_rules! to_u64 {
     };
 }
 
+/// Converts to any number from u64.
 #[macro_export]
 macro_rules! from_u64 {
     ($e:expr; $t:ty) => {

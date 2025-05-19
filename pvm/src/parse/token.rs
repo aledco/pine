@@ -1,3 +1,4 @@
+/// Represents a line of a PVM program.
 #[derive(PartialEq)]
 pub(crate) struct Line {
     pub inst_token: Token,
@@ -15,12 +16,14 @@ impl Line {
     }
 }
 
+/// Represents a token in a PVM program
 #[derive(PartialEq)]
 pub(crate) enum Token {
     Identifier(String),
     Literal(Literal),
 }
 
+/// Represents a PVM literal.
 #[derive(PartialEq)]
 pub(crate) enum Literal {
     Integer(u64),
