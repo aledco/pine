@@ -1,0 +1,8 @@
+neg x 1
+printi x # -1
+println
+
+sub x 0 1
+neg x x
+printi x # 1
+println

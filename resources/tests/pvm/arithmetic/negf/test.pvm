@@ -1,0 +1,8 @@
+negf x 1.4
+printf x # -1.4
+println
+
+subf x 0 1.4
+negf x x
+printf x # 1.4
+println

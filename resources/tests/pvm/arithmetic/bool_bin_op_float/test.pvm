@@ -1,0 +1,32 @@
+move x 5f
+eqf y x 5f
+printi y # 1
+println
+
+move x 5f
+subf z 0 5f
+eqf y x z
+printi y # 0
+println
+
+move x 5f
+nequ y x 5f
+printi y # 0
+println
+
+ltf y 5f 6f
+printi y # 1
+println
+
+ltef y 6f 5f
+printi y # 0
+println
+
+ltef y 5f 5f
+printi y # 1
+println
+
+move x 10f
+gtf x x x
+printi x # 0
+println

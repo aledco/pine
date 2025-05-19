@@ -71,7 +71,6 @@ pub fn derive_ast_node(input: TokenStream) -> TokenStream {
     .into()
 }
 
-
 #[proc_macro_derive(TypedAst)]
 pub fn derive_typed_ast(input: TokenStream) -> TokenStream {
     let item_struct = parse_macro_input!(input as ItemStruct);

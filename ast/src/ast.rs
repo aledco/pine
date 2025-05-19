@@ -1,6 +1,6 @@
+use crate::operator::Operator;
 use crate::symbol::*;
 use crate::token::*;
-use crate::operator::Operator;
 use std::fmt;
 
 extern crate ast_proc_macros;
@@ -102,7 +102,6 @@ pub struct Identifier {
 }
 
 impl Identifier {
-
     pub fn pine_type(&mut self) -> PineType {
         self.symbol.borrow().pine_type.clone()
     }
@@ -112,9 +111,8 @@ impl Identifier {
     }
 }
 
-
 #[derive(TypedAst)]
 #[ast]
 pub struct TypeNode {
-    pine_type: PineType
+    pine_type: PineType,
 }

@@ -1,0 +1,26 @@
+alloc a 10
+len len a
+
+move i 0
+label top1
+lt b i len
+jumpz b bottom1
+mul x i i
+add p a i
+storeb p x
+add i i 1
+jump top1
+label bottom1
+
+
+move i 0
+label top2
+lt b i len
+jumpz b bottom2
+add p a i
+loadb x p
+printi x
+println
+add i i 1
+jump top2
+label bottom2

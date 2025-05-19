@@ -1,6 +1,6 @@
-use std::str::FromStr;
-use ast::token::*;
 use ast::operator::*;
+use ast::token::*;
+use std::str::FromStr;
 
 pub(crate) fn parse_token_ref(token_ref: String) -> Vec<Token> {
     token_ref

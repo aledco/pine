@@ -6,16 +6,9 @@ use std::rc::Rc;
 pub type SymbolRef = Rc<RefCell<Symbol>>;
 pub type ScopeRef = Rc<RefCell<Scope>>;
 
-// pub enum SymbolType {
-//     Variable,
-//     Parameter,
-//     Function,
-// }
-
 #[derive(Debug)]
 pub struct Symbol {
     pub name: String,
-    //pub symbol_type: SymbolType,
     pub pine_type: PineType,
 }
 

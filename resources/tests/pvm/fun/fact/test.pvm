@@ -1,0 +1,39 @@
+call main
+jump end
+
+fun main
+
+pusha 5
+call fact
+popr a
+printi a # 120
+println
+
+pusha 0
+call fact
+popr a
+printi a # 1
+println
+
+ret
+
+fun fact
+popa n
+
+eq b n 0
+jumpz b rec
+pushr 1
+ret
+
+label rec
+sub m n 1
+save n
+pusha m
+call fact
+popr a
+rest n
+mul a n a
+pushr a
+ret
+
+label end

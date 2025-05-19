@@ -1,6 +1,14 @@
 [workspace]
 resolver = "2"
-members = ["ast", "ast/ast_proc_macros", "gen", "pvm", "test_util", "test_util/test_util_proc_macros"]
+members = [
+    "ast",
+    "ast/ast_proc_macros",
+    "gen",
+    "pvm",
+    "pvm/pvm_proc_macros",
+    "test_util",
+    "test_util/test_util_proc_macros"
+]
 
 [package]
 name = "pine"

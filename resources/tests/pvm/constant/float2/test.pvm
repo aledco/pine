@@ -1,0 +1,34 @@
+move x 100f
+printf x # 100
+println
+printi x # 4636737291354636288
+println
+
+move y 4636737291354636288
+printf y # 100
+println
+printi y # 4636737291354636288
+println
+
+move z 100.0
+printf z # 100
+println
+printi z # 4636737291354636288
+println
+
+move a 100.0f
+printf a # 100
+println
+printi a # 4636737291354636288
+println
+
+addf b 50.0f 50f
+printf b # 100
+println
+printi b # 4636737291354636288
+println
+
+printf 100f # 100
+println
+printi 100f # 4636737291354636288
+println

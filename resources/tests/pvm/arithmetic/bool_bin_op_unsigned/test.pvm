@@ -1,0 +1,32 @@
+move x 5
+equ y x 5
+printi y # 1
+println
+
+move x 5
+sub z 0 5
+equ y x z
+printi y # 0
+println
+
+move x 5
+nequ y x 5
+printi y # 0
+println
+
+ltu y 5 6
+printi y # 1
+println
+
+lteu y 6 5
+printi y # 0
+println
+
+lteu y 5 5
+printi y # 1
+println
+
+move x 10
+gtu x x x
+printi x # 0
+println

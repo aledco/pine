@@ -1,0 +1,13 @@
+move x 1
+jumpnz x L1
+move x 20
+label L1
+lt x x 10
+jumpnz x L2
+move x 0
+jump L3
+label L2
+move x 1
+label L3
+printi x # 1
+println

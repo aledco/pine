@@ -1,0 +1,5 @@
+alloc a 4
+store a 100
+load x a
+printi x
+println

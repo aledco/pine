@@ -1,6 +1,6 @@
 use crate::ast::*;
-use crate::token::*;
 use crate::operator::Operator;
+use crate::token::*;
 use std::fmt::Debug;
 
 pub fn parse(tokens: Vec<Token>) -> Program {
@@ -33,7 +33,7 @@ impl Parser {
         }
 
         let span = if !functions.is_empty() {
-            functions.first().unwrap().span() +  functions.last().unwrap().span()
+            functions.first().unwrap().span() + functions.last().unwrap().span()
         } else {
             Span::default()
         };
@@ -93,9 +93,7 @@ impl Parser {
     fn parse_identifier(&mut self) -> Identifier {
         let token = self.match_token(TokenTypeMatch::Identifier);
         match token.token_type {
-            TokenType::Identifier(identifier) => {
-                Identifier::new(identifier, token.span)
-            }
+            TokenType::Identifier(identifier) => Identifier::new(identifier, token.span),
             _ => panic!("Parse Error: at {}", self.span()),
         }
     }
@@ -125,7 +123,7 @@ impl Parser {
         } else if self.matches(Keyword::While) {
             self.parse_while()
         //} else if self.matches(Keyword::For) {
-            //self.parse_for()
+        //self.parse_for()
         } else if self.matches(Keyword::Return) {
             self.parse_return()
         } else if self.matches(Keyword::Begin) {
@@ -157,11 +155,7 @@ impl Parser {
         let expression = self.parse_expression();
         let span = let_token.span + expression.span();
         Statement::new(
-            StatementType::Let(
-                Box::new(identifier),
-                type_node,
-                Box::new(expression),
-            ),
+            StatementType::Let(Box::new(identifier), type_node, Box::new(expression)),
             span,
         )
     }
@@ -172,7 +166,10 @@ impl Parser {
         self.match_token(Punctuation::EqualSign);
         let expression = self.parse_expression();
         let span = let_token.span + expression.span();
-        Statement::new(StatementType::Set(Box::new(identifier), Box::new(expression)), span)
+        Statement::new(
+            StatementType::Set(Box::new(identifier), Box::new(expression)),
+            span,
+        )
     }
 
     fn parse_if(&mut self) -> Statement {
@@ -190,11 +187,7 @@ impl Parser {
         let end = self.match_token(Keyword::End);
         let span = if_token.span + end.span;
         Statement::new(
-            StatementType::If(
-                Box::new(condition),
-                Box::new(if_body),
-                else_body,
-            ),
+            StatementType::If(Box::new(condition), Box::new(if_body), else_body),
             span,
         )
     }
@@ -206,7 +199,10 @@ impl Parser {
         let body = self.parse_block();
         let end = self.match_token(Keyword::End);
         let span = while_token.span + end.span;
-        Statement::new(StatementType::While(Box::new(condition), Box::new(body)), span)
+        Statement::new(
+            StatementType::While(Box::new(condition), Box::new(body)),
+            span,
+        )
     }
 
     // fn parse_for(&mut self) -> Statement {
@@ -246,11 +242,7 @@ impl Parser {
                 let rhs = self.parse_expression_by_precedence(precedence - 1);
                 let span = expr.span() + rhs.span();
                 expr = Expression::new(
-                    ExpressionType::Binary(
-                        Box::new(expr),
-                        op,
-                        Box::new(rhs),
-                    ),
+                    ExpressionType::Binary(Box::new(expr), op, Box::new(rhs)),
                     span,
                 )
             }
@@ -266,7 +258,7 @@ impl Parser {
             self.parse_integer()
         } else if self.matches(TokenTypeMatch::Float) {
             self.parse_float()
-        }else if self.matches_any(vec![Keyword::True, Keyword::False]) {
+        } else if self.matches_any(vec![Keyword::True, Keyword::False]) {
             self.parse_bool()
         } else if self.matches(TokenTypeMatch::String) {
             self.parse_string()
@@ -321,8 +313,12 @@ impl Parser {
     fn parse_bool(&mut self) -> Expression {
         let token = self.match_any(vec![Keyword::True, Keyword::False]);
         match token.token_type {
-            TokenType::Keyword(Keyword::False) => Expression::new(ExpressionType::BoolLiteral(false), token.span.clone()),
-            TokenType::Keyword(Keyword::True) => Expression::new(ExpressionType::BoolLiteral(true), token.span.clone()),
+            TokenType::Keyword(Keyword::False) => {
+                Expression::new(ExpressionType::BoolLiteral(false), token.span.clone())
+            }
+            TokenType::Keyword(Keyword::True) => {
+                Expression::new(ExpressionType::BoolLiteral(true), token.span.clone())
+            }
             _ => panic!("Parse Error: at {}", self.span()),
         }
     }
