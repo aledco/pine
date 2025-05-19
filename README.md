@@ -32,7 +32,6 @@ are used to read and write memory.
 ## pvm
 - other syscall ops (read, write file, etc)
 - Add failure tests
-- Add comments
 
 ## Refactors
 - Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
