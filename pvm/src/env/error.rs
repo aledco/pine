@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 use crate::error::Error;
 
+/// The memory error.
 #[derive(Clone)]
 pub struct MemoryError {
     pub msg: String,

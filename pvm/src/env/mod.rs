@@ -8,7 +8,8 @@ use std::collections::{HashMap, VecDeque};
 use std::io::{Write};
 use std::rc::Rc;
 
-pub struct Environment {
+/// The execution environment.
+pub(crate) struct Environment {
     pub memory: Memory,
     pub variables: HashMap<String, u64>,
     pub labels: HashMap<String, usize>,
@@ -22,7 +23,8 @@ pub struct Environment {
 }
 
 impl Environment {
-    pub fn new(memory_size: usize, stdout: Rc<RefCell<dyn Write>>) -> Self {
+    /// Creates a new environment.
+    pub(crate) fn new(memory_size: usize, stdout: Rc<RefCell<dyn Write>>) -> Self {
         Self {
             memory: Memory::new(memory_size),
             variables: HashMap::new(),

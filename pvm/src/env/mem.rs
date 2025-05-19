@@ -4,15 +4,17 @@ use crate::Error;
 
 const WORD_SIZE: usize = size_of::<u64>();
 
+/// The execution memory.
 #[derive(Debug)]
-pub struct Memory {
+pub(crate) struct Memory {
     bytes: Box<[u8]>,
     in_use: HashMap<usize, usize>,
     free: BTreeMap<usize, usize>,
 }
 
 impl Memory {
-    pub fn new(size: usize) -> Self {
+    /// Creates a new memory.
+    pub(crate) fn new(size: usize) -> Self {
         Self {
             bytes: vec![0; size].into_boxed_slice(),
             in_use: HashMap::new(),
@@ -20,7 +22,8 @@ impl Memory {
         }
     }
 
-    pub fn allocate(&mut self, size: usize) -> Result<usize, Error> {
+    /// Allocates a block of memory.
+    pub(crate) fn allocate(&mut self, size: usize) -> Result<usize, Error> {
         if size == 0 {
             return Err(MemoryError::cannot_allocate_zero_bytes());
         }
@@ -49,7 +52,8 @@ impl Memory {
         }
     }
 
-    pub fn deallocate(&mut self, addr: usize) -> Result<(), Error> {
+    /// Deallocates a block of memory.
+    pub(crate) fn deallocate(&mut self, addr: usize) -> Result<(), Error> {
         if addr >= self.bytes.len() {
             return Err(MemoryError::address_out_of_bounds());
         }
@@ -89,14 +93,15 @@ impl Memory {
     
     /// Gets the length of an allocation in bytes. 
     /// `addr` must point to a valid allocation.
-    pub fn len(&self, addr: usize) -> Result<usize, Error> {
+    pub(crate) fn len(&self, addr: usize) -> Result<usize, Error> {
         match self.in_use.get(&addr) {
             Some(s) => Ok(*s),
             None => Err(MemoryError::invalid_address()),
         }
     }
 
-    pub fn load(&self, addr: usize) -> Result<u64, Error> {
+    /// Loads a value from memory.
+    pub(crate) fn load(&self, addr: usize) -> Result<u64, Error> {
         if addr + WORD_SIZE - 1 >= self.bytes.len() {
             Err(MemoryError::address_out_of_bounds())
         } else {
@@ -108,7 +113,8 @@ impl Memory {
         }
     }
 
-    pub fn store(&mut self, addr: usize, word: u64) -> Result<(), Error> {
+    /// Stores a value into memory.
+    pub(crate) fn store(&mut self, addr: usize, word: u64) -> Result<(), Error> {
         if addr + WORD_SIZE - 1 >= self.bytes.len() {
             Err(MemoryError::address_out_of_bounds())
         } else {
@@ -121,7 +127,8 @@ impl Memory {
         }
     }
 
-    pub fn load_byte(&self, addr: usize) -> Result<u8, Error> {
+    /// Loads a byte from memory.
+    pub(crate) fn load_byte(&self, addr: usize) -> Result<u8, Error> {
         if addr >= self.bytes.len() {
             Err(MemoryError::address_out_of_bounds())
         } else {
@@ -129,7 +136,8 @@ impl Memory {
         }
     }
 
-    pub fn store_byte(&mut self, addr: usize, byte: u8) -> Result<(), Error> {
+    /// Stores a byte into memory.
+    pub(crate) fn store_byte(&mut self, addr: usize, byte: u8) -> Result<(), Error> {
         if addr >= self.bytes.len() {
             Err(MemoryError::address_out_of_bounds())
         } else {
