@@ -55,7 +55,6 @@ impl Instruction for LenInst {
 
 #[cfg(test)]
 mod tests {
-    use crate::ExecuteConfig;
     use super::*;
 
     #[test]
@@ -70,8 +69,7 @@ mod tests {
     #[test]
     fn test_alloc() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<usize> = vec![1, 2, 5, 10, 20];
         for v in &vals {
@@ -108,8 +106,7 @@ mod tests {
     #[test]
     fn test_dealloc() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<usize> = vec![1, 2, 5, 10, 20];
         for v in &vals {
@@ -154,8 +151,7 @@ mod tests {
     #[test]
     fn test_len() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<usize> = vec![1, 2, 5, 10, 20];
         for v in vals {

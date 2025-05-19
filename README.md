@@ -30,7 +30,7 @@ are used to read and write memory.
 
 # TODO
 ## pvm
-- other syscall ops (read, write file, etc)
+- other syscall ops (read and write file, etc)
 - Add failure tests
 
 ## Refactors

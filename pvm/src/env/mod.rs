@@ -1,11 +1,11 @@
-mod mem;
 mod error;
+mod mem;
 
+use crate::env::mem::Memory;
 pub(crate) use error::*;
 use std::cell::RefCell;
-use crate::env::mem::Memory;
 use std::collections::{HashMap, VecDeque};
-use std::io::{Write};
+use std::io::{Read, Write};
 use std::rc::Rc;
 
 /// The execution environment.
@@ -18,13 +18,18 @@ pub struct Environment {
     pub(crate) ret_queue: VecDeque<u64>,
     pub(crate) ret_addr_stack: Vec<usize>,
     pub(crate) local_var_store: HashMap<String, Vec<u64>>,
+    pub(crate) stdin: Rc<RefCell<dyn Read>>,
     pub(crate) stdout: Rc<RefCell<dyn Write>>,
     pub(crate) inst_ptr: usize,
 }
 
 impl Environment {
     /// Creates a new environment.
-    pub(crate) fn new(memory_size: usize, stdout: Rc<RefCell<dyn Write>>) -> Self {
+    pub(crate) fn new(
+        memory_size: usize,
+        stdin: Rc<RefCell<dyn Read>>,
+        stdout: Rc<RefCell<dyn Write>>,
+    ) -> Self {
         Self {
             memory: Memory::new(memory_size),
             variables: HashMap::new(),
@@ -34,8 +39,19 @@ impl Environment {
             ret_queue: VecDeque::new(),
             ret_addr_stack: Vec::new(),
             local_var_store: HashMap::new(),
+            stdin,
             stdout,
             inst_ptr: 0,
         }
+    }
+}
+
+impl Default for Environment {
+    fn default() -> Self {
+        Self::new(
+            1024,
+            Rc::new(RefCell::new(std::io::stdin())),
+            Rc::new(RefCell::new(std::io::stdout())),
+        )
     }
 }

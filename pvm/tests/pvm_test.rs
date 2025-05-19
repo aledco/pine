@@ -14,8 +14,9 @@ fn test(mut test_base_path: PathBuf) {
     let pvm_content = test_content.pvm_content.expect("pvm test input is required");
     let instructions = parse(&pvm_content).unwrap();
 
+    let stdin = Rc::new(RefCell::new(std::io::stdin()));
     let buffer: Rc<RefCell<Vec<u8>>> = Rc::new(RefCell::new(Vec::new()));
-    let config = ExecuteConfig::new(MEMORY, buffer.clone());
+    let config = ExecuteConfig::new(MEMORY, stdin, buffer.clone());
     execute_with_config(instructions, config).unwrap();
     
     if let Some(pvm_ref_content) = test_content.pvm_ref_content {

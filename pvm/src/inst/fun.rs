@@ -189,13 +189,11 @@ impl Instruction for RestoreInst {
 
 #[cfg(test)]
 mod tests {
-    use crate::ExecuteConfig;
     use super::*;
 
     #[test]
     fn test_fun_initialization() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let inst = FunInst::new(Operand::Label("test".to_string()));
         inst.initialize(&mut context, 0).unwrap();
         assert_eq!(context.fun_labels.get("test"), Some(&1));
@@ -203,8 +201,7 @@ mod tests {
 
     #[test]
     fn test_pusha() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let mut inst = PushaInst::new(Operand::Constant(10));
         inst.execute(&mut context).unwrap();
         assert_eq!(context.arg_queue.pop_front(), Some(10));
@@ -212,8 +209,7 @@ mod tests {
 
     #[test]
     fn test_popa() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let mut inst = PushaInst::new(Operand::Constant(10));
         inst.execute(&mut context).unwrap();
 
@@ -225,8 +221,7 @@ mod tests {
 
     #[test]
     fn test_pushr() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let mut inst = PushrInst::new(Operand::Constant(10));
         inst.execute(&mut context).unwrap();
         assert_eq!(context.ret_queue.pop_front(), Some(10));
@@ -234,8 +229,7 @@ mod tests {
 
     #[test]
     fn test_popr() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let mut inst = PushrInst::new(Operand::Constant(10));
         inst.execute(&mut context).unwrap();
 
@@ -247,8 +241,7 @@ mod tests {
 
     #[test]
     fn test_call() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let inst = FunInst::new(Operand::Label("test".to_string()));
         inst.initialize(&mut context, 0).unwrap();
@@ -263,8 +256,7 @@ mod tests {
 
     #[test]
     fn test_ret() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let inst = FunInst::new(Operand::Label("test".to_string()));
         inst.initialize(&mut context, 0).unwrap();
@@ -282,8 +274,7 @@ mod tests {
 
     #[test]
     fn test_save() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(10));
         inst.execute(&mut context).unwrap();
 
@@ -294,8 +285,7 @@ mod tests {
 
     #[test]
     fn test_rest() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(10));
         inst.execute(&mut context).unwrap();
 

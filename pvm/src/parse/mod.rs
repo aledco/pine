@@ -95,8 +95,9 @@ fn parse_instruction(line: &Line) -> Result<Box<dyn Instruction>, Error> {
             PrinthInst::NAME => PrinthInst::parse(line),
             PrintbInst::NAME => PrintbInst::parse(line),
             PrintcInst::NAME => PrintcInst::parse(line),
-            PrintsInst::NAME => PrintsInst::parse(line),
             PrintlnInst::NAME => PrintlnInst::parse(line),
+            ReadInst::NAME => ReadInst::parse(line),
+            ExitInst::NAME => ExitInst::parse(line),
             inst => Err(ParseError::inst_not_recognized(inst, line.line))
         },
         _ => Err(ParseError::invalid_token(line.line)),

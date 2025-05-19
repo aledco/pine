@@ -20,7 +20,7 @@ pub fn execute(instructions: Vec<Box<dyn Instruction>>)  -> Result<(), Error> {
 
 /// Executes the PVM instructions with the provided configuration.
 pub fn execute_with_config(mut instructions: Vec<Box<dyn Instruction>>, config: ExecuteConfig) -> Result<(), Error> {
-    let mut env = Environment::new(config.memory_size, config.stdout);
+    let mut env = Environment::new(config.memory_size, config.stdin, config.stdout);
 
     // validation pass
     for (i, instruction) in instructions.iter().enumerate() {

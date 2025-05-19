@@ -145,6 +145,16 @@ impl Memory {
             Ok(())
         }
     }
+    
+    /// Gets a buffer from memory at the given address with the given size.
+    pub(crate) fn get_buffer(&mut self, addr: usize, size: usize) -> Result<&mut [u8], Error> {
+        if addr + size - 1 >= self.bytes.len() {
+            Err(MemoryError::address_out_of_bounds())
+        } else {
+            let buf = &mut self.bytes[addr..addr + size];
+            Ok(buf)
+        }
+    }
 }
 
 #[cfg(test)]

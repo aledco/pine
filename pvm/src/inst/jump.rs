@@ -96,7 +96,6 @@ impl Instruction for JumpNotZeroInst {
 
 #[cfg(test)]
 mod tests {
-    use crate::ExecuteConfig;
     use super::*;
 
     #[test]
@@ -109,8 +108,7 @@ mod tests {
 
     #[test]
     fn test_jump_inst() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let lab = "test".to_string();
         context.labels.insert(lab.clone(), 100);
@@ -144,8 +142,7 @@ mod tests {
 
     #[test]
     fn test_jumpz_inst() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let lab = "test".to_string();
         context.labels.insert(lab.clone(), 100);
@@ -186,8 +183,7 @@ mod tests {
 
     #[test]
     fn test_jumpnz_inst() {
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let lab = "test".to_string();
         context.labels.insert(lab.clone(), 100);

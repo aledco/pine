@@ -41,7 +41,6 @@ impl Instruction for LoadByteInst {
 
 #[cfg(test)]
 mod tests {
-    use crate::ExecuteConfig;
     use crate::inst::store::StoreInst;
     use super::*;
 
@@ -57,8 +56,7 @@ mod tests {
     #[test]
     fn test_load() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<i64> = vec![-100, -10, 0, 4, 5, 10, 20];
         for v in &vals {
@@ -115,8 +113,7 @@ mod tests {
     #[test]
     fn test_loadb() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<i8> = vec![-100, -10, 0, 4, 5, 10, 20];
         for v in &vals {

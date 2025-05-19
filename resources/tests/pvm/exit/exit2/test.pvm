@@ -1,0 +1,6 @@
+printi 1
+println
+move x 0
+exit x
+printi 1
+println

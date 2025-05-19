@@ -443,7 +443,6 @@ pub struct ShraInst {
 mod tests {
     use super::*;
     use crate::cast::*;
-    use crate::ExecuteConfig;
 
     #[test]
     #[should_panic]
@@ -458,8 +457,7 @@ mod tests {
     #[test]
     fn test_add_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -507,8 +505,7 @@ mod tests {
     #[test]
     fn test_addu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -556,8 +553,7 @@ mod tests {
     #[test]
     fn test_addf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<f64> = vec![-1000.5 * 1000.4, -100.14, 0.0, 100.14, 1000.5 * 1000.4];
         for v1 in &vals {
@@ -608,8 +604,7 @@ mod tests {
     #[test]
     fn test_sub_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -657,8 +652,7 @@ mod tests {
     #[test]
     fn test_subu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -706,8 +700,7 @@ mod tests {
     #[test]
     fn test_subf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<f64> = vec![-1000.5 * 1000.4, -100.14, 0.0, 100.14, 1000.5 * 1000.4];
         for v1 in &vals {
@@ -758,8 +751,7 @@ mod tests {
     #[test]
     fn test_mul_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -807,8 +799,7 @@ mod tests {
     #[test]
     fn test_mulu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -856,8 +847,7 @@ mod tests {
     #[test]
     fn test_mulf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<f64> = vec![-1000.5 * 1000.4, -100.14, 0.0, 100.14, 1000.5 * 1000.4];
         for v1 in &vals {
@@ -908,8 +898,7 @@ mod tests {
     #[test]
     fn test_div_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 if v2 == 0 {
@@ -961,8 +950,7 @@ mod tests {
     #[test]
     fn test_divu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 1u64..32 {
                 i += 1;
@@ -1010,8 +998,7 @@ mod tests {
     #[test]
     fn test_divf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let vals: Vec<f64> = vec![-1000.5 * 1000.4, -100.14, 0.0, 100.14, 1000.5 * 1000.4];
         for v1 in &vals {
             for v2 in &vals {
@@ -1065,8 +1052,7 @@ mod tests {
     #[test]
     fn test_mod_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 if v2 == 0 {
@@ -1118,8 +1104,7 @@ mod tests {
     #[test]
     fn test_modu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 if v2 == 0 {
@@ -1171,8 +1156,7 @@ mod tests {
     #[test]
     fn test_modf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<f64> = vec![-1000.5 * 1000.4, -100.14, 0.0, 100.14, 1000.5 * 1000.4];
         for v1 in &vals {
@@ -1227,8 +1211,7 @@ mod tests {
     #[test]
     fn test_pow_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in 0u32..32 {
                 i += 1;
@@ -1276,8 +1259,7 @@ mod tests {
     #[test]
     fn test_powu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u32..32 {
                 i += 1;
@@ -1325,8 +1307,7 @@ mod tests {
     #[test]
     fn test_powf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
 
         let vals: Vec<f64> = vec![0.0, 2.5, 100.14];
         for v1 in &vals {
@@ -1367,8 +1348,7 @@ mod tests {
     #[test]
     fn test_eq_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -1406,8 +1386,7 @@ mod tests {
     #[test]
     fn test_equ_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -1445,8 +1424,7 @@ mod tests {
     #[test]
     fn test_eqf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let vals: Vec<f64> = vec![0.0, 2.5, 100.14];
         for v1 in &vals {
             for v2 in &vals {
@@ -1486,8 +1464,7 @@ mod tests {
     #[test]
     fn test_neq_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -1525,8 +1502,7 @@ mod tests {
     #[test]
     fn test_nequ_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -1564,8 +1540,7 @@ mod tests {
     #[test]
     fn test_neqf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let vals: Vec<f64> = vec![0.0, 2.5, 100.14];
         for v1 in &vals {
             for v2 in &vals {
@@ -1605,8 +1580,7 @@ mod tests {
     #[test]
     fn test_lt_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -1644,8 +1618,7 @@ mod tests {
     #[test]
     fn test_ltu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -1683,8 +1656,7 @@ mod tests {
     #[test]
     fn test_ltf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let vals: Vec<f64> = vec![0.0, 2.5, 100.14];
         for v1 in &vals {
             for v2 in &vals {
@@ -1724,8 +1696,7 @@ mod tests {
     #[test]
     fn test_lte_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -1763,8 +1734,7 @@ mod tests {
     #[test]
     fn test_lteu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -1802,8 +1772,7 @@ mod tests {
     #[test]
     fn test_ltef_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let vals: Vec<f64> = vec![0.0, 2.5, 100.14];
         for v1 in &vals {
             for v2 in &vals {
@@ -1843,8 +1812,7 @@ mod tests {
     #[test]
     fn test_gt_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -1882,8 +1850,7 @@ mod tests {
     #[test]
     fn test_gtu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -1921,8 +1888,7 @@ mod tests {
     #[test]
     fn test_gtf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let vals: Vec<f64> = vec![0.0, 2.5, 100.14];
         for v1 in &vals {
             for v2 in &vals {
@@ -1962,8 +1928,7 @@ mod tests {
     #[test]
     fn test_gte_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in -32i64..32 {
             for v2 in -32i64..32 {
                 i += 1;
@@ -2001,8 +1966,7 @@ mod tests {
     #[test]
     fn test_gteu_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -2040,8 +2004,7 @@ mod tests {
     #[test]
     fn test_gtef_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let vals: Vec<f64> = vec![0.0, 2.5, 100.14];
         for v1 in &vals {
             for v2 in &vals {
@@ -2081,8 +2044,7 @@ mod tests {
     #[test]
     fn test_and_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -2120,8 +2082,7 @@ mod tests {
     #[test]
     fn test_or_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -2159,8 +2120,7 @@ mod tests {
     #[test]
     fn test_xor_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -2198,8 +2158,7 @@ mod tests {
     #[test]
     fn test_shl_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -2237,8 +2196,7 @@ mod tests {
     #[test]
     fn test_shr_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0u64..32 {
             for v2 in 0u64..32 {
                 i += 1;
@@ -2276,8 +2234,7 @@ mod tests {
     #[test]
     fn test_shra_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v1 in 0i64..32 {
             for v2 in 0u64..32 {
                 i += 1;

@@ -56,7 +56,7 @@ impl Instruction for NegfInst {
 
 #[cfg(test)]
 mod tests {
-    use crate::{from_u64, to_u64, ExecuteConfig};
+    use crate::{from_u64, to_u64};
     use super::*;
 
     #[test]
@@ -71,8 +71,7 @@ mod tests {
     #[test]
     fn test_move_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v in -32i64..32 {
             i += 1;
 
@@ -114,8 +113,7 @@ mod tests {
     #[test]
     fn test_neg_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         for v in -32i64..32 {
             i += 1;
 
@@ -157,8 +155,7 @@ mod tests {
     #[test]
     fn test_negf_inst() {
         let mut i = 0;
-        let config = ExecuteConfig::default();
-        let mut context = Environment::new(config.memory_size, config.stdout);
+        let mut context = Environment::default();
         let vals: Vec<f64> = vec![-100.14, -1.0, 0.0, 1.0, 100.14];
         for v in vals {
             i += 1;
