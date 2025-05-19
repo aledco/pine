@@ -1,7 +1,7 @@
 mod common;
 
 use std::cell::RefCell;
-use std::io::{BufReader, Read};
+use std::io::Read;
 use pvm::{parse, ExecuteConfig, execute_with_config, Error};
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -28,8 +28,8 @@ fn test(mut test_base_path: PathBuf) {
         assert_eq!(e.exit_code, 0);
     } else {
         result.unwrap();
-    }   
-    
+    }
+
     if let Some(pvm_ref_content) = test_content.pvm_ref_content {
         let actual: String = buffer
             .borrow()
