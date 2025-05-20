@@ -1,10 +1,10 @@
-use crate::ast::*;
-use crate::traverse::Traverse;
+use crate::Traverse;
+use ast::{Ast, TypedAst};
 
 pub struct AstTypeTraverser;
 
 impl Traverse for AstTypeTraverser {
-    fn traverse(&mut self, program: &mut Program) {
+    fn traverse(&mut self, program: &mut ast::Program) {
         for f in &mut program.functions {
             self.visit_function(f);
         }
@@ -16,7 +16,7 @@ impl AstTypeTraverser {
         Box::new(Self {})
     }
 
-    fn visit_function(&self, function: &mut Function) -> PineType {
+    fn visit_function(&self, function: &mut ast::Function) -> ast::PineType {
         let param_types = function
             .params
             .iter_mut()
@@ -25,10 +25,10 @@ impl AstTypeTraverser {
 
         let return_type = match &mut function.return_type_node {
             Some(t) => self.visit_type_node(t.as_mut()),
-            None => PineType::Void,
+            None => ast::PineType::Void,
         };
 
-        let function_type = PineType::Function {
+        let function_type = ast::PineType::Function {
             params: param_types,
             ret: Box::new(return_type),
         };
@@ -44,16 +44,16 @@ impl AstTypeTraverser {
         function_type
     }
 
-    fn visit_param(&self, param: &mut Param) -> PineType {
+    fn visit_param(&self, param: &mut ast::Param) -> ast::PineType {
         let param_type = self.visit_type_node(param.type_node.as_mut());
         param.identifier.set_pine_type(param_type.clone());
         self.visit_identifier(param.identifier.as_mut());
         param_type
     }
 
-    fn visit_statement(&self, statement: &mut Statement) -> PineType {
+    fn visit_statement(&self, statement: &mut ast::Statement) -> ast::PineType {
         match &mut statement.statement_type {
-            StatementType::Let(identifier, type_node, expression) => {
+            ast::StatementType::Let(identifier, type_node, expression) => {
                 let e_type = self.visit_expression(expression);
                 if let Some(type_node) = type_node {
                     let n_type = self.visit_type_node(type_node);
@@ -68,16 +68,16 @@ impl AstTypeTraverser {
 
                 self.visit_identifier(identifier);
             }
-            StatementType::Set(identifier, expression) => {
+            ast::StatementType::Set(identifier, expression) => {
                 let e_type = self.visit_expression(expression);
                 let i_type = self.visit_identifier(identifier);
                 if i_type != e_type {
                     panic!("Type Error at {}: types do not match", statement.span());
                 }
             }
-            StatementType::If(condition, if_body, else_body) => {
+            ast::StatementType::If(condition, if_body, else_body) => {
                 let condition_type = self.visit_expression(condition);
-                if condition_type != PineType::Bool {
+                if condition_type != ast::PineType::Bool {
                     panic!(
                         "Type Error at {}: condition must have type bool",
                         statement.span()
@@ -89,9 +89,9 @@ impl AstTypeTraverser {
                     self.visit_statement(else_body);
                 }
             }
-            StatementType::While(condition, body) => {
+            ast::StatementType::While(condition, body) => {
                 let condition_type = self.visit_expression(condition);
-                if condition_type != PineType::Bool {
+                if condition_type != ast::PineType::Bool {
                     panic!(
                         "Type Error at {}: condition must have type bool",
                         statement.span()
@@ -100,33 +100,33 @@ impl AstTypeTraverser {
 
                 self.visit_statement(body);
             }
-            StatementType::Return(expression) => {
+            ast::StatementType::Return(expression) => {
                 if let Some(expression) = expression {
                     self.visit_expression(expression);
                 }
             }
-            StatementType::Expression(expression) => {
+            ast::StatementType::Expression(expression) => {
                 self.visit_expression(expression);
             }
-            StatementType::Block(statements) => {
+            ast::StatementType::Block(statements) => {
                 for s in statements {
                     self.visit_statement(s);
                 }
             }
         }
 
-        PineType::Void // statements always have type void
+        ast::PineType::Void // statements always have type void
     }
 
-    fn visit_expression(&self, expression: &mut Expression) -> PineType {
+    fn visit_expression(&self, expression: &mut ast::Expression) -> ast::PineType {
         let span = expression.span();
         match &mut expression.expression_type {
-            ExpressionType::IntLiteral(_) => PineType::Integer,
-            ExpressionType::FloatLiteral(_) => PineType::Float,
-            ExpressionType::BoolLiteral(_) => PineType::Bool,
-            ExpressionType::StringLiteral(_) => PineType::String,
-            ExpressionType::Identifier(identifier) => self.visit_identifier(identifier),
-            ExpressionType::Unary(op, expression) => {
+            ast::ExpressionType::IntLiteral(_) => ast::PineType::Integer,
+            ast::ExpressionType::FloatLiteral(_) => ast::PineType::Float,
+            ast::ExpressionType::BoolLiteral(_) => ast::PineType::Bool,
+            ast::ExpressionType::StringLiteral(_) => ast::PineType::String,
+            ast::ExpressionType::Identifier(identifier) => self.visit_identifier(identifier),
+            ast::ExpressionType::Unary(op, expression) => {
                 let t = self.visit_expression(expression);
 
                 match op.unary_pine_type(t) {
@@ -134,7 +134,7 @@ impl AstTypeTraverser {
                     Err(e) => panic!("Type Error at {}: {}", span, e),
                 }
             }
-            ExpressionType::Binary(lhs, op, rhs) => {
+            ast::ExpressionType::Binary(lhs, op, rhs) => {
                 let lhs_type = self.visit_expression(lhs);
                 let rhs_type = self.visit_expression(rhs);
 
@@ -146,11 +146,11 @@ impl AstTypeTraverser {
         }
     }
 
-    fn visit_identifier(&self, identifier: &mut Identifier) -> PineType {
+    fn visit_identifier(&self, identifier: &mut ast::Identifier) -> ast::PineType {
         identifier.pine_type()
     }
 
-    fn visit_type_node(&self, type_node: &mut TypeNode) -> PineType {
+    fn visit_type_node(&self, type_node: &mut ast::TypeNode) -> ast::PineType {
         type_node.pine_type()
     }
 }

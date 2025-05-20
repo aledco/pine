@@ -29,7 +29,6 @@ impl Default for PineType {
 }
 
 pub trait Ast: fmt::Debug {
-    // TODO rename to AstNode after refactor
     fn scope(&self) -> ScopeRef;
     fn set_scope(&mut self, scope: ScopeRef);
     fn span(&self) -> Span;

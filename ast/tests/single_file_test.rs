@@ -18,5 +18,5 @@ fn test(mut test_base_path: PathBuf) {
 
     let program = parse(pine_content);
     assert!(program.functions.len() > 0);
-    // TODO write test traversal
+    // TODO test AST structure
 }

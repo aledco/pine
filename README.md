@@ -46,6 +46,12 @@ are used to read and write memory.
   - for loops
   - make it so (expr).function() == function(expr)
 
+## sem
+- add better type inference
+- any other semantic passes?
+- add tests
+- add comments
+
 ## pvm
 - other syscall ops (read and write file, etc)
 - Add failure tests
