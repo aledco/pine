@@ -30,20 +30,24 @@ are used to read and write memory.
 
 # TODO
 ## ast
-- Return results rather than panic
-- Move semantic tree traversals to another crate called sem
 - Write comments
 - Add failure tests
 - Finish parsing the rest of the Pine constructs
   - objects
+  - interfaces
   - enums
   - iterators
   - collections
     - lists
     - sets
     - maps
+    - tuples
   - range objects
   - for loops
+  - elifs
+  - pattern matching
+  - module imports
+  - public access modifier (or export)
   - make it so (expr).function() == function(expr)
 
 ## sem

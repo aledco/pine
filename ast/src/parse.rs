@@ -2,8 +2,9 @@ use crate::ast::*;
 use crate::operator::Operator;
 use crate::token::*;
 use std::fmt::Debug;
+use crate::error::{ParseError, ParseResult};
 
-pub fn parse(tokens: Vec<Token>) -> Program {
+pub fn parse(tokens: Vec<Token>) -> ParseResult<Program> {
     let mut parser = Parser::new(tokens);
     parser.parse()
 }
@@ -21,14 +22,14 @@ impl Parser {
         Parser { tokens, index: 0 }
     }
 
-    pub fn parse(&mut self) -> Program {
+    pub fn parse(&mut self) -> ParseResult<Program> {
         let mut functions = vec![];
         while !self.eof() {
             if self.matches_function() {
-                let function = self.parse_function();
+                let function = self.parse_function()?;
                 functions.push(function);
             } else {
-                panic!("Parse Error: at {}", self.span())
+                Err(ParseError::new("expected function", self.span()))?
             }
         }
 
@@ -37,83 +38,80 @@ impl Parser {
         } else {
             Span::default()
         };
-        Program::new(functions, span)
+        Ok(Program::new(functions, span))
     }
 
-    fn parse_function(&mut self) -> Function {
-        let fun = self.match_token(Keyword::Fun);
-        let identifier = self.parse_identifier();
-        let params = self.parse_params();
+    fn parse_function(&mut self) -> ParseResult<Function> {
+        let fun = self.match_token(Keyword::Fun)?;
+        let identifier = self.parse_identifier()?;
+        let params = self.parse_params()?;
 
         // compute the type of the function
         let return_type = if self.matches(Punctuation::Arrow) {
-            self.match_token(Punctuation::Arrow);
-            Some(Box::new(self.parse_type()))
+            self.match_token(Punctuation::Arrow)?;
+            Some(Box::new(self.parse_type()?))
         } else {
             None
         };
 
-        self.match_token(Keyword::Begin);
-        let body = self.parse_block();
-        self.match_token(Keyword::End);
+        self.match_token(Keyword::Begin)?;
+        let body = self.parse_block()?;
+        self.match_token(Keyword::End)?;
 
         let span = fun.span + body.span();
-        Function::new(
+        Ok(Function::new(
             Box::new(identifier),
             params,
             return_type,
             Box::new(body),
             span,
-        )
+        ))
     }
 
-    fn parse_params(&mut self) -> Vec<Param> {
-        self.match_token(Punctuation::OpenParen);
+    fn parse_params(&mut self) -> ParseResult<Vec<Param>> {
+        self.match_token(Punctuation::OpenParen)?;
         let mut params = Vec::new();
         while self.matches(TokenTypeMatch::Identifier) {
-            let param = self.parse_param();
+            let param = self.parse_param()?;
             params.push(param);
-            if !self.matches(Punctuation::CloseParen) {
-                break;
-            }
         }
 
-        self.match_token(Punctuation::CloseParen);
-        params
+        self.match_token(Punctuation::CloseParen)?;
+        Ok(params)
     }
 
-    fn parse_param(&mut self) -> Param {
-        let identifier = self.parse_identifier();
-        self.match_token(Punctuation::Colon);
-        let type_node = self.parse_type();
+    fn parse_param(&mut self) -> ParseResult<Param> {
+        let identifier = self.parse_identifier()?;
+        self.match_token(Punctuation::Colon)?;
+        let type_node = self.parse_type()?;
         let span = identifier.span() + type_node.span();
-        Param::new(Box::new(identifier), Box::new(type_node), span)
+        Ok(Param::new(Box::new(identifier), Box::new(type_node), span))
     }
 
-    fn parse_identifier(&mut self) -> Identifier {
-        let token = self.match_token(TokenTypeMatch::Identifier);
+    fn parse_identifier(&mut self) -> ParseResult<Identifier> {
+        let token = self.match_token(TokenTypeMatch::Identifier)?;
         match token.token_type {
-            TokenType::Identifier(identifier) => Identifier::new(identifier, token.span),
-            _ => panic!("Parse Error: at {}", self.span()),
+            TokenType::Identifier(identifier) => Ok(Identifier::new(identifier, token.span)),
+            _ => panic!("parser bug"),
         }
     }
 
-    fn parse_block(&mut self) -> Statement {
+    fn parse_block(&mut self) -> ParseResult<Statement> {
         let mut span = self.span();
         let mut statements = vec![];
         while self.matches_statement() {
-            let statement = self.parse_statement();
+            let statement = self.parse_statement()?;
             statements.push(statement);
         }
 
-        if !statements.is_empty() {
-            span = span + statements.last().unwrap().span();
+        if let Some(statement) = statements.last() {
+            span = span + statement.span();
         }
 
-        Statement::new(StatementType::Block(statements), span)
+        Ok(Statement::new(StatementType::Block(statements), span))
     }
 
-    fn parse_statement(&mut self) -> Statement {
+    fn parse_statement(&mut self) -> ParseResult<Statement> {
         if self.matches(Keyword::Let) {
             self.parse_let()
         } else if self.matches(Keyword::Set) {
@@ -127,119 +125,113 @@ impl Parser {
         } else if self.matches(Keyword::Return) {
             self.parse_return()
         } else if self.matches(Keyword::Begin) {
-            self.match_token(Keyword::Begin);
+            self.match_token(Keyword::Begin)?;
             let block = self.parse_block();
-            self.match_token(Keyword::End);
+            self.match_token(Keyword::End)?;
             block
         } else if self.matches_expression() {
-            let expr = self.parse_expression();
+            let expr = self.parse_expression()?;
             let span = expr.span();
-            Statement::new(StatementType::Expression(Box::new(expr)), span)
+            Ok(Statement::new(StatementType::Expression(Box::new(expr)), span))
         } else {
-            panic!("Parse Error: at {}", self.span())
+            Err(ParseError::new("invalid statement", self.span()))
         }
     }
 
-    fn parse_let(&mut self) -> Statement {
-        let let_token = self.match_token(Keyword::Let);
-        let identifier = self.parse_identifier();
+    fn parse_let(&mut self) -> ParseResult<Statement> {
+        let let_token = self.match_token(Keyword::Let)?;
+        let identifier = self.parse_identifier()?;
         let type_node = if self.matches(Punctuation::Colon) {
-            self.match_token(Punctuation::Colon);
-            let type_node = self.parse_type();
+            self.match_token(Punctuation::Colon)?;
+            let type_node = self.parse_type()?;
             Some(Box::new(type_node))
         } else {
             None
         };
 
-        self.match_token(Punctuation::EqualSign);
-        let expression = self.parse_expression();
+        self.match_token(Punctuation::EqualSign)?;
+        let expression = self.parse_expression()?;
         let span = let_token.span + expression.span();
-        Statement::new(
+        Ok(Statement::new(
             StatementType::Let(Box::new(identifier), type_node, Box::new(expression)),
             span,
-        )
+        ))
     }
 
-    fn parse_set(&mut self) -> Statement {
-        let let_token = self.match_token(Keyword::Set);
-        let identifier = self.parse_identifier();
-        self.match_token(Punctuation::EqualSign);
-        let expression = self.parse_expression();
+    fn parse_set(&mut self) -> ParseResult<Statement> {
+        let let_token = self.match_token(Keyword::Set)?;
+        let identifier = self.parse_identifier()?;
+        self.match_token(Punctuation::EqualSign)?;
+        let expression = self.parse_expression()?;
         let span = let_token.span + expression.span();
-        Statement::new(
+        Ok(Statement::new(
             StatementType::Set(Box::new(identifier), Box::new(expression)),
             span,
-        )
+        ))
     }
 
-    fn parse_if(&mut self) -> Statement {
-        let if_token = self.match_token(Keyword::If);
-        let condition = self.parse_expression();
-        self.match_token(Keyword::Then);
-        let if_body = self.parse_block();
+    fn parse_if(&mut self) -> ParseResult<Statement> {
+        let if_token = self.match_token(Keyword::If)?;
+        let condition = self.parse_expression()?;
+        self.match_token(Keyword::Then)?;
+        let if_body = self.parse_block()?;
         let else_body = if self.matches(Keyword::Else) {
-            self.match_token(Keyword::Else);
-            let else_body = self.parse_block();
+            self.match_token(Keyword::Else)?;
+            let else_body = self.parse_block()?;
             Some(Box::new(else_body))
         } else {
             None
         };
-        let end = self.match_token(Keyword::End);
+        let end = self.match_token(Keyword::End)?;
         let span = if_token.span + end.span;
-        Statement::new(
+        Ok(Statement::new(
             StatementType::If(Box::new(condition), Box::new(if_body), else_body),
             span,
-        )
+        ))
     }
 
-    fn parse_while(&mut self) -> Statement {
-        let while_token = self.match_token(Keyword::While);
-        let condition = self.parse_expression();
-        self.match_token(Keyword::Do);
-        let body = self.parse_block();
-        let end = self.match_token(Keyword::End);
+    fn parse_while(&mut self) -> ParseResult<Statement> {
+        let while_token = self.match_token(Keyword::While)?;
+        let condition = self.parse_expression()?;
+        self.match_token(Keyword::Do)?;
+        let body = self.parse_block()?;
+        let end = self.match_token(Keyword::End)?;
         let span = while_token.span + end.span;
-        Statement::new(
+        Ok(Statement::new(
             StatementType::While(Box::new(condition), Box::new(body)),
             span,
-        )
+        ))
     }
 
-    // fn parse_for(&mut self) -> Statement {
-    //     AstNode::dummy()
-    // }
-
-    fn parse_return(&mut self) -> Statement {
-        let ret = self.match_token(Keyword::Return);
+    fn parse_return(&mut self) -> ParseResult<Statement> {
+        let ret = self.match_token(Keyword::Return)?;
         let (expression, span) = if self.matches_expression() {
-            let e = self.parse_expression();
+            let e = self.parse_expression()?;
             let s = ret.span + e.span();
             (Some(Box::new(e)), s)
         } else {
             (None, ret.span)
         };
 
-        Statement::new(StatementType::Return(expression), span)
+        Ok(Statement::new(StatementType::Return(expression), span))
     }
 
-    fn parse_expression(&mut self) -> Expression {
+    fn parse_expression(&mut self) -> ParseResult<Expression> {
         self.parse_expression_by_precedence(Operator::max_precedence())
     }
 
-    fn parse_expression_by_precedence(&mut self, precedence: i32) -> Expression {
+    fn parse_expression_by_precedence(&mut self, precedence: i32) -> ParseResult<Expression> {
         if precedence < Operator::min_precedence() {
             self.parse_expression_term()
         } else {
-            let mut expr = self.parse_expression_by_precedence(precedence - 1);
+            let mut expr = self.parse_expression_by_precedence(precedence - 1)?;
             while self.matches_any(Operator::binary_ops_by_precedence(precedence)) {
-                let op_token = self.match_any(Operator::binary_ops_by_precedence(precedence));
-                let op = if let TokenType::Operator(op) = op_token.token_type {
-                    op
-                } else {
-                    panic!("Parse Error: at {}", self.span())
+                let op_token = self.match_any(Operator::binary_ops_by_precedence(precedence))?;
+                let op = match op_token.token_type {
+                    TokenType::Operator(op) => op,
+                    _ => panic!("parser bug"),
                 };
-
-                let rhs = self.parse_expression_by_precedence(precedence - 1);
+                let rhs = self.parse_expression_by_precedence(precedence - 1)?;
                 let span = expr.span() + rhs.span();
                 expr = Expression::new(
                     ExpressionType::Binary(Box::new(expr), op, Box::new(rhs)),
@@ -247,11 +239,11 @@ impl Parser {
                 )
             }
 
-            expr
+            Ok(expr)
         }
     }
 
-    fn parse_expression_term(&mut self) -> Expression {
+    fn parse_expression_term(&mut self) -> ParseResult<Expression> {
         if self.matches(TokenTypeMatch::Identifier) {
             self.parse_identifier_expression()
         } else if self.matches(TokenTypeMatch::Integer) {
@@ -263,144 +255,131 @@ impl Parser {
         } else if self.matches(TokenTypeMatch::String) {
             self.parse_string()
         } else if self.matches_any(Operator::all_unary_ops()) {
-            let op_token = self.match_any(Operator::all_unary_ops());
-            let op = if let TokenType::Operator(op) = op_token.token_type {
-                op
-            } else {
-                panic!("Parse Error: at {}", self.span())
+            let op_token = self.match_any(Operator::all_unary_ops())?;
+            let op = match op_token.token_type {
+                TokenType::Operator(op) => op,
+                _ => panic!("parser bug"),
             };
-
-            let expr = self.parse_expression_term();
+            let expr = self.parse_expression_term()?;
             let span = op_token.span + expr.span();
-            Expression::new(ExpressionType::Unary(op, Box::new(expr)), span)
+            Ok(Expression::new(ExpressionType::Unary(op, Box::new(expr)), span))
         } else if self.matches(Punctuation::OpenParen) {
-            self.match_token(Punctuation::OpenParen);
+            self.match_token(Punctuation::OpenParen)?;
             let expr = self.parse_expression();
-            self.match_token(Punctuation::CloseParen);
+            self.match_token(Punctuation::CloseParen)?;
             expr
         } else {
             // TODO function calls and array access
-            panic!("Parse Error: at {}", self.span())
+            Err(ParseError::new("invalid expression", self.span()))
         }
     }
 
-    fn parse_identifier_expression(&mut self) -> Expression {
-        let identifier = self.parse_identifier();
+    fn parse_identifier_expression(&mut self) -> ParseResult<Expression> {
+        let identifier = self.parse_identifier()?;
         let span = identifier.span();
-        Expression::new(ExpressionType::Identifier(Box::new(identifier)), span)
+        Ok(Expression::new(ExpressionType::Identifier(Box::new(identifier)), span))
     }
 
-    fn parse_integer(&mut self) -> Expression {
-        let token = self.match_token(TokenTypeMatch::Integer);
+    fn parse_integer(&mut self) -> ParseResult<Expression> {
+        let token = self.match_token(TokenTypeMatch::Integer)?;
         match token.token_type {
             TokenType::Integer(value) => {
-                Expression::new(ExpressionType::IntLiteral(value), token.span.clone())
+                Ok(Expression::new(ExpressionType::IntLiteral(value), token.span.clone()))
             }
-            _ => panic!("Parse Error: at {}", self.span()),
+            _ => panic!("parser bug"),
         }
     }
 
-    fn parse_float(&mut self) -> Expression {
-        let token = self.match_token(TokenTypeMatch::Float);
+    fn parse_float(&mut self) -> ParseResult<Expression> {
+        let token = self.match_token(TokenTypeMatch::Float)?;
         match token.token_type {
             TokenType::Float(value) => {
-                Expression::new(ExpressionType::FloatLiteral(value), token.span.clone())
+                Ok(Expression::new(ExpressionType::FloatLiteral(value), token.span.clone()))
             }
-            _ => panic!("Parse Error: at {}", self.span()),
+            _ => panic!("parser bug"),
         }
     }
 
-    fn parse_bool(&mut self) -> Expression {
-        let token = self.match_any(vec![Keyword::True, Keyword::False]);
+    fn parse_bool(&mut self) -> ParseResult<Expression> {
+        let token = self.match_any(vec![Keyword::True, Keyword::False])?;
         match token.token_type {
             TokenType::Keyword(Keyword::False) => {
-                Expression::new(ExpressionType::BoolLiteral(false), token.span.clone())
+                Ok(Expression::new(ExpressionType::BoolLiteral(false), token.span.clone()))
             }
             TokenType::Keyword(Keyword::True) => {
-                Expression::new(ExpressionType::BoolLiteral(true), token.span.clone())
+                Ok(Expression::new(ExpressionType::BoolLiteral(true), token.span.clone()))
             }
-            _ => panic!("Parse Error: at {}", self.span()),
+            _ => panic!("parser bug"),
         }
     }
 
-    fn parse_string(&mut self) -> Expression {
-        let token = self.match_token(TokenTypeMatch::String);
+    fn parse_string(&mut self) -> ParseResult<Expression> {
+        let token = self.match_token(TokenTypeMatch::String)?;
         match token.token_type {
             TokenType::String(value) => {
-                Expression::new(ExpressionType::StringLiteral(value), token.span.clone())
+                Ok(Expression::new(ExpressionType::StringLiteral(value), token.span.clone()))
             }
-            _ => panic!("Parse Error: at {}", self.span()),
+            _ => panic!("parser bug"),
         }
     }
 
-    fn parse_type(&mut self) -> TypeNode {
+    fn parse_type(&mut self) -> ParseResult<TypeNode> {
         let span = self.span();
-        let pine_type = self.match_type();
-        TypeNode::new(pine_type, span)
+        let pine_type = self.match_type()?;
+        Ok(TypeNode::new(pine_type, span))
     }
 
-    fn match_type(&mut self) -> PineType {
-        let span = self.span();
-        if self.matches_any(vec![
-            Keyword::Int,
-            Keyword::Float,
-            Keyword::Bool,
-            Keyword::String,
-            Keyword::Void,
-        ]) {
-            let type_token = self.match_any(vec![
-                Keyword::Int,
-                Keyword::Float,
-                Keyword::String,
-                Keyword::Void,
-            ]);
-            match type_token.token_type {
-                TokenType::Keyword(keyword) => match keyword {
-                    Keyword::Int => PineType::Integer,
-                    Keyword::Float => PineType::Float,
-                    Keyword::String => PineType::String,
-                    _ => panic!("Parse Error: at {}", span),
-                },
-                _ => panic!("Parse Error: at {}", span),
-            }
+    fn match_type(&mut self) -> ParseResult<PineType> {
+        if self.matches(Keyword::Void) {
+            self.match_token(Keyword::Void)?;
+            Ok(PineType::Void)
+        } else if self.matches(Keyword::Int) {
+            self.match_token(Keyword::Int)?;
+            Ok(PineType::Integer)
+        } else if self.matches(Keyword::Float) {
+            self.match_token(Keyword::Float)?;
+            Ok(PineType::Float)
+        } else if self.matches(Keyword::Bool) {
+            self.match_token(Keyword::Bool)?;
+            Ok(PineType::Bool)
+        } else if self.matches(Keyword::String) {
+            self.match_token(Keyword::String)?;
+            Ok(PineType::String)
         } else if self.matches(Punctuation::OpenBracket) {
-            self.match_token(Punctuation::OpenBracket);
-            let elem_type = self.match_type();
-            self.match_token(Punctuation::OpenBracket);
-            PineType::List(Box::new(elem_type))
+            self.match_token(Punctuation::OpenBracket)?;
+            let elem_type = self.match_type()?;
+            self.match_token(Punctuation::OpenBracket)?;
+            Ok(PineType::List(Box::new(elem_type)))
         } else {
             // TODO parse function and user defined types
-            panic!("Parse Error: at {}", span);
+            Err(ParseError::new("invalid type", self.span()))
         }
     }
 
-    fn match_token<T>(&mut self, token_type: T) -> Token
+    fn match_token<T>(&mut self, token_type: T) -> ParseResult<Token>
     where
         T: TokenMatch + Copy + Debug,
     {
         let token = self.token();
         if token_type.matches(&token.token_type) {
             self.index += 1;
-            return token;
+            Ok(token)
+        } else {
+            Err(ParseError::new(format!("expected {:?} found {:?}", token_type, token.token_type), self.span()))
         }
-
-        panic!(
-            "parse error at {} expected {:?} found {:?}",
-            token.span, token_type, token.token_type
-        )
     }
 
-    fn match_any<T>(&mut self, token_types: Vec<T>) -> Token
+    fn match_any<T>(&mut self, token_types: Vec<T>) -> ParseResult<Token>
     where
         T: TokenMatch + Copy + Debug,
     {
-        for token_type in token_types {
-            if self.matches(token_type) {
-                return self.match_token(token_type);
+        for token_type in &token_types {
+            if self.matches(*token_type) {
+                return self.match_token(*token_type);
             }
         }
 
-        panic!("Parse Error: at {}", self.span())
+        Err(ParseError::new(format!("expected one of {:?} found {:?}", token_types, self.token_type()), self.span()))
     }
 
     fn matches<T>(&self, token_type: T) -> bool

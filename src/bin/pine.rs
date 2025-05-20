@@ -6,7 +6,7 @@ fn main() {
 
     let input = fs::read_to_string(input_file).unwrap();
 
-    let mut program = ast::parse(input);
+    let mut program = ast::parse(input).unwrap(); // TODO handle error
     sem::traverse(&mut program);
 
     // TODO code gen

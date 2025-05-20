@@ -1,16 +1,18 @@
-pub mod ast;
 pub mod lex;
-pub mod operator;
-mod parse;
-pub mod symbol;
-pub mod token;
+pub mod parse;
+mod ast;
+mod operator;
+mod token;
+mod error;
+mod symbol;
 
 pub use ast::*;
 pub use operator::*;
 pub use symbol::*;
 pub use token::*;
+pub use error::*;
 
-pub fn parse(input: String) -> Program {
-    let tokens = lex::lex(input);
+pub fn parse(input: String) -> ParseResult<Program> {
+    let tokens = lex::lex(input)?;
     parse::parse(tokens)
 }
