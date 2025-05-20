@@ -2,23 +2,26 @@ export if_example, ObjectExample
 
 # TODO need to decide how objects should work
 
-obj ObjectExample begin
-    name: string
-    value: int
-end
+mod ex begin
+    obj ObjectExample begin
+        name: string
+        value: int
+    end
 
-namespace ObjectExample begin
-    fun ObjectExample::default() -> ObjectExample begin
+    fun default() -> ObjectExample begin
         return ObjectExample("default", 0)
     end
 
-    fun ObjectExample::inc_value(self: ObjectExample) begin
+    fun inc_value(self: ObjectExample) begin
         self.value += 1
     end
 end
 
+import ex::inc_value
+
 fun test() begin
-    let o = ObjectExample::default();
+    let o: ObjectExample = ex::default()
+    ex::inc_value(o)
     o.inc_value()
 end
 

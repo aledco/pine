@@ -3,7 +3,7 @@ use crate::parse::error::ParseError;
 use crate::parse::token::*;
 
 /// Scans the input and produces a sequence of lines.
-pub(crate) fn lex(input: &str) -> Result<Vec<Line>, Error> {
+pub(crate) fn lex(input: String) -> Result<Vec<Line>, Error> {
     input
         .lines()
         .enumerate()

@@ -32,7 +32,11 @@ are used to read and write memory.
 ## ast
 - Write comments
 - Add failure tests
+- Make statement and expression enums
+- Expressions cannot be statements, must use call keyword to call function not in an expression
 - Finish parsing the rest of the Pine constructs
+  - function calls
+  - arrays
   - objects
   - interfaces
   - enums

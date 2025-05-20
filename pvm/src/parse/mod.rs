@@ -9,8 +9,9 @@ use crate::inst::*;
 use crate::error::Error;
 
 /// Parses a string input into a sequence of PVM instructions.
-pub fn parse(input: &str) -> Result<Vec<Box<dyn Instruction>>, Error> {
-    let lines = lex(input)?;
+pub fn parse<T>(input: T) -> Result<Vec<Box<dyn Instruction>>, Error>
+where T: Into<String> {
+    let lines = lex(input.into())?;
     let mut instructions: Vec<Box<dyn Instruction>> = Vec::new();
     for line in &lines {
         let inst = parse_instruction(line)?;
