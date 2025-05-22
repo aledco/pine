@@ -180,6 +180,12 @@ pub struct IdentExpr {
 }
 
 #[typed_ast]
+pub struct CallExpr {
+    pub fun: Box<Expr>,
+    pub args: Vec<Expr>
+}
+
+#[typed_ast]
 pub struct UnaryExpr {
     pub op: Operator,
     pub expr: Box<Expr>,
@@ -199,6 +205,7 @@ pub enum Expr {
     BoolLit(BoolLitExpr),
     StringLit(StringLitExpr),
     Ident(IdentExpr),
+    Call(CallExpr),
     Unary(UnaryExpr),
     Binary(BinaryExpr),
 }
@@ -211,6 +218,7 @@ impl Ast for Expr {
             Expr::BoolLit(bool_lit_expr) => bool_lit_expr.scope(),
             Expr::StringLit(string_lit_expr) => string_lit_expr.scope(),
             Expr::Ident(ident_expr) => ident_expr.scope(),
+            Expr::Call(call_expr) => call_expr.scope(),
             Expr::Unary(unary_expr) => unary_expr.scope(),
             Expr::Binary(binary_expr) => binary_expr.scope(),
         }
@@ -223,6 +231,7 @@ impl Ast for Expr {
             Expr::BoolLit(bool_lit_expr) => bool_lit_expr.set_scope(scope),
             Expr::StringLit(string_lit_expr) => string_lit_expr.set_scope(scope),
             Expr::Ident(ident_expr) => ident_expr.set_scope(scope),
+            Expr::Call(call_expr) => call_expr.set_scope(scope),
             Expr::Unary(unary_expr) => unary_expr.set_scope(scope),
             Expr::Binary(binary_expr) => binary_expr.set_scope(scope),
         }
@@ -235,6 +244,7 @@ impl Ast for Expr {
             Expr::BoolLit(bool_lit_expr) => bool_lit_expr.span(),
             Expr::StringLit(string_lit_expr) => string_lit_expr.span(),
             Expr::Ident(ident_expr) => ident_expr.span(),
+            Expr::Call(call_expr) => call_expr.span(),
             Expr::Unary(unary_expr) => unary_expr.span(),
             Expr::Binary(binary_expr) => binary_expr.span(),
         }

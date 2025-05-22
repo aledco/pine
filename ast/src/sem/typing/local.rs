@@ -1,11 +1,10 @@
 use crate::ast::*;
 use crate::sem::{SemError, SemResult};
-use crate::symbol::*;
 
 // Simple Alg: https://pfudke.wordpress.com/2014/11/20/hindley-milner-type-inference-a-practical-example-2/
 // Efficient Alg: https://okmij.org/ftp/ML/generalization.html
 
-pub(crate) fn typing(program: &mut Program) -> SemResult<()> {
+pub(crate) fn local(program: &mut Program) -> SemResult<()> {
     program.visit()?;
     Ok(())
 }
@@ -26,39 +25,12 @@ impl AstTyping for Program {
 
 impl AstTyping for Fun {
     fn visit(&mut self) -> SemResult<PineType> {
-        let mut param_types: Vec<PineType> = vec![];
-        for p in &mut self.params {
-            param_types.push(p.visit()?);
-        }
-
-        let return_type = match &mut self.return_ty {
-            Some(t) => t.visit()?,
-            None => PineType::Void,
-        };
-
-        let function_type = PineType::Function {
-            params: param_types,
-            ret: Box::new(return_type),
-        };
-
-        self.ident.symbol.borrow_mut().pine_type = function_type.clone();
-
-        self.ident.visit()?;
+        let fun_type = self.ident.visit()?;
         self.block.visit()?;
 
-        // TODO ensure return type is valid
         // TODO ensure all paths return if return type is not void
 
-        Ok(function_type)
-    }
-}
-
-impl AstTyping for Param {
-    fn visit(&mut self) -> SemResult<PineType> {
-        let param_type = self.ty.visit()?;
-        self.ident.symbol.borrow_mut().pine_type = param_type.clone();
-        self.ident.visit()?;
-        Ok(param_type)
+        Ok(fun_type)
     }
 }
 
@@ -136,12 +108,9 @@ impl AstTyping for ReturnStmt {
             PineType::Function { ret, .. } => ret.as_ref().clone(),
             _ => return Err(SemError::error("could not find enclosing function", self.span()))
         };
-        
-        println!("ret_ty = {:?}", fun_ret_ty);
-        
+
         if let Some(expr) = &mut self.expr {
             let e_type = expr.visit()?;
-            println!("e_ty = {:?}", e_type);
             if e_type != fun_ret_ty {
                 return Err(SemError::error("types do not match", self.span()))
             }
@@ -216,6 +185,29 @@ impl AstTyping for IdentExpr {
     }
 }
 
+impl AstTyping for CallExpr {
+    fn visit(&mut self) -> SemResult<PineType> {
+        let fun_type = self.fun.visit()?;
+        match fun_type {
+            PineType::Function { params, ret } => {
+                if self.args.len() != params.len() {
+                    return Err(SemError::error("number of arguments does not match number of parameters", self.span()))
+                }
+
+                for (a, p_type) in self.args.iter_mut().zip(&params) {
+                    let a_type = a.visit()?;
+                    if a_type != *p_type {
+                        return Err(SemError::error("argument types do not match parameters", self.span()))
+                    }
+                }
+
+                Ok(ret.as_ref().clone())
+            },
+            _ => Err(SemError::error("expression cannot be called", self.span()))
+        }
+    }
+}
+
 impl AstTyping for UnaryExpr {
     fn visit(&mut self) -> SemResult<PineType> {
         let t = self.expr.visit()?;
@@ -245,6 +237,7 @@ impl AstTyping for Expr {
             Expr::BoolLit(e) => e.visit(),
             Expr::StringLit(e) => e.visit(),
             Expr::Ident(e) => e.visit(),
+            Expr::Call(e) => e.visit(),
             Expr::Unary(e) => e.visit(),
             Expr::Binary(e) => e.visit(),
         }

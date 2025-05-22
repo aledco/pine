@@ -30,7 +30,9 @@ pub fn parse<T>(input: T) -> Result<Program, Error>
 where T: Into<String> {
     let tokens = lex::lex(input.into())?;
     let mut program = parse::parse(tokens)?;
-    sem::scoping(&mut program)?;
-    sem::typing(&mut program)?;
+    sem::scoping::global(&mut program)?;
+    sem::scoping::local(&mut program)?;
+    sem::typing::global(&mut program)?;
+    sem::typing::local(&mut program)?;
     Ok(program)
 }

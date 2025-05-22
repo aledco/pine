@@ -1,10 +1,10 @@
 use crate::ast::*;
 use crate::sem::error::{SemError, SemResult};
 use crate::symbol::*;
+use crate::sem::create_symbol;
 
-pub(crate) fn scoping(program: &mut Program) -> SemResult<()> {
-    let global_scope = Scope::new_global();
-    program.visit(global_scope)?;
+pub(crate) fn local(program: &mut Program) -> SemResult<()> {
+    program.visit(program.scope())?;
     Ok(())
 }
 
@@ -23,25 +23,20 @@ impl AstScoping for Program {
 
 impl AstScoping for Fun {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
-        self.set_scope(scope.clone());
+        // crate the block scope
+        let block_scope = Scope::new_fun(scope.clone(), self.ident.symbol.clone());
 
-        // create the symbol and visit the identifier
-        create_symbol(&self.ident, &scope)?;
-        self.ident.visit(scope.clone())?;
-
-        // crate the param scope and visit the params
-        let param_scope = Scope::new_fun(scope.clone(), self.ident.symbol.clone());
+        // visit the params
         for p in &mut self.params {
-            p.visit(param_scope.clone())?;
+            p.visit(block_scope.clone())?;
         }
 
         // visit the return type
         if let Some(ret_ty) = &mut self.return_ty {
-            ret_ty.visit(param_scope.clone())?;
+            ret_ty.visit(block_scope.clone())?;
         }
 
-        // create the block scope and visit the block
-        let block_scope = Scope::new_fun(scope.clone(), self.ident.symbol.clone());
+        // visit the block
         self.block.visit(block_scope.clone())?;
         Ok(())
     }
@@ -180,6 +175,16 @@ impl AstScoping for IdentExpr {
     }
 }
 
+impl AstScoping for CallExpr {
+    fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
+        self.fun.visit(scope.clone())?;
+        for a in &mut self.args {
+            a.visit(scope.clone())?;
+        }
+
+        Ok(())
+    }
+}
 impl AstScoping for UnaryExpr {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         self.expr.visit(scope)?;
@@ -204,6 +209,7 @@ impl AstScoping for Expr {
             Expr::BoolLit(e) => e.visit(scope),
             Expr::StringLit(e) => e.visit(scope),
             Expr::Ident(e) => e.visit(scope),
+            Expr::Call(e) => e.visit(scope),
             Expr::Unary(e) => e.visit(scope),
             Expr::Binary(e) => e.visit(scope),
         }
@@ -225,13 +231,5 @@ impl AstScoping for Ty {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         self.set_scope(scope);
         Ok(())
-    }
-}
-
-fn create_symbol(ident: &Ident, scope: &ScopeRef) -> SemResult<()> {
-    let symbol = Symbol::new(ident.name.clone());
-    match scope.borrow_mut().add(symbol.clone()) {
-        Ok(()) => Ok(()),
-        Err(()) => Err(SemError::error(format!("identifier {} has already been defined", ident.name), ident.span())),
     }
 }

@@ -71,9 +71,14 @@ impl Parser {
     fn parse_params(&mut self) -> ParseResult<Vec<Param>> {
         self.match_token(Punctuation::OpenParen)?;
         let mut params = Vec::new();
-        while self.matches(TokenTypeMatch::Identifier) {
+        while !self.matches(Punctuation::CloseParen) {
             let param = self.parse_param()?;
             params.push(param);
+            if !self.matches(Punctuation::Comma) {
+                break;
+            }
+            
+            self.match_token(Punctuation::Comma)?;
         }
 
         self.match_token(Punctuation::CloseParen)?;
@@ -254,7 +259,7 @@ impl Parser {
     }
 
     fn parse_expression_term(&mut self) -> ParseResult<Expr> {
-        if self.matches(TokenTypeMatch::Identifier) {
+        let mut expr = if self.matches(TokenTypeMatch::Identifier) {
             Ok(Expr::Ident(self.parse_identifier_expression()?))
         } else if self.matches(TokenTypeMatch::Integer) {
             Ok(Expr::IntLit(self.parse_integer()?))
@@ -265,23 +270,56 @@ impl Parser {
         } else if self.matches(TokenTypeMatch::String) {
             Ok(Expr::StringLit(self.parse_string()?))
         } else if self.matches_any(Operator::all_unary_ops()) {
-            let op_token = self.match_any(Operator::all_unary_ops())?;
-            let op = match op_token.token_type {
-                TokenType::Operator(op) => op,
-                _ => panic!("parser bug"),
-            };
-            let expr = self.parse_expression_term()?;
-            let span = op_token.span + expr.span();
-            Ok(Expr::Unary(UnaryExpr::new(op, Box::new(expr), span)))
+            Ok(Expr::Unary(self.parse_unary_expression()?))
         } else if self.matches(Punctuation::OpenParen) {
-            self.match_token(Punctuation::OpenParen)?;
-            let expr = self.parse_expression();
-            self.match_token(Punctuation::CloseParen)?;
-            expr
+            self.parse_parenthized_expression()
         } else {
-            // TODO function calls and array access
             Err(ParseError::error("invalid expression", self.span()))
+        }?;
+
+        // check for function call or indexing expression
+        if self.matches(Punctuation::OpenParen) {
+            let (args, span) = self.parse_function_call_args()?;
+            expr = Expr::Call(CallExpr::new(Box::new(expr), args, span));
+        } // TODO index expr
+
+        Ok(expr)
+    }
+
+    fn parse_function_call_args(&mut self) -> ParseResult<(Vec<Expr>, Span)> {
+        let mut args: Vec<Expr> = vec![];
+        let open = self.match_token(Punctuation::OpenParen)?;
+        while !self.matches(Punctuation::CloseParen) {
+            let arg = self.parse_expression()?;
+            args.push(arg);
+            if !self.matches(Punctuation::Comma) {
+                break;
+            }
+            
+            self.match_token(Punctuation::Comma)?;
         }
+
+        let close = self.match_token(Punctuation::CloseParen)?;
+        let span = open.span + close.span;
+        Ok((args, span))
+    }
+
+    fn parse_unary_expression(&mut self) -> ParseResult<UnaryExpr> {
+        let op_token = self.match_any(Operator::all_unary_ops())?;
+        let op = match op_token.token_type {
+            TokenType::Operator(op) => op,
+            _ => panic!("parser bug"),
+        };
+        let expr = self.parse_expression_term()?;
+        let span = op_token.span + expr.span();
+        Ok(UnaryExpr::new(op, Box::new(expr), span))
+    }
+
+    fn parse_parenthized_expression(&mut self) -> ParseResult<Expr> {
+        self.match_token(Punctuation::OpenParen)?;
+        let expr = self.parse_expression();
+        self.match_token(Punctuation::CloseParen)?;
+        expr
     }
 
     fn parse_identifier_expression(&mut self) -> ParseResult<IdentExpr> {
