@@ -46,7 +46,6 @@ are used to read and write memory.
     - tuples
   - range objects
   - for loops
-  - elifs
   - pattern matching
   - module imports
     - module imports should be resolved in a semantic pass

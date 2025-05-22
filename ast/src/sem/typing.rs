@@ -95,12 +95,17 @@ impl AstTyping for SetStmt {
 
 impl AstTyping for IfStmt {
     fn visit(&mut self) -> SemResult<PineType> {
-        let c_type = self.cond.visit()?;
-        if c_type != PineType::Bool {
-            return Err(SemError::error("condition must have type bool", self.span()))
+        for c in &mut self.conds {
+            let c_type = c.visit()?;
+            if c_type != PineType::Bool {
+                return Err(SemError::error("condition must have type bool", self.span()))
+            }
         }
-
-        self.then_block.visit()?;
+        
+        for b in &mut self.then_blocks {
+            b.visit()?;
+        }
+        
         if let Some(else_block) = &mut self.else_block {
             else_block.visit()?;
         }

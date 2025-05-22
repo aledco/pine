@@ -170,9 +170,21 @@ impl Parser {
 
     fn parse_if(&mut self) -> ParseResult<IfStmt> {
         let if_token = self.match_token(Keyword::If)?;
-        let condition = self.parse_expression()?;
+        let cond = self.parse_expression()?;
         self.match_token(Keyword::Then)?;
         let if_body = self.parse_block()?;
+
+        let mut conds = vec![cond];
+        let mut blocks = vec![if_body];
+        while self.matches(Keyword::Elif) {
+            self.match_token(Keyword::Elif)?;
+            let elif_cond = self.parse_expression()?;
+            self.match_token(Keyword::Then)?;
+            let elif_body = self.parse_block()?;
+            conds.push(elif_cond);
+            blocks.push(elif_body);
+        }
+
         let else_body = if self.matches(Keyword::Else) {
             self.match_token(Keyword::Else)?;
             let else_body = self.parse_block()?;
@@ -183,7 +195,7 @@ impl Parser {
         let end = self.match_token(Keyword::End)?;
         let span = if_token.span + end.span;
         Ok(IfStmt::new(
-            Box::new(condition), Box::new(if_body), else_body,
+            conds, blocks, else_body,
             span,
         ))
     }

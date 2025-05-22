@@ -79,8 +79,8 @@ pub struct SetStmt {
 
 #[ast]
 pub struct IfStmt {
-    pub cond: Box<Expr>,
-    pub then_block: Box<Block>,
+    pub conds: Vec<Expr>,
+    pub then_blocks: Vec<Block>,
     pub else_block: Option<Box<Block>>,
 }
 

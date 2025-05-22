@@ -80,9 +80,15 @@ impl AstScoping for SetStmt {
 
 impl AstScoping for IfStmt {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
-        self.cond.visit(scope.clone())?;
-        let then_scope = Scope::new_local(scope.clone());
-        self.then_block.visit(then_scope)?;
+        for c in &mut self.conds {
+            c.visit(scope.clone())?;
+        }
+        
+        for b in &mut self.then_blocks {
+            let then_scope = Scope::new_local(scope.clone());
+            b.visit(then_scope)?;
+        }
+
         if let Some(else_block) = &mut self.else_block {
             let else_scope = Scope::new_local(scope.clone());
             else_block.visit(else_scope)?;
