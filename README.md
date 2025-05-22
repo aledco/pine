@@ -32,8 +32,6 @@ are used to read and write memory.
 ## ast
 - Write comments
 - Add failure tests
-- Make statement and expression enums
-- Expressions cannot be statements, must use call keyword to call function not in an expression
 - Finish parsing the rest of the Pine constructs
   - function calls
   - arrays
@@ -48,14 +46,15 @@ are used to read and write memory.
     - tuples
   - range objects
   - for loops
-  - elifs
   - pattern matching
   - module imports
+    - module imports should be resolved in a semantic pass
   - public access modifier (or export)
   - make it so (expr).function() == function(expr)
 
 ## sem
 - add better type inference
+  - Implement Hindley-Milner algorithm
 - any other semantic passes?
 - add tests
 - add comments

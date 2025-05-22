@@ -6,7 +6,6 @@ members = [
     "gen",
     "pvm",
     "pvm/pvm_proc_macros",
-    "sem",
     "test_util",
     "test_util/test_util_proc_macros"
 ]
@@ -28,7 +27,6 @@ bench = false
 
 [dependencies]
 ast = { path = "./ast" }
-sem = { path = "./sem" }
 gen = { path = "./gen" }
 pvm = { path = "./pvm" }
 

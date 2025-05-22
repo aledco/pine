@@ -27,6 +27,7 @@ pub enum ScopeDepth {
 pub struct Scope {
     pub parent: Option<ScopeRef>,
     pub symbol_table: SymbolTable,
+    pub owner: Option<SymbolRef>,
     pub depth: ScopeDepth,
 }
 
@@ -80,6 +81,7 @@ impl Scope {
         Rc::new(RefCell::new(Self {
             parent: None,
             symbol_table: SymbolTable::new(),
+            owner: None,
             depth: ScopeDepth::Global,
         }))
     }
@@ -88,6 +90,7 @@ impl Scope {
         Rc::new(RefCell::new(Self {
             parent: None,
             symbol_table: SymbolTable::new(),
+            owner: None,
             depth: ScopeDepth::Global,
         }))
     }
@@ -101,8 +104,15 @@ impl Scope {
         Rc::new(RefCell::new(Self {
             parent: Some(parent),
             symbol_table: SymbolTable::new(),
+            owner: None,
             depth: level,
         }))
+    }
+
+    pub fn new_fun(parent: ScopeRef, fun_sym: SymbolRef) -> ScopeRef {
+        let scope = Scope::new_local(parent);
+        scope.borrow_mut().owner = Some(fun_sym);
+        scope
     }
 
     pub fn add(&mut self, symbol: SymbolRef) -> Result<(), ()> {
@@ -116,6 +126,19 @@ impl Scope {
                 Some(parent) => parent.borrow().lookup(name),
                 None => None,
             },
+        }
+    }
+
+    /// Finds the function that owns this scope.
+    pub fn owning_fun(&self) -> Option<SymbolRef> {
+        match &self.owner {
+            Some(o) => Some(o.clone()),
+            None => {
+                match &self.parent {
+                    Some(p) => p.borrow().owning_fun(),
+                    None => None,
+                }
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ mod operator;
 mod token;
 mod error;
 mod symbol;
+mod sem;
 
 pub use ast::*;
 pub use operator::*;
@@ -22,11 +23,14 @@ pub use error::*;
 /// 
 /// # Examples
 /// ```
-/// let input = "fun main() begin end";
+/// let input = "fun main() -> int begin end";
 /// let program = ast::parse(input).unwrap();
 /// ```
-pub fn parse<T>(input: T) -> ParseResult<Program>
+pub fn parse<T>(input: T) -> Result<Program, Error>
 where T: Into<String> {
     let tokens = lex::lex(input.into())?;
-    parse::parse(tokens)
+    let mut program = parse::parse(tokens)?;
+    sem::scoping(&mut program)?;
+    sem::typing(&mut program)?;
+    Ok(program)
 }

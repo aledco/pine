@@ -12,7 +12,7 @@ pub(crate) fn typed_ast_attr(args: TokenStream, input: TokenStream) -> TokenStre
 
         fields.named.push(
             syn::Field::parse_named
-                .parse2(quote! { #[default(PineType::default)] pine_type: PineType })
+                .parse2(quote! { #[default(PineType::default)] ty: PineType })
                 .unwrap(),
         );
     }

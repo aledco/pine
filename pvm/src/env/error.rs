@@ -10,7 +10,7 @@ pub struct MemoryError {
 impl MemoryError {
     pub(crate) fn error<T>(msg: T) -> Error
     where T: Into<String> {
-        Error::MemoryError(Self {
+        Error::Memory(Self {
             msg: msg.into(),
         })
     }

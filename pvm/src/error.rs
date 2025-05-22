@@ -6,19 +6,19 @@ use std::fmt::{Debug, Display};
 /// The PVM error.
 #[derive(Clone)]
 pub enum Error {
-    ParseError(ParseError),
-    ValidateError(ValidateError),
-    ExecuteError(ExecuteError),
-    ExitError(ExitError),
-    MemoryError(MemoryError),
-    WrappedError(Box<Error>, usize),
+    Parse(ParseError),
+    Validate(ValidateError),
+    Execute(ExecuteError),
+    Exit(ExitError),
+    Memory(MemoryError),
+    Wrapped(Box<Error>, usize),
 }
 
 impl Error {
     pub(crate) fn wrap(&self, i: usize) -> Error {
         match self {
-            Error::ValidateError(_) | Error::ExecuteError(_) | Error::MemoryError(_) => {
-                Error::WrappedError(Box::new(self.clone()), i)
+            Error::Validate(_) | Error::Execute(_) | Error::Memory(_) => {
+                Error::Wrapped(Box::new(self.clone()), i)
             }
             e => e.clone(),
         }
@@ -28,12 +28,12 @@ impl Error {
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::ParseError(e) => Display::fmt(&e, f),
-            Error::ValidateError(e) => Display::fmt(&e, f),
-            Error::ExecuteError(e) => Display::fmt(&e, f),
-            Error::ExitError(e) => Display::fmt(&e, f),
-            Error::MemoryError(e) => Display::fmt(&e, f),
-            Error::WrappedError(e, i) => write!(f, "{} - instruction {}", e, i),
+            Error::Parse(e) => Display::fmt(&e, f),
+            Error::Validate(e) => Display::fmt(&e, f),
+            Error::Execute(e) => Display::fmt(&e, f),
+            Error::Exit(e) => Display::fmt(&e, f),
+            Error::Memory(e) => Display::fmt(&e, f),
+            Error::Wrapped(e, i) => write!(f, "{} - instruction {}", e, i),
         }
     }
 }
@@ -41,12 +41,12 @@ impl Display for Error {
 impl Debug for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::ParseError(e) => Debug::fmt(&e, f),
-            Error::ValidateError(e) => Debug::fmt(&e, f),
-            Error::ExecuteError(e) => Debug::fmt(&e, f),
-            Error::ExitError(e) => Debug::fmt(&e, f),
-            Error::MemoryError(e) => Debug::fmt(&e, f),
-            Error::WrappedError(e, i) => write!(f, "{:?} - instruction {}", e, i),
+            Error::Parse(e) => Debug::fmt(&e, f),
+            Error::Validate(e) => Debug::fmt(&e, f),
+            Error::Execute(e) => Debug::fmt(&e, f),
+            Error::Exit(e) => Debug::fmt(&e, f),
+            Error::Memory(e) => Debug::fmt(&e, f),
+            Error::Wrapped(e, i) => write!(f, "{:?} - instruction {}", e, i),
         }
     }
 }

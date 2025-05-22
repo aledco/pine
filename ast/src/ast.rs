@@ -29,7 +29,7 @@ impl Default for PineType {
 }
 
 /// The `Ast` trait.
-pub trait Ast: fmt::Debug {
+pub trait Ast: fmt::Debug { // TODO move sem back into this crate, rename trait, make private to crate
     fn scope(&self) -> ScopeRef;
     fn set_scope(&mut self, scope: ScopeRef);
     fn span(&self) -> Span;
@@ -37,86 +37,219 @@ pub trait Ast: fmt::Debug {
 
 /// The `TypedAst` trait.
 pub trait TypedAst: Ast + fmt::Debug {
-    fn pine_type(&self) -> PineType;
-    fn set_pine_type(&mut self, pine_type: PineType);
+    fn ty(&self) -> PineType;
+    fn set_ty(&mut self, ty: PineType);
 }
 
 /// Represents a Pine program.
 #[ast]
 pub struct Program {
-    pub functions: Vec<Function>,
+    pub funs: Vec<Fun>, // TODO make top level enum
     //pub main: AstNode,
 }
 
 /// Represents a Pine function.
 #[ast]
-pub struct Function {
-    pub identifier: Box<Identifier>,
+pub struct Fun {
+    pub ident: Box<Ident>,
     pub params: Vec<Param>,
-    pub return_type_node: Option<Box<TypeNode>>,
-    pub body: Box<Statement>,
+    pub return_ty: Option<Box<Ty>>,
+    pub block: Box<Block>,
 }
 
 /// Represents a Pine parameter.
 #[ast]
 pub struct Param {
-    pub identifier: Box<Identifier>,
-    pub type_node: Box<TypeNode>,
+    pub ident: Box<Ident>,
+    pub ty: Box<Ty>,
 }
 
-/// Represents a Pine statement type.
-#[derive(Debug)]
-pub enum StatementType { // TODO make statement and enum and each statement type a struct
-    Let(Box<Identifier>, Option<Box<TypeNode>>, Box<Expression>),
-    Set(Box<Identifier>, Box<Expression>),
-    If(Box<Expression>, Box<Statement>, Option<Box<Statement>>), // TODO add elifs
-    While(Box<Expression>, Box<Statement>),
-    Return(Option<Box<Expression>>),
-    Expression(Box<Expression>),
-    Block(Vec<Statement>),
-}
-
-/// Represents a Pine statement.
 #[ast]
-pub struct Statement {
-    pub statement_type: StatementType,
+pub struct LetStmt {
+    pub ident: Box<Ident>,
+    pub ty: Option<Box<Ty>>,
+    pub expr: Box<Expr>,
+}
+
+#[ast]
+pub struct SetStmt {
+    pub ident: Box<Ident>,
+    pub expr: Box<Expr>,
+}
+
+#[ast]
+pub struct IfStmt {
+    pub conds: Vec<Expr>,
+    pub then_blocks: Vec<Block>,
+    pub else_block: Option<Box<Block>>,
+}
+
+#[ast]
+pub struct WhileStmt {
+    pub cond: Box<Expr>,
+    pub block: Box<Block>,
+}
+
+#[ast]
+pub struct ReturnStmt {
+    pub expr: Option<Box<Expr>>,
+}
+
+#[ast]
+pub struct ExprStmt {
+    pub expr: Box<Expr>,
+}
+
+#[ast]
+pub struct Block {
+    pub stmts: Vec<Stmt>,
 }
 
 #[derive(Debug)]
-pub enum ExpressionType { // TODO make expression an enum and each expression type a struct
-    IntLiteral(i64),
-    FloatLiteral(f64),
-    BoolLiteral(bool),
-    StringLiteral(String),
-    Identifier(Box<Identifier>),
-    Unary(Operator, Box<Expression>),
-    Binary(Box<Expression>, Operator, Box<Expression>),
+pub enum Stmt {
+    Let(LetStmt),
+    Set(SetStmt),
+    If(IfStmt),
+    While(WhileStmt),
+    Return(ReturnStmt),
+    Expr(ExprStmt),
+    Block(Block),
+}
+
+impl Ast for Stmt { // TODO put this in macro
+    fn scope(&self) -> ScopeRef {
+        match self {
+            Stmt::Let(let_stmt) => let_stmt.scope(),
+            Stmt::Set(set_stmt) => set_stmt.scope(),
+            Stmt::If(if_stmt) => if_stmt.scope(),
+            Stmt::While(while_stmt) => while_stmt.scope(),
+            Stmt::Return(return_stmt) => return_stmt.scope(),
+            Stmt::Expr(expr_stmt) => expr_stmt.scope(),
+            Stmt::Block(block) => block.scope(),
+        }
+    }
+
+    fn set_scope(&mut self, scope: ScopeRef) {
+        match self {
+            Stmt::Let(let_stmt) => let_stmt.set_scope(scope),
+            Stmt::Set(set_stmt) => set_stmt.set_scope(scope),
+            Stmt::If(if_stmt) => if_stmt.set_scope(scope),
+            Stmt::While(while_stmt) => while_stmt.set_scope(scope),
+            Stmt::Return(return_stmt) => return_stmt.set_scope(scope),
+            Stmt::Expr(expr_stmt) => expr_stmt.set_scope(scope),
+            Stmt::Block(block) => block.set_scope(scope),
+        }
+    }
+
+    fn span(&self) -> Span {
+        match self {
+            Stmt::Let(let_stmt) => let_stmt.span(),
+            Stmt::Set(set_stmt) => set_stmt.span(),
+            Stmt::If(if_stmt) => if_stmt.span(),
+            Stmt::While(while_stmt) => while_stmt.span(),
+            Stmt::Return(return_stmt) => return_stmt.span(),
+            Stmt::Expr(expr_stmt) => expr_stmt.span(),
+            Stmt::Block(block) => block.span(),
+        }
+    }
 }
 
 #[typed_ast]
-pub struct Expression {
-    pub expression_type: ExpressionType,
+pub struct IntLitExpr {
+    pub value: i64,
+}
+
+#[typed_ast]
+pub struct FloatLitExpr {
+    pub value: f64,
+}
+
+#[typed_ast]
+pub struct BoolLitExpr {
+    pub value: bool,
+}
+
+#[typed_ast]
+pub struct StringLitExpr {
+    pub value: String,
+}
+
+#[typed_ast]
+pub struct IdentExpr {
+    pub ident: Box<Ident>,
+}
+
+#[typed_ast]
+pub struct UnaryExpr {
+    pub op: Operator,
+    pub expr: Box<Expr>,
+}
+
+#[typed_ast]
+pub struct BinaryExpr {
+    pub left: Box<Expr>,
+    pub op: Operator,
+    pub right: Box<Expr>,
+}
+
+#[derive(Debug)]
+pub enum Expr {
+    IntLit(IntLitExpr),
+    FloatLit(FloatLitExpr),
+    BoolLit(BoolLitExpr),
+    StringLit(StringLitExpr),
+    Ident(IdentExpr),
+    Unary(UnaryExpr),
+    Binary(BinaryExpr),
+}
+
+impl Ast for Expr {
+    fn scope(&self) -> ScopeRef {
+        match self {
+            Expr::IntLit(int_lit_expr) => int_lit_expr.scope(),
+            Expr::FloatLit(float_lit_expr) => float_lit_expr.scope(),
+            Expr::BoolLit(bool_lit_expr) => bool_lit_expr.scope(),
+            Expr::StringLit(string_lit_expr) => string_lit_expr.scope(),
+            Expr::Ident(ident_expr) => ident_expr.scope(),
+            Expr::Unary(unary_expr) => unary_expr.scope(),
+            Expr::Binary(binary_expr) => binary_expr.scope(),
+        }
+    }
+
+    fn set_scope(&mut self, scope: ScopeRef) {
+        match self {
+            Expr::IntLit(int_lit_expr) => int_lit_expr.set_scope(scope),
+            Expr::FloatLit(float_lit_expr) => float_lit_expr.set_scope(scope),
+            Expr::BoolLit(bool_lit_expr) => bool_lit_expr.set_scope(scope),
+            Expr::StringLit(string_lit_expr) => string_lit_expr.set_scope(scope),
+            Expr::Ident(ident_expr) => ident_expr.set_scope(scope),
+            Expr::Unary(unary_expr) => unary_expr.set_scope(scope),
+            Expr::Binary(binary_expr) => binary_expr.set_scope(scope),
+        }
+    }
+
+    fn span(&self) -> Span {
+        match self {
+            Expr::IntLit(int_lit_expr) => int_lit_expr.span(),
+            Expr::FloatLit(float_lit_expr) => float_lit_expr.span(),
+            Expr::BoolLit(bool_lit_expr) => bool_lit_expr.span(),
+            Expr::StringLit(string_lit_expr) => string_lit_expr.span(),
+            Expr::Ident(ident_expr) => ident_expr.span(),
+            Expr::Unary(unary_expr) => unary_expr.span(),
+            Expr::Binary(binary_expr) => binary_expr.span(),
+        }
+    }
 }
 
 #[ast]
-pub struct Identifier {
+pub struct Ident {
     pub name: String,
     #[default(Symbol::default)]
     pub symbol: SymbolRef,
 }
 
-impl Identifier {
-    pub fn pine_type(&mut self) -> PineType {
-        self.symbol.borrow().pine_type.clone()
-    }
-
-    pub fn set_pine_type(&mut self, pine_type: PineType) {
-        self.symbol.borrow_mut().pine_type = pine_type;
-    }
-}
-
 #[derive(TypedAst)]
 #[ast]
-pub struct TypeNode {
-    pine_type: PineType,
+pub struct Ty {
+    ty: PineType,
 }

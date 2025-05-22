@@ -1,4 +1,4 @@
-fun main() begin
+fun main() -> int begin
     let i = 0
     let x = 0
     let y = 0

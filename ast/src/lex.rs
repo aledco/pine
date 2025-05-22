@@ -58,7 +58,7 @@ impl Scanner {
                 } else if self.is_punctuation() || self.is_operator() {
                     self.scan_punctuation_or_operator()
                 } else {
-                    Err(ParseError::new("unrecognized token", Span::new(self.point(), self.point())))
+                    Err(ParseError::error("unrecognized token", Span::new(self.point(), self.point())))
                 };
                 
                 tokens.push(token?);
@@ -109,7 +109,7 @@ impl Scanner {
             value.push(self.char());
             self.advance();
             if !self.is_digit() {
-                return Err(ParseError::new("invalid numeral", Span::new(start, start)));
+                return Err(ParseError::error("invalid numeral", Span::new(start, start)));
             }
 
             while !self.eof() && self.is_digit() {
@@ -157,7 +157,7 @@ impl Scanner {
             }
         }
 
-        Err(ParseError::new("invalid token", Span::new(start, start)))
+        Err(ParseError::error("invalid token", Span::new(start, start)))
     }
 
     /// Skips over single line comments in the input.
