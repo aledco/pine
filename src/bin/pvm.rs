@@ -13,7 +13,7 @@ fn main() {
     let instructions = handle_result(instructions_result);
 
     let execute_result = execute(instructions);
-    if let Err(pvm::Error::ExitError(e)) = execute_result {
+    if let Err(pvm::Error::Exit(e)) = execute_result {
         eprintln!("{}", e);
         std::process::exit(e.exit_code);
     }

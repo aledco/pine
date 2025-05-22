@@ -24,7 +24,7 @@ fn test(mut test_base_path: PathBuf) {
     let buffer: Rc<RefCell<Vec<u8>>> = Rc::new(RefCell::new(Vec::new()));
     let config = ExecuteConfig::new(MEMORY, stdin, buffer.clone());
     let result = execute_with_config(instructions, config);
-    if let Err(Error::ExitError(e)) = &result {
+    if let Err(Error::Exit(e)) = &result {
         assert_eq!(e.exit_code, 0);
     } else {
         result.unwrap();

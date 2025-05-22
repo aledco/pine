@@ -11,7 +11,7 @@ pub struct ParseError {
 impl ParseError {
     pub(crate) fn error<T>(msg: T, line: usize) -> Error
     where T: Into<String> {
-        Error::ParseError(Self {
+        Error::Parse(Self {
             msg: msg.into(),
             line,
         })

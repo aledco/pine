@@ -1,4 +1,4 @@
-fun main() begin
+fun main() -> int begin
     if 1 == 2 then
         return 1
     else

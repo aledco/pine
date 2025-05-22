@@ -1,4 +1,4 @@
-fun main() begin
+fun main() -> int begin
     let x = 0
     while x < 1000 do
         set x = x ** x

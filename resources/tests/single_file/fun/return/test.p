@@ -1,3 +1,3 @@
-fun main() begin
+fun main() -> int  begin
     return 0
 end
