@@ -281,7 +281,7 @@ impl Parser {
         if self.matches(Punctuation::OpenParen) {
             let (args, span) = self.parse_function_call_args()?;
             expr = Expr::Call(CallExpr::new(Box::new(expr), args, span));
-        } // TODO index expr
+        } // TODO index typed_ast
 
         Ok(expr)
     }
