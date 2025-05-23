@@ -1,4 +1,4 @@
-use ast::Expr;
+use ast::{Expr, Operator, PineType};
 use crate::codegen::append::*;
 use crate::codegen::context::Context;
 use crate::codegen::{Inst, InstVec};
@@ -268,9 +268,18 @@ impl AstCodeGen for ast::CallExpr {
 impl AstCodeGen for ast::UnaryExpr {
     fn gen(&self, context: &mut Context) -> InstVec {
         let e_insts = self.expr.gen(context);
-        // TODO gen instruction from op
-
-        todo!()
+        let op_inst = match self.op {
+            Operator::Not => wrap(pvm::SubuInst::new(self.dest.clone(), pvm::Operand::Constant(1), self.expr.dest())),
+            Operator::Subtract => {
+                match self.expr.ty() {
+                    PineType::Integer => wrap(pvm::NegInst::new(self.dest.clone(), self.expr.dest())),
+                    PineType::Float => wrap(pvm::NegfInst::new(self.dest.clone(), self.expr.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            _ => panic!("codegen bug")
+        };
+        concat!(e_insts, op_inst)
     }
 }
 
@@ -278,9 +287,96 @@ impl AstCodeGen for ast::BinaryExpr {
     fn gen(&self, context: &mut Context) -> InstVec {
         let l_insts = self.left.gen(context);
         let r_insts = self.right.gen(context);
-        // TODO gen instruction from op
-
-        todo!()
+        let op_inst = match self.op {
+            Operator::Equals => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::EqInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::EqfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::NotEquals => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::NeqInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::NeqfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::GreaterThan => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::GtInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::GtfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::LessThan => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::LtInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::LtfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::GreaterThanOrEqual => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::GteInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::GtfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::LessThanOrEqual => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::LteInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::LtefInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::And => wrap(pvm::AndInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+            Operator::Or => wrap(pvm::OrInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+            Operator::Add => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::AddInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::AddfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::Subtract => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::SubInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::SubfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::Multiply => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::MulInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::MulfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::Divide => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::DivInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::DivfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::Power => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::PowInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::PowfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            Operator::Modulo => {
+                match self.left.ty() {
+                    PineType::Integer => wrap(pvm::ModInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    PineType::Float => wrap(pvm::ModfInst::new(self.dest.clone(), self.left.dest(), self.right.dest())),
+                    _ => panic!("codegen bug")
+                }
+            },
+            _ => panic!("codegen bug")
+        };
+        concat!(l_insts, r_insts, op_inst)
     }
 }
 
