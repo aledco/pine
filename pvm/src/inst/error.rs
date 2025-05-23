@@ -10,7 +10,7 @@ pub struct ValidateError {
 impl ValidateError {
     pub(crate) fn error<T>(msg: T) -> Error
     where T: Into<String> {
-        Error::ValidateError(Self {
+        Error::Validate(Self {
             msg: msg.into(),
         })
     }
@@ -57,7 +57,7 @@ pub struct ExecuteError {
 impl ExecuteError {
     pub(crate) fn error<T>(msg: T) -> Error
     where T: Into<String> {
-        Error::ExecuteError(Self {
+        Error::Execute(Self {
             msg: msg.into(),
         })
     }
@@ -118,7 +118,7 @@ pub struct ExitError {
 
 impl ExitError {
     pub(crate) fn exit(code: i32) -> Error {
-        Error::ExitError(Self {
+        Error::Exit(Self {
             exit_code: code,
         })
     }

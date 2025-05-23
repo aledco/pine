@@ -53,6 +53,7 @@ pub enum TokenType {
     Operator(Operator),
 }
 
+/// Represents a token type match.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TokenTypeMatch {
     Identifier,
@@ -102,6 +103,8 @@ pub enum Keyword {
     If,
     #[strum(serialize = "then")]
     Then,
+    #[strum(serialize = "elif")]
+    Elif,
     #[strum(serialize = "else")]
     Else,
     #[strum(serialize = "for")]

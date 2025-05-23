@@ -1,4 +1,4 @@
-fun main() begin
+fun main() -> int  begin
     let x = 2 ** 3
     return x
 end

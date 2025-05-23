@@ -1,4 +1,4 @@
-fun main() begin
+fun main() -> int begin
     let x = 0 + 1
     return x
 end

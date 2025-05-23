@@ -29,18 +29,37 @@ are used to read and write memory.
 - VS Code syntax highlighting
 
 # TODO
+## ast
+- Add failure tests
+- Finish parsing the rest of the Pine constructs
+  - function calls
+  - polymorphic types
+  - arrays
+  - objects
+  - interfaces
+  - enums
+  - iterators
+  - collections
+    - lists
+    - sets
+    - maps
+    - tuples
+  - range objects
+  - for loops
+  - pattern matching
+  - module imports
+    - module imports should be resolved in a semantic pass
+  - public access modifier (or export)
+  - make it so (expr).function() == function(expr)
+
+## sem
+- add better type inference
+  - Implement Hindley-Milner algorithm
+- any other semantic passes?
+- add tests
+
 ## pvm
 - other syscall ops (read and write file, etc)
-- Add failure tests
-
-## Refactors
-- Make functions return Results instead of panicking, so that tests and other code can inspect the errors and return better messages
-  - pvm done, need to work on ast still
-- Write comments
-- Refactor proc macros as much as possible
-  - pvm done, need to work on test_util and ast still
-
-## Tests
 - Add failure tests
 
 ## README

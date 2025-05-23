@@ -2,12 +2,13 @@ use crate::operator::Operator;
 use crate::token::*;
 use std::cmp::{max, min};
 use std::str::FromStr;
+use crate::error::{ParseError, ParseResult};
 
 /// Processes the input into a collection of tokens.
 ///
 /// # Arguments
 /// * `input` - A string that holds a Pine program
-pub fn lex(input: String) -> Vec<Token> {
+pub fn lex(input: String) -> ParseResult<Vec<Token>> {
     let mut scanner = Scanner::new(input);
     scanner.scan()
 }
@@ -42,7 +43,7 @@ impl Scanner {
     ///
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
-    pub fn scan(&mut self) -> Vec<Token> {
+    pub fn scan(&mut self) -> ParseResult<Vec<Token>> {
         let mut tokens: Vec<Token> = Vec::new();
         while !self.eof() {
             if self.is_whitespace() {
@@ -55,33 +56,23 @@ impl Scanner {
                 } else if self.is_digit() {
                     self.scan_numeral()
                 } else if self.is_punctuation() || self.is_operator() {
-                    match self.scan_punctuation_or_operator() {
-                        Some(token) => token,
-                        None => panic!(
-                            "Parse Error: Unrecognized character {} at {}",
-                            self.char(),
-                            self.point()
-                        ),
-                    }
+                    self.scan_punctuation_or_operator()
                 } else {
-                    panic!(
-                        "Parse Error: Unrecognized character {} at {}",
-                        self.char(),
-                        self.point()
-                    )
+                    Err(ParseError::error("unrecognized token", Span::new(self.point(), self.point())))
                 };
-                tokens.push(token);
+                
+                tokens.push(token?);
             }
         }
 
-        tokens
+        Ok(tokens)
     }
 
     /// Scans an identifier, keyword, or operator and returns the token.
     ///
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
-    fn scan_identifier_or_keyword_or_operator(&mut self) -> Token {
+    fn scan_identifier_or_keyword_or_operator(&mut self) ->ParseResult<Token> {
         assert!(self.is_alphabetic());
         let start = self.point();
         let mut value = String::new();
@@ -98,14 +89,14 @@ impl Scanner {
         } else {
             TokenType::Identifier(value)
         };
-        Token::new(token_type, Span::new(start, end))
+        Ok(Token::new(token_type, Span::new(start, end)))
     }
 
     /// Scans a numeral and returns the token.
     ///
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
-    fn scan_numeral(&mut self) -> Token {
+    fn scan_numeral(&mut self) -> ParseResult<Token> {
         assert!(self.is_digit());
         let start = self.point();
         let mut value = String::new();
@@ -118,7 +109,7 @@ impl Scanner {
             value.push(self.char());
             self.advance();
             if !self.is_digit() {
-                panic!("Parse Error: Invalid numeral at {}", start);
+                return Err(ParseError::error("invalid numeral", Span::new(start, start)));
             }
 
             while !self.eof() && self.is_digit() {
@@ -128,11 +119,11 @@ impl Scanner {
 
             let end = self.point();
             let float: f64 = value.parse().unwrap();
-            Token::new(TokenType::Float(float), Span::new(start, end))
+            Ok(Token::new(TokenType::Float(float), Span::new(start, end)))
         } else {
             let end = self.point();
             let integer: i64 = value.parse().unwrap();
-            Token::new(TokenType::Integer(integer), Span::new(start, end))
+            Ok(Token::new(TokenType::Integer(integer), Span::new(start, end)))
         }
     }
 
@@ -140,7 +131,7 @@ impl Scanner {
     ///
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
-    fn scan_punctuation_or_operator(&mut self) -> Option<Token> {
+    fn scan_punctuation_or_operator(&mut self) -> ParseResult<Token> {
         assert!(self.is_punctuation() || self.is_operator());
         let start = self.point();
         let mut length = max(Punctuation::get_max_length(), Operator::max_length());
@@ -150,14 +141,14 @@ impl Scanner {
             if let Ok(punctuation) = Punctuation::from_str(slice.as_str()) {
                 self.advance_n(length);
                 let end = self.point();
-                return Some(Token::new(
+                return Ok(Token::new(
                     TokenType::Punctuation(punctuation),
                     Span::new(start, end),
                 ));
             } else if let Ok(operator) = Operator::from_str(slice.as_str()) {
                 self.advance_n(length);
                 let end = self.point();
-                return Some(Token::new(
+                return Ok(Token::new(
                     TokenType::Operator(operator),
                     Span::new(start, end),
                 ));
@@ -166,7 +157,7 @@ impl Scanner {
             }
         }
 
-        None
+        Err(ParseError::error("invalid token", Span::new(start, start)))
     }
 
     /// Skips over single line comments in the input.
@@ -200,7 +191,7 @@ impl Scanner {
     ///
     /// # Arguments
     /// * `self` - A mutable reference to the scanner.
-    /// * `n` - The number advances to make.
+    /// * `n` - The number of advances to make.
     fn advance_n(&mut self, n: usize) {
         assert!(!self.eof());
         for _ in 0..n {
