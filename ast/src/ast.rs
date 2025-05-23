@@ -166,37 +166,43 @@ impl ScopedAst for Stmt {
 #[ast]
 pub struct IntLitExpr {
     pub value: i64,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents a floating point literal.
 #[ast]
 pub struct FloatLitExpr {
     pub value: f64,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents a bool literal.
 #[ast]
 pub struct BoolLitExpr {
     pub value: bool,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents a string literal.
 #[ast]
 pub struct StringLitExpr {
     pub value: String,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents an identifier expression.
 #[ast]
 pub struct IdentExpr {
     pub ident: Box<Ident>,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents a call expression.
 #[ast]
 pub struct CallExpr {
     pub fun: Box<Expr>,
-    pub args: Vec<Expr>
+    pub args: Vec<Expr>,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents a unary expression.
@@ -204,6 +210,7 @@ pub struct CallExpr {
 pub struct UnaryExpr {
     pub op: Operator,
     pub expr: Box<Expr>,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents a binary expression.
@@ -212,6 +219,7 @@ pub struct BinaryExpr {
     pub left: Box<Expr>,
     pub op: Operator,
     pub right: Box<Expr>,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents a Pine expression.
@@ -227,6 +235,20 @@ pub enum Expr {
     Binary(BinaryExpr),
 }
 
+impl Expr {
+    pub fn dest(&self) -> pvm::Operand {
+        match self {
+            Expr::IntLit(int_lit) => int_lit.dest.clone(),
+            Expr::FloatLit(float_lit) => float_lit.dest.clone(),
+            Expr::BoolLit(bool_lit) => bool_lit.dest.clone(),
+            Expr::StringLit(string_lit) => string_lit.dest.clone(),
+            Expr::Ident(ident) => ident.dest.clone(),
+            Expr::Call(call) => call.dest.clone(),
+            Expr::Unary(unary) => unary.dest.clone(),
+            Expr::Binary(binary) => binary.dest.clone(),
+        }
+    }
+}
 impl Ast for Expr {
     fn span(&self) -> Span {
         match self {
@@ -276,6 +298,12 @@ pub struct Ident {
     pub name: String,
     #[default(Symbol::default)]
     pub symbol: SymbolRef,
+}
+
+impl Ident {
+    pub fn dest(&self) -> pvm::Operand {
+        self.symbol.borrow().dest.clone()
+    }
 }
 
 /// Represents a Pine type.

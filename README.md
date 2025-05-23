@@ -30,6 +30,8 @@ are used to read and write memory.
 
 # TODO
 ## ast
+- Need to add reference from fun call to fun symbol
+- Need to insert return statement if void function has none
 - Add failure tests
 - Finish parsing the rest of the Pine constructs
   - function calls
@@ -58,7 +60,11 @@ are used to read and write memory.
 - any other semantic passes?
 - add tests
 
+## gen
+- Will need to collect a set of local var symbols for each function call, then save and restore
+
 ## pvm
+- May want to implement functions with separate local variables, makes codegen easier
 - other syscall ops (read and write file, etc)
 - Add failure tests
 
