@@ -1,22 +1,24 @@
 use proc_macro::TokenStream;
 use quote::quote;
 
-/// Derives the `Ast` trait for a struct.
+/// Derives the `Ast` and `ScopedAst` traits for a struct.
 pub(crate) fn derive_ast_node(input: TokenStream) -> TokenStream {
     let item_struct = syn::parse_macro_input!(input as syn::ItemStruct);
     let name = item_struct.ident.clone();
     quote! {
         impl Ast for #name {
+            fn span(&self) -> Span {
+                self.span.clone()
+            }
+        }
+
+        impl ScopedAst for #name {
             fn scope(&self) -> ScopeRef {
                 self.scope.clone()
             }
 
             fn set_scope(&mut self, scope: ScopeRef) {
                 self.scope = scope;
-            }
-
-            fn span(&self) -> Span {
-                self.span.clone()
             }
         }
     }

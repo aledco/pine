@@ -3,6 +3,7 @@ use crate::sem::error::{SemError, SemResult};
 use crate::symbol::*;
 use crate::sem::create_symbol;
 
+/// Annotates local scopes.
 pub(crate) fn local(program: &mut Program) -> SemResult<()> {
     program.visit(program.scope())?;
     Ok(())

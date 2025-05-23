@@ -4,6 +4,7 @@ use crate::sem::{SemError, SemResult};
 // Simple Alg: https://pfudke.wordpress.com/2014/11/20/hindley-milner-type-inference-a-practical-example-2/
 // Efficient Alg: https://okmij.org/ftp/ML/generalization.html
 
+/// Annotates local types.
 pub(crate) fn local(program: &mut Program) -> SemResult<()> {
     program.visit()?;
     Ok(())
@@ -252,6 +253,6 @@ impl AstTyping for Ident {
 
 impl AstTyping for Ty {
     fn visit(&mut self) -> SemResult<PineType> {
-        Ok(self.ty())
+        Ok(self.ty.clone())
     }
 }

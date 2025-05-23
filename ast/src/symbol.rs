@@ -3,26 +3,33 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+/// The symbol reference type.
 pub type SymbolRef = Rc<RefCell<Symbol>>;
+
+/// The scope reference type.
 pub type ScopeRef = Rc<RefCell<Scope>>;
 
+/// Represents a symbol.
 #[derive(Debug)]
 pub struct Symbol {
     pub name: String,
     pub pine_type: PineType,
 }
 
+/// Represents a symbol table.
 #[derive(Debug)]
 pub struct SymbolTable {
     symbols: HashMap<String, SymbolRef>,
 }
 
+/// Represents the depth of a scope.
 #[derive(Debug, PartialEq)]
 pub enum ScopeDepth {
     Global,
     Local(usize),
 }
 
+/// Represents a scope.
 #[derive(Debug)]
 pub struct Scope {
     pub parent: Option<ScopeRef>,
@@ -86,6 +93,7 @@ impl Scope {
         }))
     }
 
+    /// Creates a new global scope.
     pub fn new_global() -> ScopeRef {
         Rc::new(RefCell::new(Self {
             parent: None,
@@ -95,6 +103,7 @@ impl Scope {
         }))
     }
 
+    /// Creates a new local scope.
     pub fn new_local(parent: ScopeRef) -> ScopeRef {
         let level = match parent.borrow().depth {
             ScopeDepth::Global => ScopeDepth::Local(1),
@@ -109,6 +118,9 @@ impl Scope {
         }))
     }
 
+    /// Creates a new function scope.
+    /// A function scope is a local scope owned by a function.
+    /// In other words, it is the first scope of a function.
     pub fn new_fun(parent: ScopeRef, fun_sym: SymbolRef) -> ScopeRef {
         let scope = Scope::new_local(parent);
         scope.borrow_mut().owner = Some(fun_sym);
@@ -119,6 +131,7 @@ impl Scope {
         self.symbol_table.add(symbol)
     }
 
+    /// Looks a symbol up by name in this scope and all ancestor scopes recursively.
     pub fn lookup(&self, name: &str) -> Option<SymbolRef> {
         match self.symbol_table.get(name) {
             Some(symbol) => Some(symbol),

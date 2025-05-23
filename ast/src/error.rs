@@ -2,6 +2,7 @@ use std::fmt::{Debug, Display};
 use crate::Span;
 use crate::sem::SemError;
 
+/// Error produced by this crate.
 pub enum Error {
     Parse(ParseError),
     Sem(SemError)
@@ -25,8 +26,10 @@ impl Debug for Error {
     }
 }
 
+/// A parse result.
 pub(crate) type ParseResult<T> = Result<T, Error>;
 
+/// A parse error.
 pub struct ParseError {
     pub msg: String,
     pub span: Span

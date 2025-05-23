@@ -64,6 +64,7 @@ pub enum Operator {
 }
 
 impl Operator {
+    /// Gets all operator values.
     pub fn all_values() -> Vec<String> {
         Self::iter()
             .filter(|p| p.get_str("Value").is_some())
@@ -72,14 +73,17 @@ impl Operator {
             .collect()
     }
 
+    /// Gets all unary ops.
     pub fn all_unary_ops() -> Vec<Self> {
         Self::iter().filter(|op| op.is_unary()).collect()
     }
 
+    /// Gets all binary ops.
     pub fn all_binary_ops() -> Vec<Self> {
         Self::iter().filter(|op| op.is_binary()).collect()
     }
 
+    /// Gets binary ops by precedence.
     pub fn binary_ops_by_precedence(precedence: i32) -> Vec<Self> {
         Self::all_binary_ops()
             .into_iter()
@@ -87,6 +91,7 @@ impl Operator {
             .collect()
     }
 
+    /// Gets the maximum length of an operator, used for lexing.
     pub fn max_length() -> usize {
         Self::all_values()
             .into_iter()
@@ -95,6 +100,7 @@ impl Operator {
             .len()
     }
 
+    /// Gets the maximum precedence level of all Pine operators.
     pub fn max_precedence() -> i32 {
         Self::iter()
             .max_by(|a, b| a.precedence().cmp(&b.precedence()))
@@ -102,6 +108,7 @@ impl Operator {
             .precedence()
     }
 
+    /// Gets the minimum precedence level of all Pine operators.
     pub fn min_precedence() -> i32 {
         Self::iter()
             .min_by(|a, b| a.precedence().cmp(&b.precedence()))
@@ -109,6 +116,7 @@ impl Operator {
             .precedence()
     }
 
+    /// Gets the precedence level of an operator.
     pub fn precedence(&self) -> i32 {
         match self {
             Operator::Equals => 4,
@@ -129,6 +137,7 @@ impl Operator {
         }
     }
 
+    /// Gets the type resulting from a binary operation.
     pub fn binary_pine_type(&self, lhs: PineType, rhs: PineType) -> Result<PineType, String> {
         if !self.is_binary() {
             return Err(format!("Operator `{}` is not binary", self));
@@ -171,6 +180,7 @@ impl Operator {
         }
     }
 
+    /// Gets the type resulting from a unary operation.
     pub fn unary_pine_type(&self, t: PineType) -> Result<PineType, String> {
         if !self.is_unary() {
             return Err(format!("Operator `{}` is not unary", self));
@@ -192,14 +202,17 @@ impl Operator {
         }
     }
 
+    /// Determines if the operator is unary.
     pub fn is_unary(&self) -> bool {
         self.get_bool("IsUnary").unwrap()
     }
 
+    /// Determines if the operator is binary.
     pub fn is_binary(&self) -> bool {
         self.get_bool("IsBinary").unwrap()
     }
 
+    /// Gets the operator as a string.
     pub fn as_str(&self) -> &str {
         self.get_str("Value").unwrap()
     }

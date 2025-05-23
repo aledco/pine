@@ -22,6 +22,7 @@ impl Parser {
         Parser { tokens, index: 0 }
     }
 
+    /// Parses the input.
     pub fn parse(&mut self) -> ParseResult<Program> {
         let mut functions = vec![];
         while !self.eof() {
@@ -41,6 +42,7 @@ impl Parser {
         Ok(Program::new(functions, span))
     }
 
+    /// Parses a function.
     fn parse_function(&mut self) -> ParseResult<Fun> {
         let fun = self.match_token(Keyword::Fun)?;
         let identifier = self.parse_identifier()?;
@@ -68,6 +70,7 @@ impl Parser {
         ))
     }
 
+    /// Parses the function params.
     fn parse_params(&mut self) -> ParseResult<Vec<Param>> {
         self.match_token(Punctuation::OpenParen)?;
         let mut params = Vec::new();
@@ -77,7 +80,7 @@ impl Parser {
             if !self.matches(Punctuation::Comma) {
                 break;
             }
-            
+
             self.match_token(Punctuation::Comma)?;
         }
 
@@ -85,6 +88,7 @@ impl Parser {
         Ok(params)
     }
 
+    /// Parses a function param.
     fn parse_param(&mut self) -> ParseResult<Param> {
         let identifier = self.parse_identifier()?;
         self.match_token(Punctuation::Colon)?;
@@ -93,6 +97,7 @@ impl Parser {
         Ok(Param::new(Box::new(identifier), Box::new(type_node), span))
     }
 
+    /// Parses an identifier.
     fn parse_identifier(&mut self) -> ParseResult<Ident> {
         let token = self.match_token(TokenTypeMatch::Identifier)?;
         match token.token_type {
@@ -101,6 +106,7 @@ impl Parser {
         }
     }
 
+    /// Parses a block.
     fn parse_block(&mut self) -> ParseResult<Block> {
         let mut span = self.span();
         let mut statements = vec![];
@@ -116,6 +122,7 @@ impl Parser {
         Ok(Block::new(statements, span))
     }
 
+    /// Parses a statement.
     fn parse_statement(&mut self) -> ParseResult<Stmt> {
         if self.matches(Keyword::Let) {
             Ok(Stmt::Let(self.parse_let()?))
@@ -141,6 +148,7 @@ impl Parser {
         }
     }
 
+    /// Parses a let statement.
     fn parse_let(&mut self) -> ParseResult<LetStmt> {
         let let_token = self.match_token(Keyword::Let)?;
         let identifier = self.parse_identifier()?;
@@ -161,6 +169,7 @@ impl Parser {
         ))
     }
 
+    /// Parses a set statement.
     fn parse_set(&mut self) -> ParseResult<SetStmt> {
         let let_token = self.match_token(Keyword::Set)?;
         let identifier = self.parse_identifier()?;
@@ -173,6 +182,7 @@ impl Parser {
         ))
     }
 
+    /// Parses an if statement.
     fn parse_if(&mut self) -> ParseResult<IfStmt> {
         let if_token = self.match_token(Keyword::If)?;
         let cond = self.parse_expression()?;
@@ -205,6 +215,7 @@ impl Parser {
         ))
     }
 
+    /// Parses a while statement.
     fn parse_while(&mut self) -> ParseResult<WhileStmt> {
         let while_token = self.match_token(Keyword::While)?;
         let condition = self.parse_expression()?;
@@ -218,6 +229,7 @@ impl Parser {
         ))
     }
 
+    /// Parses a return statement.
     fn parse_return(&mut self) -> ParseResult<ReturnStmt> {
         let ret = self.match_token(Keyword::Return)?;
         let (expression, span) = if self.matches_expression() {
@@ -231,10 +243,12 @@ impl Parser {
         Ok(ReturnStmt::new(expression, span))
     }
 
+    /// Parses an expression.
     fn parse_expression(&mut self) -> ParseResult<Expr> {
         self.parse_expression_by_precedence(Operator::max_precedence())
     }
 
+    /// Parses an expression by precedence.
     fn parse_expression_by_precedence(&mut self, precedence: i32) -> ParseResult<Expr> {
         if precedence < Operator::min_precedence() {
             self.parse_expression_term()
@@ -258,6 +272,7 @@ impl Parser {
         }
     }
 
+    /// Parses an expression term.
     fn parse_expression_term(&mut self) -> ParseResult<Expr> {
         let mut expr = if self.matches(TokenTypeMatch::Identifier) {
             Ok(Expr::Ident(self.parse_identifier_expression()?))
@@ -272,7 +287,7 @@ impl Parser {
         } else if self.matches_any(Operator::all_unary_ops()) {
             Ok(Expr::Unary(self.parse_unary_expression()?))
         } else if self.matches(Punctuation::OpenParen) {
-            self.parse_parenthized_expression()
+            self.parse_parenthesized_expression()
         } else {
             Err(ParseError::error("invalid expression", self.span()))
         }?;
@@ -286,6 +301,7 @@ impl Parser {
         Ok(expr)
     }
 
+    /// Parses the function call args.
     fn parse_function_call_args(&mut self) -> ParseResult<(Vec<Expr>, Span)> {
         let mut args: Vec<Expr> = vec![];
         let open = self.match_token(Punctuation::OpenParen)?;
@@ -295,7 +311,7 @@ impl Parser {
             if !self.matches(Punctuation::Comma) {
                 break;
             }
-            
+
             self.match_token(Punctuation::Comma)?;
         }
 
@@ -304,6 +320,7 @@ impl Parser {
         Ok((args, span))
     }
 
+    /// Parses a unary expression.
     fn parse_unary_expression(&mut self) -> ParseResult<UnaryExpr> {
         let op_token = self.match_any(Operator::all_unary_ops())?;
         let op = match op_token.token_type {
@@ -315,19 +332,22 @@ impl Parser {
         Ok(UnaryExpr::new(op, Box::new(expr), span))
     }
 
-    fn parse_parenthized_expression(&mut self) -> ParseResult<Expr> {
+    /// Parses a parenthesized expression.
+    fn parse_parenthesized_expression(&mut self) -> ParseResult<Expr> {
         self.match_token(Punctuation::OpenParen)?;
         let expr = self.parse_expression();
         self.match_token(Punctuation::CloseParen)?;
         expr
     }
 
+    /// Parses an identifier expression.
     fn parse_identifier_expression(&mut self) -> ParseResult<IdentExpr> {
         let identifier = self.parse_identifier()?;
         let span = identifier.span();
         Ok(IdentExpr::new(Box::new(identifier), span))
     }
 
+    /// Parses an integer.
     fn parse_integer(&mut self) -> ParseResult<IntLitExpr> {
         let token = self.match_token(TokenTypeMatch::Integer)?;
         match token.token_type {
@@ -338,6 +358,7 @@ impl Parser {
         }
     }
 
+    /// Parses a float.
     fn parse_float(&mut self) -> ParseResult<FloatLitExpr> {
         let token = self.match_token(TokenTypeMatch::Float)?;
         match token.token_type {
@@ -348,6 +369,7 @@ impl Parser {
         }
     }
 
+    /// Parses a bool.
     fn parse_bool(&mut self) -> ParseResult<BoolLitExpr> {
         let token = self.match_any(vec![Keyword::True, Keyword::False])?;
         match token.token_type {
@@ -361,6 +383,7 @@ impl Parser {
         }
     }
 
+    /// Parses a string.
     fn parse_string(&mut self) -> ParseResult<StringLitExpr> {
         let token = self.match_token(TokenTypeMatch::String)?;
         match token.token_type {
@@ -371,12 +394,14 @@ impl Parser {
         }
     }
 
+    /// Parses a type.
     fn parse_type(&mut self) -> ParseResult<Ty> {
         let span = self.span();
         let pine_type = self.match_type()?;
         Ok(Ty::new(pine_type, span))
     }
 
+    /// Matches a type.
     fn match_type(&mut self) -> ParseResult<PineType> {
         if self.matches(Keyword::Void) {
             self.match_token(Keyword::Void)?;
@@ -404,6 +429,7 @@ impl Parser {
         }
     }
 
+    /// Matches a token.
     fn match_token<T>(&mut self, token_type: T) -> ParseResult<Token>
     where
         T: TokenMatch + Copy + Debug,
@@ -417,6 +443,7 @@ impl Parser {
         }
     }
 
+    /// Matches any token from a set of tokens.
     fn match_any<T>(&mut self, token_types: Vec<T>) -> ParseResult<Token>
     where
         T: TokenMatch + Copy + Debug,
@@ -430,6 +457,7 @@ impl Parser {
         Err(ParseError::error(format!("expected one of {:?} found {:?}", token_types, self.token_type()), self.span()))
     }
 
+    /// Determines if the token is matched.
     fn matches<T>(&self, token_type: T) -> bool
     where
         T: TokenMatch + Copy + Debug,
@@ -437,6 +465,7 @@ impl Parser {
         token_type.matches(&self.token_type())
     }
 
+    /// Determines if any token is matches from a set of token types.
     fn matches_any<T>(&self, token_types: Vec<T>) -> bool
     where
         T: TokenMatch + Copy + Debug,
@@ -444,10 +473,12 @@ impl Parser {
         token_types.into_iter().any(|t| self.matches(t))
     }
 
+    /// Determines if a function is matched.
     fn matches_function(&self) -> bool {
         self.matches(Keyword::Fun)
     }
 
+    /// Determines if a statement is matched.
     fn matches_statement(&self) -> bool {
         if self.matches_any(vec![
             Keyword::Begin,
@@ -466,6 +497,7 @@ impl Parser {
         }
     }
 
+    /// Determines if an expression is matched.
     fn matches_expression(&self) -> bool {
         if self.matches_any(vec![
             TokenTypeMatch::Identifier,
@@ -485,18 +517,22 @@ impl Parser {
         }
     }
 
+    /// Gets the current token.
     fn token(&self) -> Token {
         self.tokens[self.index].clone()
     }
 
+    /// Gets the current token type.
     fn token_type(&self) -> TokenType {
         self.tokens[self.index].token_type.clone()
     }
 
+    /// Gets the current span.
     fn span(&self) -> Span {
         self.tokens[self.index].span.clone()
     }
 
+    /// Determines if EOF is reached.
     fn eof(&self) -> bool {
         self.index >= self.tokens.len()
     }

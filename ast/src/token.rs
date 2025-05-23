@@ -53,6 +53,7 @@ pub enum TokenType {
     Operator(Operator),
 }
 
+/// Represents a token type match.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TokenTypeMatch {
     Identifier,

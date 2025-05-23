@@ -1,8 +1,10 @@
 use std::fmt::{Debug, Display};
 use crate::{Error, Span};
 
+/// A semantic result.
 pub type SemResult<T> = Result<T, Error>;
 
+/// A semantic error.
 pub struct SemError {
     pub msg: String,
     pub span: Span

@@ -30,7 +30,6 @@ are used to read and write memory.
 
 # TODO
 ## ast
-- Write comments
 - Add failure tests
 - Finish parsing the rest of the Pine constructs
   - function calls
@@ -58,7 +57,6 @@ are used to read and write memory.
   - Implement Hindley-Milner algorithm
 - any other semantic passes?
 - add tests
-- add comments
 
 ## pvm
 - other syscall ops (read and write file, etc)

@@ -1,6 +1,7 @@
 use crate::ast::*;
 use crate::sem::SemResult;
 
+/// Annotates global types.
 pub(crate) fn global(program: &mut Program) -> SemResult<()> {
     program.visit()?;
     Ok(())
@@ -52,6 +53,6 @@ impl AstTyping for Param {
 
 impl AstTyping for Ty {
     fn visit(&mut self) -> SemResult<PineType> {
-        Ok(self.ty())
+        Ok(self.ty.clone())
     }
 }

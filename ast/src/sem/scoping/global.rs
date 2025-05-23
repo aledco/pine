@@ -3,6 +3,7 @@ use crate::sem::error::{SemError, SemResult};
 use crate::symbol::*;
 use crate::sem::create_symbol;
 
+/// Annotates global scopes.
 pub(crate) fn global(program: &mut Program) -> SemResult<()> {
     let global_scope = Scope::new_global();
     program.visit(global_scope)?;
