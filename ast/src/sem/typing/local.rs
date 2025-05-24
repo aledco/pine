@@ -28,9 +28,6 @@ impl AstTyping for Fun {
     fn visit(&mut self) -> SemResult<PineType> {
         let fun_type = self.ident.visit()?;
         self.block.visit()?;
-
-        // TODO ensure all paths return if return type is not void
-
         Ok(fun_type)
     }
 }

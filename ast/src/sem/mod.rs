@@ -1,6 +1,7 @@
 mod error;
 pub(crate) mod scoping;
 pub(crate) mod typing;
+pub(crate) mod ret;
 
 pub use error::*;
 use crate::Ast;
