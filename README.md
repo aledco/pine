@@ -59,10 +59,8 @@ are used to read and write memory.
 - add tests
 
 ## gen
-- Will need to collect a set of local var symbols for each function call, then save and restore
 
 ## pvm
-- May want to implement functions with separate local variables, makes codegen easier
 - other syscall ops (read and write file, etc)
 - Add failure tests
 

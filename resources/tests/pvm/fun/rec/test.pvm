@@ -1,0 +1,32 @@
+move x 0
+move y 0
+
+call main
+exit 0
+
+fun main
+pusha y
+call f
+popr z
+printi z
+println
+ret
+
+fun f
+popa y
+printi x
+println
+printi y
+println
+eq b x 10
+jumpz b f_lab
+pushr x
+ret
+label f_lab
+add x x 1
+add y y 1
+pusha y
+call f
+popr y
+pushr y
+ret
