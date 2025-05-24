@@ -45,14 +45,17 @@ impl Environment {
         }
     }
     
+    /// Pushes a new variable stack.
     pub(crate) fn push_variable_stack(&mut self) {
         self.fun_variable_stack.push(HashMap::new());
     }
     
+    /// Pops the most recent variable stack.
     pub(crate) fn pop_variable_stack(&mut self) {
         self.fun_variable_stack.pop();
     }
     
+    /// Gets a variable's value from the variable stack or globals.
     pub(crate) fn variable(&self, name: &str) -> Option<u64> {
         match self.fun_variable_stack.last() {
             Some(variables) => {
@@ -67,6 +70,8 @@ impl Environment {
         }
     }
 
+    
+    /// Sets a variables value in the variable stack or globals.
     pub(crate) fn set_variable(&mut self, name: &str, value: u64) {
         match self.fun_variable_stack.last_mut() {
             Some(variables) => {
