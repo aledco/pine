@@ -13,7 +13,9 @@ pub type ScopeRef = Rc<RefCell<Scope>>;
 #[derive(Debug)]
 pub struct Symbol {
     pub name: String,
+    pub dest: pvm::Operand,
     pub pine_type: PineType,
+    pub(crate) scope: ScopeRef,
 }
 
 /// Represents a symbol table.
@@ -42,14 +44,18 @@ impl Symbol {
     pub fn default() -> SymbolRef {
         Rc::new(RefCell::new(Self {
             name: String::default(),
+            dest: pvm::Operand::default(),
             pine_type: PineType::Unknown,
+            scope: Scope::default(),
         }))
     }
 
-    pub fn new(name: String) -> SymbolRef {
+    pub fn new(name: String, scope: ScopeRef) -> SymbolRef {
         Rc::new(RefCell::new(Self {
-            name,
+            name: name.clone(),
+            dest: pvm::Operand::Variable(format!("${}_{}", name, scope.borrow().depth)),
             pine_type: PineType::Unknown,
+            scope
         }))
     }
 }
@@ -82,6 +88,16 @@ impl SymbolTable {
         }
     }
 }
+
+impl std::fmt::Display for ScopeDepth {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            ScopeDepth::Global => write!(f, "g"),
+            ScopeDepth::Local(depth) => write!(f, "l{}", depth),
+        }
+    }
+}
+
 
 impl Scope {
     pub fn default() -> ScopeRef {

@@ -28,9 +28,6 @@ impl AstTyping for Fun {
     fn visit(&mut self) -> SemResult<PineType> {
         let fun_type = self.ident.visit()?;
         self.block.visit()?;
-
-        // TODO ensure all paths return if return type is not void
-
         Ok(fun_type)
     }
 }
@@ -232,7 +229,7 @@ impl AstTyping for BinaryExpr {
 
 impl AstTyping for Expr {
     fn visit(&mut self) -> SemResult<PineType> {
-        match self {
+        let ty = match self {
             Expr::IntLit(e) => e.visit(),
             Expr::FloatLit(e) => e.visit(),
             Expr::BoolLit(e) => e.visit(),
@@ -241,7 +238,9 @@ impl AstTyping for Expr {
             Expr::Call(e) => e.visit(),
             Expr::Unary(e) => e.visit(),
             Expr::Binary(e) => e.visit(),
-        }
+        }?;
+        self.set_ty(ty.clone());
+        Ok(ty)
     }
 }
 

@@ -74,7 +74,7 @@ fn lex_identifier(value: &str) -> Result<Token, ()> {
 
 /// Determines if a character is a valid identifier character.
 fn is_valid_identifier_char(c: char) -> bool {
-    c.is_alphanumeric() || c == '_' || c == '.'
+    c.is_alphanumeric() || c == '_' || c == '.' || c == '$' || c == ':'
 }
 
 /// Scans a number.

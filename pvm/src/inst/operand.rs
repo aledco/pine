@@ -74,6 +74,12 @@ impl Display for Operand {
     }
 }
 
+impl Default for Operand {
+    fn default() -> Self {
+        Operand::Constant(0)
+    }
+}
+
 impl OperandFormat {
     /// Validates that an operand has the correct format.
     pub fn validate(&self, operand: &Operand) -> Result<(), Error> {

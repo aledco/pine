@@ -7,6 +7,7 @@ name = "ast"
 version = "0.1.0"
 dependencies = [
  "ast_proc_macros",
+ "pvm",
  "strum",
  "strum_macros",
  "test_util",
@@ -23,6 +24,10 @@ dependencies = [
 [[package]]
 name = "gen"
 version = "0.1.0"
+dependencies = [
+ "ast",
+ "pvm",
+]
 
 [[package]]
 name = "heck"
