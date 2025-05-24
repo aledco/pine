@@ -17,7 +17,11 @@ fn main() {
         .collect::<Vec<_>>()
         .join("\n");
     println!("{}", output);
+
+    let execute_result = pvm::execute(instructions);
+    if let Err(pvm::Error::Exit(e)) = execute_result {
+        std::process::exit(e.exit_code);
+    }
     
-    pvm::execute(instructions).unwrap();
     //fs::write(output_file, output).unwrap();
 }

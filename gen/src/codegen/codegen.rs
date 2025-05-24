@@ -1,4 +1,4 @@
-use ast::{Expr, Operator, PineType};
+use ast::{Ast, Expr, Operator, PineType};
 use crate::codegen::append::*;
 use crate::codegen::context::Context;
 use crate::codegen::{Inst, InstVec};
@@ -35,21 +35,29 @@ trait AstCodeGen {
 
 impl AstCodeGen for ast::Program {
     fn gen(&self, context: &mut Context) -> InstVec {
-        let main_call_inst = wrap(pvm::CallInst::new(pvm::Operand::Label("main".to_string())));
-        // TODO popr if main returns int
-
-        let end_label = pvm::Operand::Label("end".to_string());
-        let jump_end_inst = wrap(pvm::JumpInst::new(end_label.clone()));
-
-        let mut insts = concat!(main_call_inst, jump_end_inst);
+        let main_call_inst = wrap(pvm::CallInst::new(pvm::Operand::Label(self.main.borrow().name.clone())));
+        let mut insts = vec![main_call_inst];
+        match &self.main.borrow().pine_type {
+            PineType::Function { ret, .. } => {
+                if **ret == PineType::Integer {
+                    let exit_code = pvm::Operand::Variable("exit_code".to_string());
+                    let popr_inst = wrap(pvm::PoprInst::new(exit_code.clone()));
+                    let exit_inst = wrap(pvm::ExitInst::new(exit_code));
+                    insts = concat!(insts, popr_inst, exit_inst);
+                } else {
+                    let exit_inst = wrap(pvm::ExitInst::new(pvm::Operand::Constant(0)));
+                    insts = concat!(insts, exit_inst);
+                }
+            },
+            _ => panic!("codegen bug")
+        }
 
         for f in &self.funs {
             let f_insts = f.gen(context);
             insts = concat!(insts, f_insts);
         }
 
-        let end_label_inst = wrap(pvm::LabelInst::new(end_label.clone()));
-        concat!(insts, end_label_inst)
+        insts
     }
 }
 
@@ -256,12 +264,20 @@ impl AstCodeGen for ast::CallExpr {
             insts = concat!(insts, a_insts);
         }
 
-
         let call_inst = wrap(pvm::CallInst::new(self.fun.dest())); // TODO will this work for lambdas?
+        insts = concat!(insts, push_insts, call_inst);
 
-        // TODO if function has ret val, need popr instruction
+        match self.fun.ty() {
+            PineType::Function { ret, ..} => {
+                if *ret != PineType::Void {
+                    let popr_inst = wrap(pvm::PoprInst::new(self.dest.clone()));
+                    insts = concat!(insts, popr_inst);
+                }
+            }
+            _ => panic!("codegen bug")
+        }
 
-        concat!(insts, push_insts, call_inst)
+        insts
     }
 }
 

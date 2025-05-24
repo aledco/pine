@@ -30,8 +30,9 @@ are used to read and write memory.
 
 # TODO
 ## ast
-- Need to add reference from fun call to fun symbol
 - Need to insert return statement if void function has none
+  - Need another semantic pass for checking that all code paths return if function is non void, and inserts returns for void functions
+  - May need to do this with basic blocks?
 - Add failure tests
 - Finish parsing the rest of the Pine constructs
   - function calls

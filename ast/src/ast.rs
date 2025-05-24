@@ -43,7 +43,7 @@ pub(crate) trait ScopedAst {
 #[ast]
 pub struct Program {
     pub funs: Vec<Fun>, // TODO make top level enum
-    //pub main: AstNode,
+    #[default(Symbol::default)] pub main: SymbolRef,
 }
 
 /// Represents a Pine function.
