@@ -28,8 +28,8 @@ impl Operand {
     pub fn value(&self, env: &Environment) -> Result<u64, Error> {
         match self {
             Operand::Constant(v) => Ok(v.clone()),
-            Operand::Variable(n) => match env.variables.get(n) {
-                Some(v) => Ok(v.clone()),
+            Operand::Variable(n) => match env.variable(n) {
+                Some(v) => Ok(v),
                 None => Err(ExecuteError::variable_does_not_exist(&n))
             },
             _ => Err(ExecuteError::operand_has_no_value()),
@@ -40,7 +40,7 @@ impl Operand {
     pub fn set_value(&mut self, value: u64, env: &mut Environment) -> Result<(), Error> {
         match self {
             Operand::Variable(n) => {
-                env.variables.insert(n.clone(), value);
+                env.set_variable(n, value);
                 Ok(())
             }
             _ => Err(ExecuteError::operand_is_not_variable())

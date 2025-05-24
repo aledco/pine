@@ -27,11 +27,9 @@ ret
 
 label rec
 sub m n 1
-save n
 pusha m
 call fact
 popr a
-rest n
 mul a n a
 pushr a
 ret

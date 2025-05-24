@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use pvm_proc_macros::Inst;
 use crate::env::Environment;
 use crate::inst::*;
@@ -13,7 +14,8 @@ pub struct FunInst {
 }
 
 impl Instruction for FunInst {
-    fn execute(&mut self, _env: &mut Environment) -> Result<(), Error> {
+    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
+        env.push_variable_stack();
         Ok(())
     }
 
@@ -23,7 +25,7 @@ impl Instruction for FunInst {
             return Err(ValidateError::label_already_defined(&label));
         }
 
-        env.fun_labels.insert(label, i+1);
+        env.fun_labels.insert(label, i);
         Ok(())
     }
 }
@@ -126,6 +128,7 @@ pub struct RetInst {
 impl Instruction for RetInst {
     fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
         env.arg_queue.clear();
+        env.pop_variable_stack();
         Ok(())
     }
 
@@ -141,52 +144,6 @@ impl Instruction for RetInst {
     }
 }
 
-/// Saves a local variable to the local var store.
-#[inst(name = "save", operands = [OperandFormat::Variable])]
-pub struct SaveInst {
-    pub(crate) src: Operand,
-}
-
-impl Instruction for SaveInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
-        let var_name = self.src.var_name()?;
-        let val = self.src.value(env)?;
-        match env.local_var_store.get_mut(&var_name) {
-            Some(vals) => vals.push(val),
-            None => {
-                let mut vals = Vec::new();
-                vals.push(val);
-                env.local_var_store.insert(var_name, vals);
-            }
-        }
-        Ok(())
-    }
-}
-
-/// Restores a local variable from the local var store.
-#[inst(name = "rest", operands = [OperandFormat::Variable])]
-pub struct RestoreInst {
-    pub(crate) dest: Operand,
-}
-
-impl Instruction for RestoreInst {
-    fn execute(&mut self, env: &mut Environment) -> Result<(), Error> {
-        let var_name = self.dest.var_name()?;
-        match env.local_var_store.get_mut(&var_name) {
-            Some(vals) => {
-                match vals.pop() {
-                    Some(val) => {
-                        self.dest.set_value(val, env)?;
-                        Ok(())
-                    }
-                    None => Err(ExecuteError::local_var_not_saved(&var_name))
-                }
-            }
-            None => Err(ExecuteError::local_var_not_saved(&var_name))
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -196,7 +153,7 @@ mod tests {
         let mut context = Environment::default();
         let inst = FunInst::new(Operand::Label("test".to_string()));
         inst.initialize(&mut context, 0).unwrap();
-        assert_eq!(context.fun_labels.get("test"), Some(&1));
+        assert_eq!(context.fun_labels.get("test"), Some(&0));
     }
 
     #[test]
@@ -251,7 +208,7 @@ mod tests {
         inst.execute(&mut context).unwrap();
         inst.inc_inst_ptr(&mut context).unwrap();
         assert_eq!(context.ret_addr_stack.pop(), Some(2));
-        assert_eq!(context.inst_ptr, 1);
+        assert_eq!(context.inst_ptr, 0);
     }
 
     #[test]
@@ -270,34 +227,5 @@ mod tests {
         inst.execute(&mut context).unwrap();
         inst.inc_inst_ptr(&mut context).unwrap();
         assert_eq!(context.inst_ptr, 2);
-    }
-
-    #[test]
-    fn test_save() {
-        let mut context = Environment::default();
-        let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(10));
-        inst.execute(&mut context).unwrap();
-
-        let mut inst = SaveInst::new(Operand::Variable("test".to_string()));
-        inst.execute(&mut context).unwrap();
-        assert_eq!(context.local_var_store.get("test"), Some(&vec![10]));
-    }
-
-    #[test]
-    fn test_rest() {
-        let mut context = Environment::default();
-        let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(10));
-        inst.execute(&mut context).unwrap();
-
-        let mut inst = SaveInst::new(Operand::Variable("test".to_string()));
-        inst.execute(&mut context).unwrap();
-
-        let mut inst = MoveInst::new(Operand::Variable("test".to_string()), Operand::Constant(20));
-        inst.execute(&mut context).unwrap();
-
-        let mut inst = RestoreInst::new(Operand::Variable("test".to_string()));
-        inst.execute(&mut context).unwrap();
-        let val = inst.dest.value(&context).unwrap();
-        assert_eq!(val, 10);
     }
 }
