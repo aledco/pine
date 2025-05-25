@@ -2,8 +2,8 @@ use crate::ast::*;
 use crate::sem::SemResult;
 
 /// Annotates global types.
-pub(crate) fn global(module: &mut Module) -> SemResult<()> {
-    module.visit()?;
+pub(crate) fn global(program: &mut Program) -> SemResult<()> {
+    program.main_module.visit()?;
     Ok(())
 }
 

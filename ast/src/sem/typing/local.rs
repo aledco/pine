@@ -1,12 +1,28 @@
 use crate::ast::*;
+use crate::sem;
 use crate::sem::{SemError, SemResult};
 
 // Simple Alg: https://pfudke.wordpress.com/2014/11/20/hindley-milner-type-inference-a-practical-example-2/
 // Efficient Alg: https://okmij.org/ftp/ML/generalization.html
 
 /// Annotates local types.
-pub(crate) fn local(module: &mut Module) -> SemResult<()> {
-    module.visit()?;
+pub(crate) fn local(program: &mut Program) -> SemResult<()> {
+    program.main_module.visit()?;
+
+    let main_fun = match program.main_module.scope().borrow().lookup("main") {
+        Some(main_symbol) => main_symbol,
+        None => return Err(SemError::error("no main function found", program.main_module.span())),
+    };
+
+    match &main_fun.borrow().pine_type {
+        PineType::Function { ret, .. } => { // TODO ensure params make sense too
+            if **ret != PineType::Void && **ret != PineType::Integer {
+                return Err(SemError::error("main must return void or int", program.main_module.span()))
+            }
+        },
+        _ => return Err(SemError::error("main must be a function", program.main_module.span()))
+    }
+
     Ok(())
 }
 

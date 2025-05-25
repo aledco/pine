@@ -2,6 +2,7 @@ mod error;
 pub(crate) mod scoping;
 pub(crate) mod typing;
 pub(crate) mod ret;
+pub(crate) mod modresv;
 
 pub use error::*;
 use crate::Ast;

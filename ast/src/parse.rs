@@ -2,7 +2,6 @@ use crate::ast::*;
 use crate::operator::Operator;
 use crate::token::*;
 use std::fmt::Debug;
-use std::fs;
 use crate::error::{ParseError, ParseResult};
 
 pub fn parse(tokens: Vec<Token>) -> ParseResult<Module> {
@@ -26,10 +25,14 @@ impl Parser {
     /// Parses the input.
     pub fn parse(&mut self) -> ParseResult<Module> {
         let mut functions = vec![];
+        let mut imports = vec![];
         while !self.eof() {
-            if self.matches_function() {
+            if self.matches(Keyword::Fun) {
                 let function = self.parse_function()?;
                 functions.push(function);
+            } else if self.matches(Keyword::Import) {
+                let import = self.parse_import()?;
+                imports.push(import);
             } else {
                 Err(ParseError::error("expected function", self.span()))?
             }
@@ -40,7 +43,7 @@ impl Parser {
         } else {
             Span::default()
         };
-        Ok(Module::new(functions, span))
+        Ok(Module::new(imports, functions, span))
     }
 
     /// Parses a function.
@@ -101,22 +104,10 @@ impl Parser {
     fn parse_import(&mut self) -> ParseResult<Import> {
         let import = self.match_token(Keyword::Import)?;
         let ident = self.parse_identifier()?;
-        let path = format!("./{}.p", ident.name); // TODO 
-        let module = self.parse_module(&path)?;
         let span = import.span + ident.span();
-        Ok(Import::new(Box::new(ident), Box::new(module), span))
+        Ok(Import::new(Box::new(ident), span))
     }
     
-    fn parse_module(&mut self, path: &str) -> ParseResult<Module> {
-        let module_content = match fs::read_to_string(path) {
-            Ok(content) => content,
-            Err(e) => return Err(ParseError::error(format!("failed to read file: {}", e), self.span()))?,
-        };
-        
-        let module = crate::parse_module(module_content)?;
-        Ok(module)
-    }
-
     /// Parses an identifier.
     fn parse_identifier(&mut self) -> ParseResult<Ident> {
         let token = self.match_token(TokenTypeMatch::Identifier)?;
@@ -492,12 +483,7 @@ impl Parser {
     {
         token_types.into_iter().any(|t| self.matches(t))
     }
-
-    /// Determines if a function is matched.
-    fn matches_function(&self) -> bool {
-        self.matches(Keyword::Fun)
-    }
-
+    
     /// Determines if a statement is matched.
     fn matches_statement(&self) -> bool {
         if self.matches_any(vec![

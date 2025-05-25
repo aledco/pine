@@ -4,8 +4,8 @@ use crate::symbol::*;
 use crate::sem::create_symbol;
 
 /// Annotates local scopes.
-pub(crate) fn local(module: &mut Module) -> SemResult<()> {
-    module.visit(module.scope())?;
+pub(crate) fn local(program: &mut Program) -> SemResult<()> {
+    program.main_module.visit(program.main_module.scope())?;
     Ok(())
 }
 

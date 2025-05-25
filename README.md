@@ -29,6 +29,18 @@ are used to read and write memory.
 - VS Code syntax highlighting
 
 # TODO
+
+## Plan
+1. Implement objects and interfaces
+2. Implement polymorphic types
+3. Implement operator overloading
+4. Implement core module
+   - Overload operators for primitive types
+   - Implement to_string interface
+   - Implement string interpolation and print functions
+5. Implement core data structures
+6. Implement module system
+
 ## ast
 - Add failure tests
 - Module system

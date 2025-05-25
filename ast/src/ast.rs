@@ -45,10 +45,20 @@ pub struct Program {
     pub main_fun: SymbolRef
 }
 
+impl Program {
+    pub fn new(main_module: Box<Module>) -> Self {
+        Self {
+            main_module,
+            main_fun: Symbol::default()
+        }
+    }
+}
+
 /// Represents a Pine module.
 #[ast]
 pub struct Module {
-    pub funs: Vec<Fun>, // TODO make top level enum
+    pub imports: Vec<Import>,
+    pub funs: Vec<Fun>,
 }
 
 /// Represents a Pine function.
@@ -70,7 +80,6 @@ pub struct Param {
 #[ast]
 pub struct Import {
     pub ident: Box<Ident>,
-    pub module: Box<Module>
 }
 
 /// Represents a Pine let statement.

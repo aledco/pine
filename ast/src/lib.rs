@@ -12,7 +12,6 @@ pub use operator::*;
 pub use symbol::*;
 pub use token::*;
 pub use error::*;
-use crate::sem::SemError;
 
 /// Parses a Pine input program into an AST. Returns the annotated AST.
 /// 
@@ -30,47 +29,28 @@ use crate::sem::SemError;
 pub fn parse<T>(input: T) -> Result<Program, Error>
 where T: Into<String> {
     let main_module = parse_module(input)?;
+    
+    let mut program = Program::new(Box::new(main_module));
+    
+    // let modules = sem::modresv::resolve_modules(&main_module);
 
-    // TODO move this code
-    let main_fun = match main_module.scope().borrow().lookup("main") {
-        Some(main_symbol) => main_symbol,
-        None => return Err(SemError::error("no main function found", main_module.span())),
-    };
+    // check function returns
+    sem::ret::check(&mut program)?;
 
-    match &main_fun.borrow().pine_type {
-        PineType::Function { ret, .. } => { // TODO ensure params make sense too
-            if **ret != PineType::Void && **ret != PineType::Integer {
-                return Err(SemError::error("main must return void or int", main_module.span()))
-            }
-        },
-        _ => return Err(SemError::error("main must be a function", main_module.span()))
-    }
+    // annotate the AST with scopes
+    sem::scoping::global(&mut program)?;
+    sem::scoping::local(&mut program)?;
 
-    // TODO move to new fn
-    let program = ast::Program {
-        main_module: Box::new(main_module),
-        main_fun,
-    };
-
+    // annotate the AST with types
+    sem::typing::global(&mut program)?;
+    sem::typing::local(&mut program)?;
+    
     Ok(program)
 }
 
-// TODO comment
-pub fn parse_module<T>(input: T) -> Result<Module, Error>
+/// Parses a module.
+pub(crate) fn parse_module<T>(input: T) -> Result<Module, Error>
 where T: Into<String> {
     let tokens = lex::lex(input.into())?;
-    let mut module = parse::parse(tokens)?;
-
-    // check function returns
-    sem::ret::check(&mut module)?;
-
-    // annotate the AST with scopes
-    sem::scoping::global(&mut module)?;
-    sem::scoping::local(&mut module)?;
-
-    // annotate the AST with types
-    sem::typing::global(&mut module)?;
-    sem::typing::local(&mut module)?;
-
-    Ok(module)
+    parse::parse(tokens)
 }
