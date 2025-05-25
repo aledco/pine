@@ -2,7 +2,7 @@ export if_example, ObjectExample
 
 # TODO need to decide how objects should work
 
-mod ex begin
+module ex begin
     obj ObjectExample begin
         name: string
         value: int

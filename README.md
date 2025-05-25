@@ -29,8 +29,25 @@ are used to read and write memory.
 - VS Code syntax highlighting
 
 # TODO
+
+## Plan
+1. Implement objects and interfaces
+2. Implement polymorphic types
+3. Implement operator overloading
+4. Implement core module
+   - Overload operators for primitive types
+   - Implement to_string interface
+   - Implement string interpolation and print functions
+5. Implement core data structures
+6. Implement module system
+
 ## ast
 - Add failure tests
+- Module system
+  - Need a way to ensure modules only get parsed once, even if imported multiple times
+  - Need to build some sort of module graph to detect circles
+  - Need to parse and annotate modules in order, so that typing information is availabe at the correct time
+    - Need to do a breadth first search of module graph
 - Finish parsing the rest of the Pine constructs
   - function calls
   - polymorphic types

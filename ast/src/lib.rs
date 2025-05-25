@@ -28,8 +28,11 @@ pub use error::*;
 /// ```
 pub fn parse<T>(input: T) -> Result<Program, Error>
 where T: Into<String> {
-    let tokens = lex::lex(input.into())?;
-    let mut program = parse::parse(tokens)?;
+    let main_module = parse_module(input)?;
+    
+    let mut program = Program::new(Box::new(main_module));
+    
+    // let modules = sem::modresv::resolve_modules(&main_module);
 
     // check function returns
     sem::ret::check(&mut program)?;
@@ -41,6 +44,13 @@ where T: Into<String> {
     // annotate the AST with types
     sem::typing::global(&mut program)?;
     sem::typing::local(&mut program)?;
-
+    
     Ok(program)
+}
+
+/// Parses a module.
+pub(crate) fn parse_module<T>(input: T) -> Result<Module, Error>
+where T: Into<String> {
+    let tokens = lex::lex(input.into())?;
+    parse::parse(tokens)
 }

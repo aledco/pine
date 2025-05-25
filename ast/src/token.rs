@@ -91,6 +91,8 @@ impl TokenMatch for TokenTypeMatch {
 pub enum Keyword {
     #[strum(serialize = "fun")]
     Fun,
+    #[strum(serialize = "import")]
+    Import,
     #[strum(serialize = "begin")]
     Begin,
     #[strum(serialize = "end")]

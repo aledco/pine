@@ -4,7 +4,7 @@ use crate::token::*;
 use std::fmt::Debug;
 use crate::error::{ParseError, ParseResult};
 
-pub fn parse(tokens: Vec<Token>) -> ParseResult<Program> {
+pub fn parse(tokens: Vec<Token>) -> ParseResult<Module> {
     let mut parser = Parser::new(tokens);
     parser.parse()
 }
@@ -23,12 +23,16 @@ impl Parser {
     }
 
     /// Parses the input.
-    pub fn parse(&mut self) -> ParseResult<Program> {
+    pub fn parse(&mut self) -> ParseResult<Module> {
         let mut functions = vec![];
+        let mut imports = vec![];
         while !self.eof() {
-            if self.matches_function() {
+            if self.matches(Keyword::Fun) {
                 let function = self.parse_function()?;
                 functions.push(function);
+            } else if self.matches(Keyword::Import) {
+                let import = self.parse_import()?;
+                imports.push(import);
             } else {
                 Err(ParseError::error("expected function", self.span()))?
             }
@@ -39,7 +43,7 @@ impl Parser {
         } else {
             Span::default()
         };
-        Ok(Program::new(functions, span))
+        Ok(Module::new(imports, functions, span))
     }
 
     /// Parses a function.
@@ -96,7 +100,14 @@ impl Parser {
         let span = identifier.span() + type_node.span();
         Ok(Param::new(Box::new(identifier), Box::new(type_node), span))
     }
-
+    
+    fn parse_import(&mut self) -> ParseResult<Import> {
+        let import = self.match_token(Keyword::Import)?;
+        let ident = self.parse_identifier()?;
+        let span = import.span + ident.span();
+        Ok(Import::new(Box::new(ident), span))
+    }
+    
     /// Parses an identifier.
     fn parse_identifier(&mut self) -> ParseResult<Ident> {
         let token = self.match_token(TokenTypeMatch::Identifier)?;
@@ -472,12 +483,7 @@ impl Parser {
     {
         token_types.into_iter().any(|t| self.matches(t))
     }
-
-    /// Determines if a function is matched.
-    fn matches_function(&self) -> bool {
-        self.matches(Keyword::Fun)
-    }
-
+    
     /// Determines if a statement is matched.
     fn matches_statement(&self) -> bool {
         if self.matches_any(vec![

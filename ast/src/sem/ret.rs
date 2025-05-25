@@ -4,7 +4,7 @@ use crate::sem::{SemError, SemResult};
 /// Checks that all functions with return types return values for every path,
 /// and inserts void returns for void functions.
 pub(crate) fn check(program: &mut Program) -> SemResult<()> {
-    for f in &mut program.funs {
+    for f in &mut program.main_module.funs {
         check_fun(f)?;
     }
 
