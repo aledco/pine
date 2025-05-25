@@ -35,9 +35,9 @@ trait AstCodeGen {
 
 impl AstCodeGen for ast::Program {
     fn gen(&self, context: &mut Context) -> InstVec {
-        let main_call_inst = wrap(pvm::CallInst::new(pvm::Operand::Label(self.main.borrow().name.clone())));
+        let main_call_inst = wrap(pvm::CallInst::new(pvm::Operand::Label(self.main_fun.borrow().name.clone())));
         let mut insts = vec![main_call_inst];
-        match &self.main.borrow().pine_type {
+        match &self.main_fun.borrow().pine_type {
             PineType::Function { ret, .. } => {
                 if **ret == PineType::Integer {
                     let exit_code = pvm::Operand::Variable("exit_code".to_string());
@@ -51,7 +51,15 @@ impl AstCodeGen for ast::Program {
             },
             _ => panic!("codegen bug")
         }
+        
+        let m_insts = self.main_module.gen(context);
+        concat!(insts, m_insts)
+    }
+}
 
+impl AstCodeGen for ast::Module {
+    fn gen(&self, context: &mut Context) -> InstVec {
+        let mut insts = Vec::new();
         for f in &self.funs {
             let f_insts = f.gen(context);
             insts = concat!(insts, f_insts);

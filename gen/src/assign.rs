@@ -5,14 +5,14 @@ use crate::temp::TempStore;
 
 pub(crate) fn assign(program: &mut ast::Program) {
     let mut temp_store = TempStore::new();
-    program.assign(&mut temp_store)
+    program.main_module.assign(&mut temp_store)
 }
 
 trait AstAssign {
     fn assign(&mut self, temp_store: &mut TempStore);
 }
 
-impl AstAssign for ast::Program {
+impl AstAssign for ast::Module {
     fn assign(&mut self, temp_store: &mut TempStore) {
         for f in &mut self.funs {
             f.assign(temp_store);

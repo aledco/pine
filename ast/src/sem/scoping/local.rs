@@ -4,8 +4,8 @@ use crate::symbol::*;
 use crate::sem::create_symbol;
 
 /// Annotates local scopes.
-pub(crate) fn local(program: &mut Program) -> SemResult<()> {
-    program.visit(program.scope())?;
+pub(crate) fn local(module: &mut Module) -> SemResult<()> {
+    module.visit(module.scope())?;
     Ok(())
 }
 
@@ -13,7 +13,7 @@ trait AstScoping {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()>;
 }
 
-impl AstScoping for Program {
+impl AstScoping for Module {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         for f in &mut self.funs {
             f.visit(scope.clone())?;

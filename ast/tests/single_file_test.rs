@@ -16,6 +16,6 @@ fn test(mut test_base_path: PathBuf) {
     }
 
     let program = ast::parse(pine_content).unwrap();
-    assert!(program.funs.len() > 0);
+    assert!(program.main_module.funs.len() > 0);
     // TODO test AST structure
 }

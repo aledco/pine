@@ -4,9 +4,9 @@ use crate::symbol::*;
 use crate::sem::create_symbol;
 
 /// Annotates global scopes.
-pub(crate) fn global(program: &mut Program) -> SemResult<()> {
+pub(crate) fn global(module: &mut Module) -> SemResult<()> {
     let global_scope = Scope::new_global();
-    program.visit(global_scope)?;
+    module.visit(global_scope)?;
     Ok(())
 }
 
@@ -14,7 +14,7 @@ trait AstScoping {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()>;
 }
 
-impl AstScoping for Program {
+impl AstScoping for Module {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         self.set_scope(scope.clone());
         for f in &mut self.funs {

@@ -39,11 +39,16 @@ pub(crate) trait ScopedAst {
     fn set_scope(&mut self, scope: ScopeRef);
 }
 
-/// Represents a Pine program.
-#[ast]
+/// Represents a Pine executable program.
 pub struct Program {
+    pub main_module: Box<Module>,
+    pub main_fun: SymbolRef
+}
+
+/// Represents a Pine module.
+#[ast]
+pub struct Module {
     pub funs: Vec<Fun>, // TODO make top level enum
-    #[default(Symbol::default)] pub main: SymbolRef,
 }
 
 /// Represents a Pine function.
@@ -60,6 +65,12 @@ pub struct Fun {
 pub struct Param {
     pub ident: Box<Ident>,
     pub ty: Box<Ty>,
+}
+
+#[ast]
+pub struct Import {
+    pub ident: Box<Ident>,
+    pub module: Box<Module>
 }
 
 /// Represents a Pine let statement.

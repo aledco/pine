@@ -31,6 +31,11 @@ are used to read and write memory.
 # TODO
 ## ast
 - Add failure tests
+- Module system
+  - Need a way to ensure modules only get parsed once, even if imported multiple times
+  - Need to build some sort of module graph to detect circles
+  - Need to parse and annotate modules in order, so that typing information is availabe at the correct time
+    - Need to do a breadth first search of module graph
 - Finish parsing the rest of the Pine constructs
   - function calls
   - polymorphic types

@@ -5,8 +5,8 @@ use crate::sem::{SemError, SemResult};
 // Efficient Alg: https://okmij.org/ftp/ML/generalization.html
 
 /// Annotates local types.
-pub(crate) fn local(program: &mut Program) -> SemResult<()> {
-    program.visit()?;
+pub(crate) fn local(module: &mut Module) -> SemResult<()> {
+    module.visit()?;
     Ok(())
 }
 
@@ -14,7 +14,7 @@ trait AstTyping {
     fn visit(&mut self) -> SemResult<PineType>;
 }
 
-impl AstTyping for Program {
+impl AstTyping for Module {
     fn visit(&mut self) -> SemResult<PineType> {
         for f in &mut self.funs {
             f.visit()?;
