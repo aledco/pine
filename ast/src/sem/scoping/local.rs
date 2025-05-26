@@ -176,6 +176,25 @@ impl AstScoping for IdentExpr {
     }
 }
 
+impl AstScoping for NewObjectExpr {
+    fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
+        self.ident.visit(scope.clone())?;
+        for f in &mut self.field_inits {
+            f.visit(scope.clone())?;
+        }
+
+        Ok(())
+    }
+}
+
+impl AstScoping for FieldInit {
+    fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
+        self.ident.visit(scope.clone())?;
+        self.expr.visit(scope.clone())?;
+        Ok(())
+    }
+}
+
 impl AstScoping for CallExpr {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         self.fun.visit(scope.clone())?;
@@ -210,6 +229,7 @@ impl AstScoping for Expr {
             Expr::BoolLit(e) => e.visit(scope),
             Expr::StringLit(e) => e.visit(scope),
             Expr::Ident(e) => e.visit(scope),
+            Expr::NewObject(e) => e.visit(scope),
             Expr::Call(e) => e.visit(scope),
             Expr::Unary(e) => e.visit(scope),
             Expr::Binary(e) => e.visit(scope),

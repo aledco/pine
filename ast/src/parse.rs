@@ -325,6 +325,8 @@ impl Parser {
             Ok(Expr::BoolLit(self.parse_bool()?))
         } else if self.matches(TokenTypeMatch::String) {
             Ok(Expr::StringLit(self.parse_string()?))
+        } else if self.matches(Keyword::New) {
+            Ok(Expr::NewObject(self.parse_new_object()?))
         } else if self.matches_any(Operator::all_unary_ops()) {
             Ok(Expr::Unary(self.parse_unary_expression()?))
         } else if self.matches(Punctuation::OpenParen) {
@@ -435,6 +437,36 @@ impl Parser {
         }
     }
 
+    /// Parses a new object expression.
+    fn parse_new_object(&mut self) -> ParseResult<NewObjectExpr> {
+        let new = self.match_token(Keyword::New)?;
+        let ident = self.parse_identifier()?;
+        self.match_token(Keyword::Begin)?;
+        let mut field_inits = vec![];
+        while self.matches(TokenTypeMatch::Identifier) {
+            let field_init = self.parse_field_init()?;
+            field_inits.push(field_init);
+            if !self.matches(Punctuation::Comma) {
+                break;
+            }
+
+            self.match_token(Punctuation::Comma)?;
+        }
+
+        let end = self.match_token(Keyword::End)?;
+        let span = new.span + end.span;
+        Ok(NewObjectExpr::new(Box::new(ident), field_inits, span))
+    }
+
+    /// Parses a field initializer.
+    fn parse_field_init(&mut self) -> ParseResult<FieldInit> {
+        let ident = self.parse_identifier()?;
+        self.match_token(Punctuation::EqualSign)?;
+        let expr = self.parse_expression()?;
+        let span = ident.span() + expr.span();
+        Ok(FieldInit::new(Box::new(ident), Box::new(expr), span))
+    }
+
     /// Parses a type.
     fn parse_type(&mut self) -> ParseResult<Ty> {
         let span = self.span();
@@ -463,7 +495,7 @@ impl Parser {
             self.match_token(Punctuation::OpenBracket)?;
             let elem_type = self.match_type()?;
             self.match_token(Punctuation::OpenBracket)?;
-            Ok(PineType::List(Box::new(elem_type)))
+            Ok(PineType::Array(Box::new(elem_type))) // TODO parse arrays correctly
         } else {
             // TODO parse function and user defined types
             Err(ParseError::error("invalid type", self.span()))
@@ -543,6 +575,8 @@ impl Parser {
         ]) {
             true
         } else if self.matches_any(vec![Keyword::True, Keyword::False]) {
+            true
+        } else if self.matches(Keyword::New) {
             true
         } else if self.matches_any(Operator::all_unary_ops().into_iter().map(|o| o).collect()) {
             true

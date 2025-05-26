@@ -136,6 +136,8 @@ pub enum Keyword {
     True,
     #[strum(serialize = "false")]
     False,
+    #[strum(serialize = "new")]
+    New
 }
 
 impl TokenMatch for Keyword {

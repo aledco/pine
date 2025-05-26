@@ -8,12 +8,12 @@ use crate::sem::{SemError, SemResult};
 pub(crate) fn local(program: &mut Program) -> SemResult<()> {
     program.main_module.visit()?;
 
-    let main_fun = match program.main_module.scope().borrow().lookup("main") {
+    program.main_fun = match program.main_module.scope().borrow().lookup("main") {
         Some(main_symbol) => main_symbol,
         None => return Err(SemError::error("no main function found", program.main_module.span())),
     };
 
-    match &main_fun.borrow().pine_type {
+    match &program.main_fun.borrow().pine_type {
         PineType::Function { ret, .. } => { // TODO ensure params make sense too
             if **ret != PineType::Void && **ret != PineType::Integer {
                 return Err(SemError::error("main must return void or int", program.main_module.span()))
@@ -198,6 +198,34 @@ impl AstTyping for IdentExpr {
     }
 }
 
+impl AstTyping for NewObjectExpr {
+    fn visit(&mut self) -> SemResult<PineType> {
+        let object_type = self.ident.visit()?; // TODO need to set when procesing object defs
+        match &object_type {
+            PineType::Object { fields } => {
+                if fields.len() != self.field_inits.len() {
+                    return Err(SemError::error("object constructor must provide a value for all fields", self.span()));
+                }
+
+                for field_init in &mut self.field_inits {
+                    let (_, field_ty) = match fields.iter().find(|(fs, _)| *fs == field_init.ident.name) {
+                        Some(field) => field,
+                        None => return Err(SemError::error(format!("field {} does not exist in object", field_init.ident.name), field_init.span()))
+                    };
+
+                    let expr_ty = field_init.expr.visit()?;
+                    if *field_ty != expr_ty {
+                       return Err(SemError::error(format!("invalid type for field {}", field_init.ident.name), field_init.span()));
+                    }
+                }
+
+                Ok(object_type)
+            },
+            _ => Err(SemError::error("only objects can be constructed", self.span()))
+        }
+    }
+}
+
 impl AstTyping for CallExpr {
     fn visit(&mut self) -> SemResult<PineType> {
         let fun_type = self.fun.visit()?;
@@ -250,6 +278,7 @@ impl AstTyping for Expr {
             Expr::BoolLit(e) => e.visit(),
             Expr::StringLit(e) => e.visit(),
             Expr::Ident(e) => e.visit(),
+            Expr::NewObject(e) => e.visit(),
             Expr::Call(e) => e.visit(),
             Expr::Unary(e) => e.visit(),
             Expr::Binary(e) => e.visit(),

@@ -44,6 +44,7 @@ are used to read and write memory.
 
 ## ast
 - Add failure tests
+- TODO need to add checks to make sure params, variables, and object fields are not void
 - Module system
   - Need a way to ensure modules only get parsed once, even if imported multiple times
   - Need to build some sort of module graph to detect circles

@@ -13,10 +13,13 @@ pub enum PineType {
     Float,
     Bool,
     String,
-    List(Box<PineType>),
+    Array(Box<PineType>),
     Function {
         params: Vec<PineType>,
         ret: Box<PineType>,
+    },
+    Object {
+        fields: Vec<(String, PineType)>,
     },
     Void,
     Unknown,
@@ -40,6 +43,7 @@ pub(crate) trait ScopedAst {
 }
 
 /// Represents a Pine executable program.
+#[derive(Debug)]
 pub struct Program {
     pub main_module: Box<Module>,
     pub main_fun: SymbolRef
@@ -238,6 +242,22 @@ pub struct IdentExpr {
     #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
+/// Represents a new object expression.
+#[ast]
+pub struct NewObjectExpr {
+    pub ident: Box<Ident>,
+    pub field_inits: Vec<FieldInit>,
+    #[default(PineType::default)] pub ty: PineType,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
+}
+
+/// Represents a field initialization.
+#[ast]
+pub struct FieldInit {
+    pub ident: Box<Ident>,
+    pub expr: Box<Expr>,
+}
+
 /// Represents a call expression.
 #[ast]
 pub struct CallExpr {
@@ -274,6 +294,7 @@ pub enum Expr {
     BoolLit(BoolLitExpr),
     StringLit(StringLitExpr),
     Ident(IdentExpr),
+    NewObject(NewObjectExpr),
     Call(CallExpr),
     Unary(UnaryExpr),
     Binary(BinaryExpr),
@@ -287,6 +308,7 @@ impl Expr {
             Expr::BoolLit(bool_lit) => bool_lit.ty.clone(),
             Expr::StringLit(string_lit) => string_lit.ty.clone(),
             Expr::Ident(ident) => ident.ty.clone(),
+            Expr::NewObject(new_object) => new_object.ty.clone(),
             Expr::Call(call) => call.ty.clone(),
             Expr::Unary(unary) => unary.ty.clone(),
             Expr::Binary(binary) => binary.ty.clone(),
@@ -300,6 +322,7 @@ impl Expr {
             Expr::BoolLit(bool_lit) => bool_lit.ty = ty,
             Expr::StringLit(string_lit) => string_lit.ty = ty,
             Expr::Ident(ident) => ident.ty = ty,
+            Expr::NewObject(new_object) => new_object.ty = ty,
             Expr::Call(call) => call.ty = ty,
             Expr::Unary(unary) => unary.ty = ty,
             Expr::Binary(binary) => binary.ty = ty,
@@ -313,6 +336,7 @@ impl Expr {
             Expr::BoolLit(bool_lit) => bool_lit.dest.clone(),
             Expr::StringLit(string_lit) => string_lit.dest.clone(),
             Expr::Ident(ident) => ident.dest.clone(),
+            Expr::NewObject(new_object) => new_object.dest.clone(),
             Expr::Call(call) => call.dest.clone(),
             Expr::Unary(unary) => unary.dest.clone(),
             Expr::Binary(binary) => binary.dest.clone(),
@@ -327,6 +351,7 @@ impl Ast for Expr {
             Expr::BoolLit(bool_lit_expr) => bool_lit_expr.span(),
             Expr::StringLit(string_lit_expr) => string_lit_expr.span(),
             Expr::Ident(ident_expr) => ident_expr.span(),
+            Expr::NewObject(new_object_expr) => new_object_expr.span(),
             Expr::Call(call_expr) => call_expr.span(),
             Expr::Unary(unary_expr) => unary_expr.span(),
             Expr::Binary(binary_expr) => binary_expr.span(),
@@ -342,6 +367,7 @@ impl ScopedAst for Expr {
             Expr::BoolLit(bool_lit_expr) => bool_lit_expr.scope(),
             Expr::StringLit(string_lit_expr) => string_lit_expr.scope(),
             Expr::Ident(ident_expr) => ident_expr.scope(),
+            Expr::NewObject(new_object_expr) => new_object_expr.scope(),
             Expr::Call(call_expr) => call_expr.scope(),
             Expr::Unary(unary_expr) => unary_expr.scope(),
             Expr::Binary(binary_expr) => binary_expr.scope(),
@@ -355,6 +381,7 @@ impl ScopedAst for Expr {
             Expr::BoolLit(bool_lit_expr) => bool_lit_expr.set_scope(scope),
             Expr::StringLit(string_lit_expr) => string_lit_expr.set_scope(scope),
             Expr::Ident(ident_expr) => ident_expr.set_scope(scope),
+            Expr::NewObject(new_object) => new_object.set_scope(scope),
             Expr::Call(call_expr) => call_expr.set_scope(scope),
             Expr::Unary(unary_expr) => unary_expr.set_scope(scope),
             Expr::Binary(binary_expr) => binary_expr.set_scope(scope),
