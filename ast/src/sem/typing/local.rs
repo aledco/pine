@@ -1,5 +1,4 @@
 use crate::ast::*;
-use crate::sem;
 use crate::sem::{SemError, SemResult};
 
 // Simple Alg: https://pfudke.wordpress.com/2014/11/20/hindley-milner-type-inference-a-practical-example-2/

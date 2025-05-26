@@ -64,7 +64,8 @@ impl Scanner {
                 tokens.push(token?);
             }
         }
-
+        
+        tokens.push(Token::new(TokenType::Eof, Span::new(self.point(), self.point())));
         Ok(tokens)
     }
 

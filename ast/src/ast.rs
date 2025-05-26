@@ -59,6 +59,7 @@ impl Program {
 pub struct Module {
     pub imports: Vec<Import>,
     pub funs: Vec<Fun>,
+    pub objs: Vec<Object>,
 }
 
 /// Represents a Pine function.
@@ -77,9 +78,24 @@ pub struct Param {
     pub ty: Box<Ty>,
 }
 
+/// Represents a Pine import statement.
 #[ast]
 pub struct Import {
     pub ident: Box<Ident>,
+}
+
+/// Represents a Pine object definition.
+#[ast]
+pub struct Object {
+    pub ident: Box<Ident>,
+    pub fields: Vec<Field>,
+}
+
+/// Represents a Pine field.
+#[ast]
+pub struct Field {
+    pub ident: Box<Ident>,
+    pub ty: Box<Ty>,
 }
 
 /// Represents a Pine let statement.

@@ -51,6 +51,7 @@ pub enum TokenType {
     String(String),
     Punctuation(Punctuation),
     Operator(Operator),
+    Eof
 }
 
 /// Represents a token type match.
@@ -93,6 +94,10 @@ pub enum Keyword {
     Fun,
     #[strum(serialize = "import")]
     Import,
+    #[strum(serialize = "obj")]
+    Obj,
+    #[strum(serialize = "inf")]
+    Inf,
     #[strum(serialize = "begin")]
     Begin,
     #[strum(serialize = "end")]

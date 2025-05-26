@@ -24,26 +24,27 @@ impl Parser {
 
     /// Parses the input.
     pub fn parse(&mut self) -> ParseResult<Module> {
-        let mut functions = vec![];
+        let start = self.span();
         let mut imports = vec![];
+        let mut functions = vec![];
+        let mut objects = vec![];
         while !self.eof() {
-            if self.matches(Keyword::Fun) {
-                let function = self.parse_function()?;
-                functions.push(function);
-            } else if self.matches(Keyword::Import) {
+            if self.matches(Keyword::Import) {
                 let import = self.parse_import()?;
                 imports.push(import);
+            } else if self.matches(Keyword::Fun) {
+                let function = self.parse_function()?;
+                functions.push(function);
+            } else if self.matches(Keyword::Obj) {
+                let object = self.parse_object()?;
+                objects.push(object);
             } else {
                 Err(ParseError::error("expected function", self.span()))?
             }
         }
 
-        let span = if !functions.is_empty() {
-            functions.first().unwrap().span() + functions.last().unwrap().span()
-        } else {
-            Span::default()
-        };
-        Ok(Module::new(imports, functions, span))
+        let span = start + self.span();
+        Ok(Module::new(imports, functions, objects, span))
     }
 
     /// Parses a function.
@@ -107,7 +108,36 @@ impl Parser {
         let span = import.span + ident.span();
         Ok(Import::new(Box::new(ident), span))
     }
-    
+
+    fn parse_object(&mut self) -> ParseResult<Object> {
+        let obj = self.match_token(Keyword::Obj)?;
+        let ident = self.parse_identifier()?;
+        self.match_token(Keyword::Begin)?;
+        let mut fields = vec![];
+        while self.matches(TokenTypeMatch::Identifier) {
+            let field = self.parse_field()?;
+            fields.push(field);
+            if !self.matches(Punctuation::Comma) {
+                break;
+            }
+
+            self.match_token(Punctuation::Comma)?;
+        }
+        
+        let end = self.match_token(Keyword::End)?;
+        let span = obj.span + end.span;
+        Ok(Object::new(Box::new(ident), fields, span))
+    }
+
+    /// Parses an object field.
+    fn parse_field(&mut self) -> ParseResult<Field> {
+        let identifier = self.parse_identifier()?;
+        self.match_token(Punctuation::Colon)?;
+        let type_node = self.parse_type()?;
+        let span = identifier.span() + type_node.span();
+        Ok(Field::new(Box::new(identifier), Box::new(type_node), span))
+    }
+
     /// Parses an identifier.
     fn parse_identifier(&mut self) -> ParseResult<Ident> {
         let token = self.match_token(TokenTypeMatch::Identifier)?;
@@ -540,6 +570,6 @@ impl Parser {
 
     /// Determines if EOF is reached.
     fn eof(&self) -> bool {
-        self.index >= self.tokens.len()
+        self.token_type() == TokenType::Eof
     }
 }
