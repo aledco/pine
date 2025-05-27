@@ -196,6 +196,7 @@ impl AstScoping for NewObjectExpr {
                 Ok(())
             },
             _ => Err(SemError::error("only objects can be constructed", self.span()))
+
         }
     }
 }

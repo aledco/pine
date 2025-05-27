@@ -275,6 +275,7 @@ pub struct NewObjectExpr {
 pub struct FieldInit {
     pub ident: Box<Ident>,
     pub expr: Box<Expr>,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
 /// Represents a call expression.

@@ -42,8 +42,20 @@ impl AstTyping for Module {
 impl AstTyping for Fun {
     fn visit(&mut self) -> SemResult<PineType> {
         let fun_type = self.ident.visit()?;
+        for p in &mut self.params {
+            p.visit()?;
+        }
+        
         self.block.visit()?;
         Ok(fun_type)
+    }
+}
+
+impl AstTyping for Param {
+    fn visit(&mut self) -> SemResult<PineType> {
+        let param_type = self.ty.visit()?;
+        self.ident.symbol.borrow_mut().pine_type = param_type.clone();
+        Ok(param_type)
     }
 }
 

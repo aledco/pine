@@ -6,8 +6,8 @@ end
 
 fun main() begin
     let o = new Example begin
-        count = 0,
-        cost = 0.0,
+        count = 10,
+        cost = 1.4,
     end
 
     # let c = o.count

@@ -134,6 +134,8 @@ impl AstAssign for ast::NewObjectExpr {
     fn assign(&mut self, temp_store: &mut TempStore) {
         for f in &mut self.field_inits {
             f.expr.assign(temp_store);
+            let t = temp_store.temp();
+            f.dest = pvm::Operand::Variable(t)
         }
 
         let t = temp_store.temp();

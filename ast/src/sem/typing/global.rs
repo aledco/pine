@@ -13,6 +13,10 @@ trait AstTyping {
 
 impl AstTyping for Module {
     fn visit(&mut self) -> SemResult<PineType> {
+        for o in &mut self.objs {
+            o.visit()?;
+        }
+        
         for f in &mut self.funs {
             f.visit()?;
         }
@@ -25,9 +29,10 @@ impl AstTyping for Fun {
     fn visit(&mut self) -> SemResult<PineType> {
         let mut param_types: Vec<PineType> = vec![];
         for p in &mut self.params {
-            param_types.push(p.visit()?);
+            let p_type = p.ty.visit()?;
+            param_types.push(p_type);
         }
-
+        
         let return_type = match &mut self.return_ty {
             Some(t) => t.visit()?,
             None => PineType::Void,
@@ -43,20 +48,13 @@ impl AstTyping for Fun {
     }
 }
 
-impl AstTyping for Param {
-    fn visit(&mut self) -> SemResult<PineType> {
-        let param_type = self.ty.visit()?;
-        self.ident.symbol.borrow_mut().pine_type = param_type.clone();
-        Ok(param_type)
-    }
-}
-
 impl AstTyping for Object {
     fn visit(&mut self) -> SemResult<PineType> {
         let mut field_types = vec![];
         for f in &mut self.fields {
             let sym = f.ident.symbol.clone();
             let ty = f.ty.visit()?;
+            f.ident.symbol.borrow_mut().pine_type = ty.clone();
             field_types.push((sym, ty));
         }
 

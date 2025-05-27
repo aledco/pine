@@ -17,6 +17,10 @@ trait AstScoping {
 impl AstScoping for Module {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         self.set_scope(scope.clone());
+        for o in &mut self.objs {
+            o.visit(scope.clone())?;    
+        }
+        
         for f in &mut self.funs {
             f.visit(scope.clone())?;
         }
@@ -56,6 +60,7 @@ impl AstScoping for Field {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         self.set_scope(scope.clone());
         create_symbol(&self.ident, &scope)?;
+        self.ident.visit(scope)?;
         Ok(())
     }
 }

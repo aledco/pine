@@ -267,23 +267,18 @@ impl AstCodeGen for ast::NewObjectExpr {
         let alloc_inst = wrap(pvm::AllocInst::new(self.dest.clone(), pvm::Operand::Constant(to_u64!(size))));
         let mut insts = vec![alloc_inst];
         for f in &self.field_inits {
-            let f_insts = f.expr.gen(context);
-            insts = concat!(insts, f_insts);
+            let expr_insts = f.expr.gen(context);
+            let offset = f.ident.symbol.borrow().offset;
+            let offset = pvm::Operand::Constant(to_u64!(offset));
+            let addr_inst = wrap(pvm::AddInst::new(f.dest.clone(), self.dest.clone(), offset));
+            let store_inst = match f.ident.symbol.borrow().pine_type.sizeof() {
+                1 => wrap(pvm::StoreByteInst::new(f.dest.clone(), f.expr.dest())),
+                _ => wrap(pvm::StoreInst::new(f.dest.clone(), f.expr.dest())),
+            };
+            insts = concat!(insts, expr_insts, addr_inst, store_inst);
         }
         
         insts
-    }
-}
-
-impl AstCodeGen for ast::FieldInit {
-    fn gen(&self, context: &mut Context) -> InstVec {
-        let mut insts = vec![];
-        let expr_insts = self.expr.gen(context);
-        let offset = self.ident.symbol.borrow().offset;
-        // TODO calculate address of field, then store value of expr 
-        //let addr_inst = wrap(pvm::AddInst())
-        //let store_inst = wrap(pvm::StoreInst::new())
-        concat!(insts, expr_insts)
     }
 }
 
