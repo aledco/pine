@@ -1,7 +1,6 @@
 use crate::temp::TempStore;
 
 // TODO need to free temps when possilbe
-// TODO need to worry about fun calls, maybe make PVM have local fun vars?
 
 pub(crate) fn assign(program: &mut ast::Program) {
     let mut temp_store = TempStore::new();
@@ -131,6 +130,17 @@ impl AstAssign for ast::IdentExpr {
     }
 }
 
+impl AstAssign for ast::NewObjectExpr {
+    fn assign(&mut self, temp_store: &mut TempStore) {
+        for f in &mut self.field_inits {
+            f.expr.assign(temp_store);
+        }
+
+        let t = temp_store.temp();
+        self.dest = pvm::Operand::Variable(t)
+    }
+}
+
 impl AstAssign for ast::CallExpr {
     fn assign(&mut self, temp_store: &mut TempStore) {
         self.fun.assign(temp_store);
@@ -168,6 +178,7 @@ impl AstAssign for ast::Expr {
             ast::Expr::BoolLit(e) => e.assign(temp_store),
             ast::Expr::StringLit(e) => e.assign(temp_store),
             ast::Expr::Ident(e) => e.assign(temp_store),
+            ast::Expr::NewObject(e) => e.assign(temp_store),
             ast::Expr::Call(e) => e.assign(temp_store),
             ast::Expr::Unary(e) => e.assign(temp_store),
             ast::Expr::Binary(e) => e.assign(temp_store),

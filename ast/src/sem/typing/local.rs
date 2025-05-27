@@ -200,7 +200,7 @@ impl AstTyping for IdentExpr {
 
 impl AstTyping for NewObjectExpr {
     fn visit(&mut self) -> SemResult<PineType> {
-        let object_type = self.ident.visit()?; // TODO need to set when procesing object defs
+        let object_type = self.ident.visit()?;
         match &object_type {
             PineType::Object { fields } => {
                 if fields.len() != self.field_inits.len() {
@@ -208,7 +208,7 @@ impl AstTyping for NewObjectExpr {
                 }
 
                 for field_init in &mut self.field_inits {
-                    let (_, field_ty) = match fields.iter().find(|(fs, _)| *fs == field_init.ident.name) {
+                    let (_, field_ty) = match fields.iter().find(|(fs, _)| *fs == field_init.ident.symbol) {
                         Some(field) => field,
                         None => return Err(SemError::error(format!("field {} does not exist in object", field_init.ident.name), field_init.span()))
                     };

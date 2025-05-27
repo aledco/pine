@@ -495,7 +495,7 @@ impl Parser {
             self.match_token(Punctuation::OpenBracket)?;
             let elem_type = self.match_type()?;
             self.match_token(Punctuation::OpenBracket)?;
-            Ok(PineType::Array(Box::new(elem_type))) // TODO parse arrays correctly
+            Ok(PineType::Array(Box::new(elem_type), 0)) // TODO parse arrays correctly
         } else {
             // TODO parse function and user defined types
             Err(ParseError::error("invalid type", self.span()))

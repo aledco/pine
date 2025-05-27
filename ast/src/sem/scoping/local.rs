@@ -179,17 +179,29 @@ impl AstScoping for IdentExpr {
 impl AstScoping for NewObjectExpr {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         self.ident.visit(scope.clone())?;
-        for f in &mut self.field_inits {
-            f.visit(scope.clone())?;
-        }
+        let obj_type = self.ident.symbol.borrow().pine_type.clone();
+        match obj_type {
+            PineType::Object { fields } => {
+                let field_scope = Scope::new_local(scope.clone());
+                for fi in &mut self.field_inits {
+                    let f_symbol = match fields.iter().find(|(fs, _)| fs.borrow().name == fi.ident.name) {
+                        Some((fs, _)) => fs.clone(),
+                        None => return Err(SemError::error("field does not exist in object", fi.span())),
+                    };
+                    
+                    fi.ident.symbol = f_symbol;
+                    fi.visit(field_scope.clone())?;
+                }
 
-        Ok(())
+                Ok(())
+            },
+            _ => Err(SemError::error("only objects can be constructed", self.span()))
+        }
     }
 }
 
 impl AstScoping for FieldInit {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
-        self.ident.visit(scope.clone())?;
         self.expr.visit(scope.clone())?;
         Ok(())
     }

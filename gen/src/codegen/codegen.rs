@@ -1,4 +1,5 @@
 use ast::{Ast, Expr, Operator, PineType};
+use pvm::to_u64;
 use crate::codegen::append::*;
 use crate::codegen::context::Context;
 use crate::codegen::{Inst, InstVec};
@@ -259,6 +260,33 @@ impl AstCodeGen for ast::IdentExpr {
     }
 }
 
+impl AstCodeGen for ast::NewObjectExpr {
+    fn gen(&self, context: &mut Context) -> InstVec {
+        let obj_type = self.ident.symbol.borrow().pine_type.clone();
+        let size = obj_type.sizeof();
+        let alloc_inst = wrap(pvm::AllocInst::new(self.dest.clone(), pvm::Operand::Constant(to_u64!(size))));
+        let mut insts = vec![alloc_inst];
+        for f in &self.field_inits {
+            let f_insts = f.expr.gen(context);
+            insts = concat!(insts, f_insts);
+        }
+        
+        insts
+    }
+}
+
+impl AstCodeGen for ast::FieldInit {
+    fn gen(&self, context: &mut Context) -> InstVec {
+        let mut insts = vec![];
+        let expr_insts = self.expr.gen(context);
+        let offset = self.ident.symbol.borrow().offset;
+        // TODO calculate address of field, then store value of expr 
+        //let addr_inst = wrap(pvm::AddInst())
+        //let store_inst = wrap(pvm::StoreInst::new())
+        concat!(insts, expr_insts)
+    }
+}
+
 impl AstCodeGen for ast::CallExpr {
     fn gen(&self, context: &mut Context) -> InstVec {
         let mut insts = Vec::new();
@@ -412,6 +440,7 @@ impl AstCodeGen for ast::Expr {
             Expr::BoolLit(e) => e.gen(context),
             Expr::StringLit(e) => e.gen(context),
             Expr::Ident(e) => e.gen(context),
+            Expr::NewObject(e) => e.gen(context),
             Expr::Call(e) => e.gen(context),
             Expr::Unary(e) => e.gen(context),
             Expr::Binary(e) => e.gen(context),

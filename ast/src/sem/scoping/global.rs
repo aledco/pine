@@ -36,6 +36,30 @@ impl AstScoping for Fun {
     }
 }
 
+impl AstScoping for Object {
+    fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
+        self.set_scope(scope.clone());
+
+        create_symbol(&self.ident, &scope)?;
+        self.ident.visit(scope.clone())?;
+
+        let field_scope = Scope::new_local(scope.clone());
+        for f in &mut self.fields {
+            f.visit(field_scope.clone())?;
+        }
+
+        Ok(())
+    }
+}
+
+impl AstScoping for Field {
+    fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
+        self.set_scope(scope.clone());
+        create_symbol(&self.ident, &scope)?;
+        Ok(())
+    }
+}
+
 impl AstScoping for Ident {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
         self.set_scope(scope.clone());

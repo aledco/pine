@@ -51,6 +51,21 @@ impl AstTyping for Param {
     }
 }
 
+impl AstTyping for Object {
+    fn visit(&mut self) -> SemResult<PineType> {
+        let mut field_types = vec![];
+        for f in &mut self.fields {
+            let sym = f.ident.symbol.clone();
+            let ty = f.ty.visit()?;
+            field_types.push((sym, ty));
+        }
+
+        let obj_type = PineType::Object { fields: field_types };
+        self.ident.symbol.borrow_mut().pine_type = obj_type.clone();
+        Ok(obj_type)
+    }
+}
+
 impl AstTyping for Ty {
     fn visit(&mut self) -> SemResult<PineType> {
         Ok(self.ty.clone())

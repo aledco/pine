@@ -15,6 +15,7 @@ pub struct Symbol {
     pub name: String,
     pub dest: pvm::Operand,
     pub pine_type: PineType,
+    pub offset: usize,
     pub(crate) scope: ScopeRef,
 }
 
@@ -46,6 +47,7 @@ impl Symbol {
             name: String::default(),
             dest: pvm::Operand::default(),
             pine_type: PineType::Unknown,
+            offset: 0,
             scope: Scope::default(),
         }))
     }
@@ -55,8 +57,15 @@ impl Symbol {
             name: name.clone(),
             dest: pvm::Operand::Variable(format!("${}_{}", name, scope.borrow().depth)),
             pine_type: PineType::Unknown,
+            offset: 0,
             scope
         }))
+    }
+}
+
+impl PartialEq for Symbol {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.scope.borrow().depth == other.scope.borrow().depth
     }
 }
 

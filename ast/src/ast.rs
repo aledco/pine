@@ -13,16 +13,35 @@ pub enum PineType {
     Float,
     Bool,
     String,
-    Array(Box<PineType>),
+    Array(Box<PineType>, usize),
     Function {
         params: Vec<PineType>,
         ret: Box<PineType>,
     },
     Object {
-        fields: Vec<(String, PineType)>,
+        fields: Vec<(SymbolRef, PineType)>,
     },
     Void,
     Unknown,
+}
+
+impl PineType {
+    /// Gets the size of the type in bytes.
+    pub fn sizeof(&self) -> usize {
+        match self {
+            PineType::Integer => 8,
+            PineType::Float => 8,
+            PineType::Bool => 1,
+            PineType::String => 0, // TODO need to figure out size of string 
+            PineType::Array(_, s) => *s,
+            PineType::Function { .. } => 8, // sizeof pointer
+            PineType::Object { fields } => {
+                fields.iter().map(|(_, t)| t.sizeof()).sum()
+            }
+            PineType::Void => 0,
+            PineType::Unknown => 0,
+        }
+    }
 }
 
 impl Default for PineType {
