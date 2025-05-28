@@ -335,13 +335,23 @@ impl Parser {
             Err(ParseError::error("invalid expression", self.span()))
         }?;
 
-        // check for function call or indexing expression
+        // check for function call, field access, or indexing expression
         if self.matches(Punctuation::OpenParen) {
             let (args, span) = self.parse_function_call_args()?;
             expr = Expr::Call(CallExpr::new(Box::new(expr), args, span));
-        } // TODO index typed_ast
+        } else if self.matches(Punctuation::Dot) {
+            let field_expr = self.parse_field_access_expr()?;
+            let span = expr.span() + field_expr.span();
+            expr = Expr::FieldAccess(FieldAccessExpr::new(Box::new(expr), Box::new(field_expr), span))
+        }
 
         Ok(expr)
+    }
+
+    fn parse_field_access_expr(&mut self) -> ParseResult<Expr> {
+        // TODO need to handle other expressions like func calls and array access
+        self.match_token(Punctuation::Dot)?;
+        self.parse_expression_term() // TODO this will allow literals, need specialized expr parser
     }
 
     /// Parses the function call args.

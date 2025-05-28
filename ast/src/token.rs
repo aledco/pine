@@ -172,6 +172,8 @@ pub enum Punctuation {
     Arrow,
     #[strum(serialize = "=", props(Value = "="))]
     EqualSign,
+    #[strum(serialize = ".", props(Value = "."))]
+    Dot,
 }
 
 impl Punctuation {

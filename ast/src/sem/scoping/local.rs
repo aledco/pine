@@ -190,7 +190,7 @@ impl AstScoping for NewObjectExpr {
                     };
                     
                     fi.ident.symbol = f_symbol;
-                    fi.visit(field_scope.clone())?;
+                    fi.expr.visit(scope.clone())?;
                 }
 
                 Ok(())
@@ -201,10 +201,9 @@ impl AstScoping for NewObjectExpr {
     }
 }
 
-impl AstScoping for FieldInit {
+impl AstScoping for FieldAccessExpr {
     fn visit(&mut self, scope: ScopeRef) -> SemResult<()> {
-        self.expr.visit(scope.clone())?;
-        Ok(())
+        todo!()
     }
 }
 
@@ -243,6 +242,7 @@ impl AstScoping for Expr {
             Expr::StringLit(e) => e.visit(scope),
             Expr::Ident(e) => e.visit(scope),
             Expr::NewObject(e) => e.visit(scope),
+            Expr::FieldAccess(e) => e.visit(scope),
             Expr::Call(e) => e.visit(scope),
             Expr::Unary(e) => e.visit(scope),
             Expr::Binary(e) => e.visit(scope),

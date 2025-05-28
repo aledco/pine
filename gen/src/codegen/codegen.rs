@@ -282,6 +282,12 @@ impl AstCodeGen for ast::NewObjectExpr {
     }
 }
 
+impl AstCodeGen for ast::FieldAccessExpr {
+    fn gen(&self, context: &mut Context) -> InstVec {
+        todo!()
+    }
+}
+
 impl AstCodeGen for ast::CallExpr {
     fn gen(&self, context: &mut Context) -> InstVec {
         let mut insts = Vec::new();
@@ -436,6 +442,7 @@ impl AstCodeGen for ast::Expr {
             Expr::StringLit(e) => e.gen(context),
             Expr::Ident(e) => e.gen(context),
             Expr::NewObject(e) => e.gen(context),
+            Expr::FieldAccess(e) => e.gen(context),
             Expr::Call(e) => e.gen(context),
             Expr::Unary(e) => e.gen(context),
             Expr::Binary(e) => e.gen(context),

@@ -238,6 +238,12 @@ impl AstTyping for NewObjectExpr {
     }
 }
 
+impl AstTyping for FieldAccessExpr {
+    fn visit(&mut self) -> SemResult<PineType> {
+        todo!()
+    }
+}
+
 impl AstTyping for CallExpr {
     fn visit(&mut self) -> SemResult<PineType> {
         let fun_type = self.fun.visit()?;
@@ -291,6 +297,7 @@ impl AstTyping for Expr {
             Expr::StringLit(e) => e.visit(),
             Expr::Ident(e) => e.visit(),
             Expr::NewObject(e) => e.visit(),
+            Expr::FieldAccess(e) => e.visit(),
             Expr::Call(e) => e.visit(),
             Expr::Unary(e) => e.visit(),
             Expr::Binary(e) => e.visit(),

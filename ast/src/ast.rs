@@ -278,6 +278,15 @@ pub struct FieldInit {
     #[default(pvm::Operand::default)] pub dest: pvm::Operand,
 }
 
+/// Represents a field access expression.
+#[ast]
+pub struct FieldAccessExpr {
+    pub obj_expr: Box<Expr>,
+    pub field_expr: Box<Expr>,
+    #[default(PineType::default)] pub ty: PineType,
+    #[default(pvm::Operand::default)] pub dest: pvm::Operand,
+}
+
 /// Represents a call expression.
 #[ast]
 pub struct CallExpr {
@@ -315,6 +324,7 @@ pub enum Expr {
     StringLit(StringLitExpr),
     Ident(IdentExpr),
     NewObject(NewObjectExpr),
+    FieldAccess(FieldAccessExpr),
     Call(CallExpr),
     Unary(UnaryExpr),
     Binary(BinaryExpr),
@@ -329,6 +339,7 @@ impl Expr {
             Expr::StringLit(string_lit) => string_lit.ty.clone(),
             Expr::Ident(ident) => ident.ty.clone(),
             Expr::NewObject(new_object) => new_object.ty.clone(),
+            Expr::FieldAccess(field_access) => field_access.ty.clone(),
             Expr::Call(call) => call.ty.clone(),
             Expr::Unary(unary) => unary.ty.clone(),
             Expr::Binary(binary) => binary.ty.clone(),
@@ -343,6 +354,7 @@ impl Expr {
             Expr::StringLit(string_lit) => string_lit.ty = ty,
             Expr::Ident(ident) => ident.ty = ty,
             Expr::NewObject(new_object) => new_object.ty = ty,
+            Expr::FieldAccess(field_access) => field_access.ty = ty,
             Expr::Call(call) => call.ty = ty,
             Expr::Unary(unary) => unary.ty = ty,
             Expr::Binary(binary) => binary.ty = ty,
@@ -357,6 +369,7 @@ impl Expr {
             Expr::StringLit(string_lit) => string_lit.dest.clone(),
             Expr::Ident(ident) => ident.dest.clone(),
             Expr::NewObject(new_object) => new_object.dest.clone(),
+            Expr::FieldAccess(field_access) => field_access.dest.clone(),
             Expr::Call(call) => call.dest.clone(),
             Expr::Unary(unary) => unary.dest.clone(),
             Expr::Binary(binary) => binary.dest.clone(),
@@ -372,6 +385,7 @@ impl Ast for Expr {
             Expr::StringLit(string_lit_expr) => string_lit_expr.span(),
             Expr::Ident(ident_expr) => ident_expr.span(),
             Expr::NewObject(new_object_expr) => new_object_expr.span(),
+            Expr::FieldAccess(field_access) => field_access.span(),
             Expr::Call(call_expr) => call_expr.span(),
             Expr::Unary(unary_expr) => unary_expr.span(),
             Expr::Binary(binary_expr) => binary_expr.span(),
@@ -388,6 +402,7 @@ impl ScopedAst for Expr {
             Expr::StringLit(string_lit_expr) => string_lit_expr.scope(),
             Expr::Ident(ident_expr) => ident_expr.scope(),
             Expr::NewObject(new_object_expr) => new_object_expr.scope(),
+            Expr::FieldAccess(field_access) => field_access.scope(),
             Expr::Call(call_expr) => call_expr.scope(),
             Expr::Unary(unary_expr) => unary_expr.scope(),
             Expr::Binary(binary_expr) => binary_expr.scope(),
@@ -402,6 +417,7 @@ impl ScopedAst for Expr {
             Expr::StringLit(string_lit_expr) => string_lit_expr.set_scope(scope),
             Expr::Ident(ident_expr) => ident_expr.set_scope(scope),
             Expr::NewObject(new_object) => new_object.set_scope(scope),
+            Expr::FieldAccess(field_access) => field_access.set_scope(scope),
             Expr::Call(call_expr) => call_expr.set_scope(scope),
             Expr::Unary(unary_expr) => unary_expr.set_scope(scope),
             Expr::Binary(binary_expr) => binary_expr.set_scope(scope),

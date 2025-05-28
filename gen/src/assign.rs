@@ -143,6 +143,12 @@ impl AstAssign for ast::NewObjectExpr {
     }
 }
 
+impl AstAssign for ast::FieldAccessExpr {
+    fn assign(&mut self, temp_store: &mut TempStore) {
+        todo!()
+    }
+}
+
 impl AstAssign for ast::CallExpr {
     fn assign(&mut self, temp_store: &mut TempStore) {
         self.fun.assign(temp_store);
@@ -181,6 +187,7 @@ impl AstAssign for ast::Expr {
             ast::Expr::StringLit(e) => e.assign(temp_store),
             ast::Expr::Ident(e) => e.assign(temp_store),
             ast::Expr::NewObject(e) => e.assign(temp_store),
+            ast::Expr::FieldAccess(e) => e.assign(temp_store),
             ast::Expr::Call(e) => e.assign(temp_store),
             ast::Expr::Unary(e) => e.assign(temp_store),
             ast::Expr::Binary(e) => e.assign(temp_store),
